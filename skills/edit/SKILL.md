@@ -19,7 +19,8 @@ layer: the checker finds, this skill judges and rewrites.
 2. Load the `writing` skill's Core Ideas and Tripwires, and its
    `references/claude-defaults.md`; together they govern every rewrite. The
    defaults reference also lists trained habits the checker cannot catch
-   (synonym cycling, "not just X but Y", closing summaries); hunt those in
+   (synonym cycling, compulsive triplets, participial tails, closing
+   summaries); hunt those in
    the same pass.
 3. Fix each flag with the smallest edit that clears it:
    - hard sentence: split it, or turn an in-sentence list into bullets
@@ -28,6 +29,9 @@ layer: the checker finds, this skill judges and rewrites.
    - qualifier: delete it or state the evidence
    - simpler alternative: substitute the suggested word
    - aside: cut it, or promote it to its own sentence
+   - ai-tell: delete the tell phrase or swap the inflated word for a plain
+     one; for "it's not X, it's Y", pick the claim you mean and state it
+     once
    - em dash: use a period, colon, or comma; parentheses only when the
      span stays under six words, or the fix trades one flag for an aside
    Skip a flag only when it matches a documented false alarm; keep a list of

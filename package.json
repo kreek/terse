@@ -8,7 +8,9 @@
   },
   "scripts": {
     "check": "node scripts/style-check.mjs",
-    "test": "vitest run test"
+    "test": "vitest run test",
+    "eval": "claude plugin eval . --json evals/results/latest.json --max-cost-usd 10 --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
+    "eval:quick": "claude plugin eval . --runs 1 --case claudism-removal --json evals/results/latest.json --no-publish && node scripts/eval-score.mjs evals/results/latest.json"
   },
   "devDependencies": {
     "vitest": "^3.2.1"

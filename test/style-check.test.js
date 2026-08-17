@@ -173,4 +173,53 @@ describe('checkText', () => {
 		const { flags } = checkText('Maybe yes, maybe no.');
 		expect(flags.filter((f) => f.category === 'qualifier')).toHaveLength(2);
 	});
+
+	it('flags AI-tell phrases and banned vocabulary', () => {
+		const { flags, stats } = checkText(
+			'This sentence is load-bearing. Worth noting: the robust, seamless ecosystem fosters synergy across the landscape.'
+		);
+		const tells = flags.filter((f) => f.category === 'ai-tell').map((f) => f.match);
+		expect(tells).toEqual(expect.arrayContaining([
+			'load-bearing', 'worth noting', 'robust', 'seamless', 'ecosystem',
+			'synergy', 'landscape',
+		]));
+		expect(tells).toContain('fosters');
+		expect(stats.aiTells).toBe(tells.length);
+	});
+
+	it('flags the structural tells with curly or straight apostrophes', () => {
+		const tellsOf = (t) => checkText(t).flags
+			.filter((f) => f.category === 'ai-tell').map((f) => f.match);
+		expect(tellsOf("It's not just a checker, it's an editor."))
+			.toContain("it's not X, it's Y");
+		expect(tellsOf('It’s not speed, it’s discipline.'))
+			.toContain("it's not X, it's Y");
+		expect(tellsOf('The tool not only checks but also rewrites.'))
+			.toContain('not only X but also Y');
+	});
+
+	it('flags validation, therapy-speak, and punchy-fragment tells', () => {
+		const tellsOf = (t) => checkText(t).flags
+			.filter((f) => f.category === 'ai-tell').map((f) => f.match);
+		expect(tellsOf("You're absolutely right to push back. That is real, and that's not nothing."))
+			.toEqual(expect.arrayContaining(["you're absolutely right", "that's real / not nothing"]));
+		expect(tellsOf('Sit with that. It is worth stating plainly: the plan works, full stop.'))
+			.toEqual(expect.arrayContaining(['sit with that', 'worth stating plainly', 'full stop']));
+		expect(tellsOf('Not a detail. A design decision.')).toContain('punchy fragment');
+		expect(tellsOf("This isn't just faster, it's cheaper."))
+			.toContain("isn't just X, it's Y");
+	});
+
+	it('does not fire ai-tell on innocent look-alikes', () => {
+		const { flags } = checkText(
+			'The load on the bearing wore it down. The horse fostered no journeys across realms of iron.'
+		);
+		const tells = flags.filter((f) => f.category === 'ai-tell').map((f) => f.match);
+		// literal vocabulary uses still fire (accepted false-positive risk),
+		// but split words and phrase fragments must not
+		expect(tells).not.toContain('load-bearing');
+		expect(tells).not.toContain('load bearing');
+		expect(checkText('He noted the worth of the change.').stats.aiTells).toBe(0);
+		expect(checkText('This is an important note.').stats.aiTells).toBe(0);
+	});
 });

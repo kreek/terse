@@ -21,7 +21,7 @@ const ADVERB_WHITELIST = new Set([
 	'friendly', 'costly', 'timely', 'elderly', 'lively', 'lonely', 'lovely',
 	'deadly', 'orderly', 'unruly', 'burly', 'curly', 'oily', 'wobbly',
 	'kelly', 'holly', 'sally', 'molly', 'polly', 'billy', 'emily', 'lilly',
-	'beverly', 'kimberly',
+	'beverly', 'kimberly', 'grammarly',
 ]);
 
 const QUALIFIERS = [
@@ -55,6 +55,43 @@ const SIMPLER = {
 const SIMPLER_PATTERNS = Object.entries(SIMPLER).map(([phrase, simpler]) => ({
 	phrase, simpler,
 	re: new RegExp(`\\b${phrase.replace(/ /g, '\\s+')}\\b`, 'gi') }));
+
+// Claudisms and AI tells: phrases and vocabulary that mark machine writing.
+const AI_TELLS = [
+	'load-bearing', 'load bearing', 'doing real work', 'does real work',
+	"here's the thing", 'worth noting', 'importantly', 'at its core',
+	'the key insight', 'in essence',
+	'delve', 'delves', 'delving', 'harness', 'harnesses', 'harnessing',
+	'robust', 'seamless', 'seamlessly', 'crucial', 'crucially', 'pivotal',
+	'foster', 'fosters', 'fostering', 'streamline', 'streamlines',
+	'streamlined', 'underscore', 'underscores', 'underscoring', 'showcase',
+	'showcases', 'showcasing', 'unlock', 'unlocks', 'unlocking', 'elevate',
+	'elevates', 'testament', 'tapestry', 'landscape', 'realm', 'synergy',
+	'journey', 'ecosystem', 'multifaceted', 'transformative', 'cutting-edge',
+	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
+	'and that matters', 'carry the argument', 'carries the argument',
+];
+
+const AI_TELL_PATTERNS = AI_TELLS.map((q) => ({ phrase: q,
+	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b`, 'gi') }));
+
+// Structural tells: negative parallelisms, reflexive validation, and punchy
+// fragments. Matched against the whole text (some span sentence boundaries),
+// so word gaps are \s+ to survive wrapped lines.
+const AI_TELL_STRUCTURES = [
+	{ phrase: "it's not X, it's Y",
+		re: /\b(?:it|this|that)['’]s\s+not\s+(?:just\s+|only\s+)?[^,;.]{1,40}[,;]\s+(?:it|this|that)['’]s\b/gi },
+	{ phrase: "isn't just X, it's Y",
+		re: /\bisn['’]t\s+(?:just|only)\s+[^,;.—]{1,40}[,;—]\s*(?:it|this|that)['’]s\b/gi },
+	{ phrase: 'not only X but also Y',
+		re: /\bnot\s+only\b[^.;]{1,60}\bbut\s+also\b/gi },
+	{ phrase: "you're absolutely right",
+		re: /\byou['’]re\s+(?:absolutely|completely)\s+right\b|\byou['’]re\s+right\s+to\s+\w+/gi },
+	{ phrase: "that's real / not nothing",
+		re: /\b(?:that|this|it)(?:['’]s|\s+is)\s+(?:not\s+nothing|real)\b/gi },
+	{ phrase: 'punchy fragment',
+		re: /\bNot\s+(?:a|an|the|just)\s+[\w-]+\.\s+(?:A|An|The)\s+[\w-]+\b/g },
+];
 
 const IRREGULAR_PARTICIPLES = new Set([
 	'begun', 'bought', 'brought', 'broken', 'built', 'caught', 'chosen',
@@ -235,6 +272,12 @@ function checkLexicon(sentence, flags, file, line) {
 				hint: `use "${simpler}"` });
 		}
 	}
+	for (const { phrase, re } of AI_TELL_PATTERNS) {
+		for (const m of sentence.matchAll(re)) {
+			flags.push({ file, line, category: 'ai-tell', match: phrase,
+				hint: 'an AI tell; state the claim plainly' });
+		}
+	}
 }
 
 export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = {}) {
@@ -255,6 +298,13 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 				hint: 'cut the aside, or promote it to its own sentence' });
 		}
 	}
+	// Structural tells can span sentence boundaries, so scan the whole text.
+	for (const { phrase, re } of AI_TELL_STRUCTURES) {
+		for (const m of text.matchAll(re)) {
+			flags.push({ file, line: lineAt(m.index), category: 'ai-tell', match: phrase,
+				hint: 'an AI tell; state the claim plainly' });
+		}
+	}
 	const allWords = [];
 	const sentenceLengths = [];
 	for (const s of splitSentences(text)) {
@@ -269,6 +319,13 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 		sentenceLengths.push(words.length);
 	}
 	return { flags, stats: docStats(allWords, sentenceLengths, flags) };
+}
+
+// The whole document fails the gate when accumulated dense vocabulary pushes
+// its grade past the target, even if no single sentence trips. Enforced in
+// the CLI, not as a flag: flags are positional, this finding has no line.
+export function docGradeExceeded(stats, maxGrade) {
+	return stats.words >= MIN_WORDS_FOR_GRADE && stats.grade >= maxGrade;
 }
 
 // Targets scale with length, in the spirit of the classic readability editors.
@@ -287,6 +344,7 @@ function docStats(words, sentenceLengths, flags) {
 		adverbs: { count: count('adverb'), target: Math.max(2, Math.round(n / 130)) },
 		passive: { count: count('passive-voice'), target: Math.max(2, Math.round(n / 200)) },
 		qualifiers: { count: count('qualifier'), target: Math.max(2, Math.round(n / 250)) },
+		aiTells: count('ai-tell'),
 		hardSentences: count('hard-sentence') + count('very-hard-sentence'),
 	};
 }
@@ -322,17 +380,22 @@ function main() {
 			process.exit(2);
 		}
 		const { flags, stats } = checkText(raw, { maxGrade, file });
-		total += flags.length;
-		results.push({ file, flags, stats });
+		const gradeExceeded = docGradeExceeded(stats, maxGrade);
+		total += flags.length + (gradeExceeded ? 1 : 0);
+		results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });
 		if (json) continue;
 		for (const f of flags) {
 			console.log(`${f.file}:${f.line}  [${f.category}] "${f.match}" - ${f.hint}`);
+		}
+		if (gradeExceeded) {
+			console.log(`${file}  [document-grade] "grade ${stats.grade}, target below ` +
+				`${maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
 		}
 		console.log(`${file}: ${stats.words} words, ~${stats.readingTimeMinutes} min read, ` +
 			`grade ${stats.grade}; adverbs ${stats.adverbs.count}/${stats.adverbs.target}, ` +
 			`passive ${stats.passive.count}/${stats.passive.target}, ` +
 			`qualifiers ${stats.qualifiers.count}/${stats.qualifiers.target}, ` +
-			`hard sentences ${stats.hardSentences}`);
+			`AI tells ${stats.aiTells}, hard sentences ${stats.hardSentences}`);
 	}
 	if (json) console.log(JSON.stringify(results, null, 2));
 	else console.log(total === 0 ? 'style-check: clean' : `style-check: ${total} flag(s)`);

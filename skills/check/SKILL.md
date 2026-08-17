@@ -1,6 +1,6 @@
 ---
 name: check
-description: "Check a document's readability and style: hard sentences, passive voice, adverbs, qualifiers, wordy phrases, long asides, em dashes."
+description: "Check a document's readability and style: hard sentences, passive voice, adverbs, qualifiers, wordy phrases, long asides, em dashes, AI tells."
 ---
 
 # Check

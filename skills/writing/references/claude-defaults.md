@@ -44,7 +44,12 @@ them; they are model tendencies and need active suppression when editing:
 - A closing summary that restates what the reader just read.
 - Mid-sentence bold for emphasis.
 
-When `/terse:edit` runs, treat these two lists as flags of equal standing
-with the mechanical checker's output: the checker catches some of them
-(em dashes, simpler-alternative words); the rest are the editor's
-responsibility.
+The checker's `ai-tell` category now catches the lexical tells
+mechanically: the tell phrases ("worth noting", "at its core",
+"load-bearing"), the banned vocabulary, and the "it's not X, it's Y" and
+"not only X but also Y" structures, alongside the existing em-dash and
+simpler-alternative flags. What remains the editor's responsibility is
+what no pattern can see: synonym cycling, compulsive triplets,
+participial analysis tails, closing summaries, and mid-sentence bold.
+When `/terse:edit` runs, hunt those in the same pass and treat them as
+flags of equal standing.
