@@ -47,6 +47,15 @@ describe('checkText', () => {
 		expect(flags).toEqual([]);
 	});
 
+	it('flags long parenthetical asides but not short ones', () => {
+		const { flags } = checkText(
+			'The scheduler runs at night (except on the last day of each fiscal quarter) and deletes stale entries (see docs).'
+		);
+		const asides = flags.filter((f) => f.category === 'aside');
+		expect(asides).toHaveLength(1);
+		expect(asides[0].match).toContain('except on the last day');
+	});
+
 	it('computes document stats', () => {
 		const { stats } = checkText('The scheduler deletes stale entries. The report is short.');
 		expect(stats.words).toBe(9);

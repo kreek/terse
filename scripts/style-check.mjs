@@ -114,6 +114,13 @@ function checkSentence(sentence, maxGrade, flags, file, line) {
 				hint: 'pick a stronger verb or give the number' });
 		}
 	}
+	for (const m of sentence.matchAll(/\(([^)]+)\)/g)) {
+		if (wordsOf(m[1]).length >= 6) {
+			flags.push({ file, line, category: 'aside',
+				match: `(${m[1].slice(0, 40)}${m[1].length > 40 ? '...' : ''})`,
+				hint: 'cut the aside, or promote it to its own sentence' });
+		}
+	}
 }
 
 function checkLexicon(sentence, flags, file, line) {

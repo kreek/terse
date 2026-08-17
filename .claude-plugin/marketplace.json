@@ -6,8 +6,7 @@
   },
   "metadata": {
     "description": "Terse: a writing editor for Claude Code.",
-    "version": "0.1.0",
-    "license": "MIT"
+    "version": "0.1.0"
   },
   "plugins": [
     {

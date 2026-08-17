@@ -11,8 +11,8 @@ Two layers:
 
 - **Mechanical** (`scripts/style-check.mjs`): pattern matching, word lists,
   and readability arithmetic. It flags hard-to-read sentences (per-sentence
-  ARI grade), passive voice, adverbs, qualifiers, wordy phrases, and em
-  dashes. It also reports document stats: word count, reading time, grade,
+  ARI grade), passive voice, adverbs, qualifiers, wordy phrases, long
+  parenthetical asides, and em dashes. It also reports document stats: word count, reading time, grade,
   and each count against a length-scaled target. No AI, no network, no
   dependencies.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
@@ -36,6 +36,9 @@ Add this repo as a marketplace in Claude Code, then install the plugin:
 | `/terse:check <file>` | Run the checker, report stats and flags. Read-only. |
 | `/terse:edit <file>` | Fix every flag with the smallest edit that clears it. |
 | `/terse:analyze <dir>` | Learn your voice from writing samples into a signed-off `.terse/voice.md`. |
+| `/terse:proof <file>` | Fix grammar, spelling, and punctuation only. No style opinions. |
+| `/terse:tone <file> <preset>` | Shift tone: confident, formal, friendly, casual, persuasive, shorter, more-detail, simpler. |
+| `/terse:review <file>` | Editor feedback without edits: readability, structure, voice, AI tells. |
 
 The `writing` skill also loads on its own when Claude writes or edits
 prose. It carries the voice rules into everyday document work.

@@ -27,6 +27,7 @@ layer: the checker finds, this skill judges and rewrites.
    - adverb: choose a stronger verb, or give the number
    - qualifier: delete it or state the evidence
    - simpler alternative: substitute the suggested word
+   - aside: cut it, or promote it to its own sentence
    - em dash: use a period, colon, comma, or parentheses
    Skip a flag only when it matches a documented false alarm; keep a list of
    skipped flags with the reason.
