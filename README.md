@@ -10,11 +10,11 @@ Claude subscription you already pay for.
 Two layers:
 
 - **Mechanical** (`scripts/style-check.mjs`): pattern matching, word lists,
-  and readability arithmetic. It flags hard-to-read sentences (per-sentence
-  ARI grade), passive voice, adverbs, qualifiers, wordy phrases, long
-  parenthetical asides, and em dashes. It also reports document stats: word count, reading time, grade,
-  and each count against a length-scaled target. No AI, no network, no
-  dependencies.
+  and readability arithmetic. No AI, no network, no dependencies. It grades
+  each sentence with ARI and flags the hard ones. It flags passive voice,
+  adverbs, qualifiers, wordy phrases, long asides, and em dashes. Document
+  stats cover word count, reading time, and grade. Each adverb, passive,
+  and qualifier count gets a length-scaled target.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
   playbook governs each fix and knows when a flag is a false alarm. Passive
   voice with an irrelevant actor stays. A load-bearing hedge stays. Your em
@@ -46,11 +46,12 @@ prose. It carries the voice rules into everyday document work.
 ## Your voice
 
 `/terse:analyze` reads a directory of your writing. The checker measures
-your habits as numbers; the model names your traits, each with a quoted
+your habits as numbers. The model names your traits, each with a quoted
 example. The result is a draft `.terse/voice.md`. You review and approve
 it trait by trait; Terse honors no template you have not signed off.
-Once approved, your template wins: flags your voice overrides go quiet,
-and rewrites stay inside your measured ranges.
+Once approved, your template wins. `/terse:edit` skips the flags your
+voice overrides, and `/terse:check` names them as covered. Rewrites stay
+inside your measured ranges.
 
 ## Use the checker standalone
 

@@ -1,6 +1,6 @@
 ---
 name: check
-description: "Check a document's readability and style: hard sentences, passive voice, adverbs, qualifiers, wordy phrases."
+description: "Check a document's readability and style: hard sentences, passive voice, adverbs, qualifiers, wordy phrases, long asides, em dashes."
 ---
 
 # Check
@@ -15,13 +15,17 @@ the prose yourself.
    check; do not guess.
 2. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>`
    (add `--max-grade N` if the user set a target reading level).
-3. Report the document stats first (words, reading time, grade, and each
-   count against its target), then the flags grouped by category with
-   `file:line` references.
+3. Report the document stats first (words, reading time, grade, and the
+   adverb, passive, and qualifier counts against their length-scaled
+   targets), then the flags grouped by category with `file:line`
+   references.
 4. For each category with flags, add one sentence on the likely fix, using
    the `writing` skill's tripwires. Name any flags that look like documented
    false alarms (passive with an irrelevant actor, a load-bearing hedge, a
-   meaning-changing adverb) so the user can keep them deliberately.
+   meaning-changing adverb, an aside that is a citation or required
+   wording) so the user can keep them deliberately. If an approved
+   `.terse/voice.md` exists, also name the flags its exceptions cover;
+   `/terse:edit` will skip those.
 5. Do not edit the document. Offer `/terse:edit` if the user wants the
    fixes applied.
 

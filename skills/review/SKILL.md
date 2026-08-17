@@ -12,9 +12,10 @@ document-feedback feature.
 ## Workflow
 
 1. Resolve the target file(s); ask if none were named.
-2. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file>` for the
-   stats and mechanical flags; the review builds on them rather than
-   repeating them one by one.
+2. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file>` (add
+   `--max-grade N` if the user set a target reading level) for the stats
+   and mechanical flags; the review builds on them rather than repeating
+   them one by one.
 3. Assess, in order:
    - **Readability**: the stats line against the target grade (default
      10), and where the hard sentences cluster.

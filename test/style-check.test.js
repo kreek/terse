@@ -63,4 +63,114 @@ describe('checkText', () => {
 		expect(stats.grade).toBeGreaterThan(0);
 		expect(stats.adverbs.target).toBeGreaterThanOrEqual(2);
 	});
+
+	it('keeps text when punctuation is followed by a closing quote or paren', () => {
+		const { flags, stats } = checkText('The plan failed. (Nobody was surprised at all by this outcome.) We moved on.');
+		expect(stats.words).toBe(14);
+		expect(cats(flags)).toContain('passive-voice');
+		expect(cats(flags)).toContain('aside');
+	});
+
+	it('checks paragraphs that follow a heading with no blank line', () => {
+		const { flags, stats } = checkText('# Title\nThe cache was invalidated by the scheduler significantly.');
+		expect(cats(flags)).toContain('passive-voice');
+		expect(cats(flags)).toContain('adverb');
+		expect(stats.words).toBe(8);
+	});
+
+	it('flags asides despite nested parens or inner sentence punctuation', () => {
+		const nested = checkText('The cache layer (both L1 (on-die) and the shared L2 slice) needs work.');
+		expect(cats(nested.flags)).toContain('aside');
+		const inner = checkText('The job skips derived tables (e.g. the aggregate rollups built by the pipeline) tonight.');
+		expect(cats(inner.flags)).toContain('aside');
+	});
+
+	it('ignores parens inside markdown link URLs when finding asides', () => {
+		const { flags } = checkText('It broke (because the [job](https://en.wikipedia.org/wiki/Cron_(Unix)) can delete active entries).');
+		expect(flags.filter((f) => f.category === 'aside')).toHaveLength(1);
+	});
+
+	it('counts typographic apostrophes, decimals, and abbreviations as single words', () => {
+		const { stats } = checkText('Don’t ship version 3.5 before 3:30 p.m. today.');
+		expect(stats.words).toBe(8);
+		expect(stats.sentences).toBe(1);
+	});
+
+	it('does not flag qualifier words inside larger words', () => {
+		const { flags } = checkText('Her unrequited love caused a bitter dispute.');
+		expect(cats(flags)).not.toContain('qualifier');
+	});
+
+	it('keeps the aside preview well-formed when emoji straddle the cut', () => {
+		const { flags } = checkText(`Ship it (${'a'.repeat(39)}🎉 and more words to pass the threshold) now.`);
+		const aside = flags.find((f) => f.category === 'aside');
+		expect(aside.match.isWellFormed()).toBe(true);
+	});
+
+	it('treats unpunctuated list items as separate sentences', () => {
+		const { flags, stats } = checkText('- deploys the build to the staging cluster\n- runs the smoke tests for every service\n- promotes the build when the tests pass');
+		expect(cats(flags)).not.toContain('very-hard-sentence');
+		expect(stats.sentences).toBe(3);
+	});
+
+	it('catches passive voice with contractions, "being", and prefixed participles', () => {
+		const { flags } = checkText('The bridge was being built. The cake wasn’t eaten. The policy was rewritten.');
+		expect(flags.filter((f) => f.category === 'passive-voice')).toHaveLength(3);
+	});
+
+	it('does not read "-ed" lookalikes or proper nouns as flags', () => {
+		const { flags } = checkText('She was indeed talented. Kelly spoke to Holly warmly.');
+		expect(cats(flags)).not.toContain('passive-voice');
+		expect(flags.filter((f) => f.category === 'adverb').map((f) => f.match)).toEqual(['warmly']);
+	});
+
+	it('reports per-sentence lengths in stats', () => {
+		const { stats } = checkText('One two three. Four five.');
+		expect(stats.sentenceLengths).toEqual([3, 2]);
+	});
+
+	it('reports zero reading time for an empty document', () => {
+		const { stats } = checkText('');
+		expect(stats.readingTimeMinutes).toBe(0);
+		expect(stats.words).toBe(0);
+	});
+
+	it('ignores YAML frontmatter', () => {
+		const { flags, stats } = checkText('---\ndescription: "We utilize numerous additional things significantly."\n---\n\nClean prose here.');
+		expect(flags).toEqual([]);
+		expect(stats.words).toBe(3);
+	});
+
+	it('flags sentence-initial adverbs after quotes or list markers', () => {
+		const { flags } = checkText('"Sadly, the server died."\n\n- Quickly restart the pods');
+		expect(flags.filter((f) => f.category === 'adverb').map((f) => f.match)).toEqual(['Sadly', 'Quickly']);
+	});
+
+	it('does not read "un-" adjectives as passive voice', () => {
+		const { flags } = checkText('The actor is unknown. The risk was unseen. She was mistaken about it.');
+		expect(cats(flags)).not.toContain('passive-voice');
+	});
+
+	it('leaves multiline pseudo-links alone without shifting line numbers', () => {
+		const { flags } = checkText('See [the doc](https://example.com/\nvery/long/path) here.\nStale entries — every night.');
+		const dash = flags.find((f) => f.category === 'em-dash');
+		expect(dash.line).toBe(3);
+	});
+
+	it('does not count horizontal rules as sentences', () => {
+		const { stats } = checkText('First paragraph here.\n\n---\n\nSecond paragraph here.');
+		expect(stats.sentences).toBe(2);
+		expect(stats.sentenceLengths).toEqual([3, 3]);
+	});
+
+	it('keeps a standalone year as a sentence and "ms." as a sentence end', () => {
+		expect(checkText('The war ended. 1945. Everyone celebrated.').stats.sentences).toBe(3);
+		expect(checkText('The query took 30 ms. Then it returned.').stats.sentences).toBe(2);
+		expect(checkText('Ms. Smith arrived early.').stats.sentences).toBe(1);
+	});
+
+	it('counts each qualifier occurrence', () => {
+		const { flags } = checkText('Maybe yes, maybe no.');
+		expect(flags.filter((f) => f.category === 'qualifier')).toHaveLength(2);
+	});
 });

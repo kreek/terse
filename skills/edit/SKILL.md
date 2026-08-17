@@ -1,6 +1,6 @@
 ---
 name: edit
-description: "Fix a document's style flags: rewrite hard sentences, activate passive voice, cut adverbs, qualifiers, and wordy phrases."
+description: "Fix a document's style flags: rewrite hard sentences, activate passive voice, cut adverbs, qualifiers, wordy phrases, long asides, and em dashes."
 ---
 
 # Edit
@@ -28,7 +28,8 @@ layer: the checker finds, this skill judges and rewrites.
    - qualifier: delete it or state the evidence
    - simpler alternative: substitute the suggested word
    - aside: cut it, or promote it to its own sentence
-   - em dash: use a period, colon, comma, or parentheses
+   - em dash: use a period, colon, or comma; parentheses only when the
+     span stays under six words, or the fix trades one flag for an aside
    Skip a flag only when it matches a documented false alarm; keep a list of
    skipped flags with the reason.
 4. Preserve the author's voice: no rewrites beyond the flagged span, no
@@ -36,9 +37,10 @@ layer: the checker finds, this skill judges and rewrites.
    would change what the sentence claims, skip it and say so.
 5. Re-run the checker. Iterate until the remaining flags are all documented
    false alarms.
-6. Also fix mechanics found while editing: spelling, subject-verb
-   agreement, homophones (were/where, they're/their/there, its/it's,
-   your/you're).
+6. Also fix mechanics found while editing (spelling, agreement,
+   homophones), following `/terse:proof`'s scope and safeguards: quoted
+   material keeps its original errors, and the document's spelling
+   convention (US or UK) stays as found.
 7. Report: flags fixed per category, flags kept with reasons, and the
    before/after stats line.
 

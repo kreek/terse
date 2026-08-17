@@ -61,6 +61,8 @@ closing summaries).
 | "An adverb strengthens the verb" | Pick a stronger verb or give the number. | The adverb changes meaning, not intensity ("only", "never", "no longer"). |
 | "The five-dollar word is more precise" | Write the plain version first; keep the term only if the plain version is longer, vaguer, or wrong for this audience. | The readers are specialists and the term is their working vocabulary. |
 | "Rewrite the paragraph while I'm here" | Make the smallest edit that fixes the flagged issue. | The author asked for a rewrite. |
+| "The aside is too useful to cut" | Cut it, promote it to its own sentence, or shorten it below six words. | The aside is a citation, cross-reference, or required wording that cannot stand alone. |
+| "The em dash reads best as parentheses" | Prefer a period, colon, or comma; a parenthetical of six or more words trades the em-dash flag for an aside flag. | An approved voice template keeps em dashes. |
 
 ## The user's voice
 
@@ -77,3 +79,9 @@ hedging rate) bound any prose written or edited for that author.
   above and the approved voice template.
 - `/terse:analyze` learns the user's voice from samples into
   `.terse/voice.md`, gated on their sign-off.
+- `/terse:proof` fixes grammar, spelling, and punctuation only, with no
+  style opinions.
+- `/terse:tone` shifts register across presets while keeping claims and
+  the approved voice intact.
+- `/terse:review` reports editor feedback (readability, structure, voice,
+  AI tells) without editing.
