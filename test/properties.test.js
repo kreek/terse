@@ -190,6 +190,20 @@ describe('CLI contract', () => {
 		expect(run().status).toBe(2);
 	});
 
+	it('document grade past the target fails even when every sentence passes', () => {
+		const f = join(dir, 'dense.md');
+		// each sentence is under 14 words, so no per-sentence grade flag fires
+		writeFileSync(f, 'Multifaceted organizational transformation necessitates comprehensive stakeholder alignment procedures. Transformative institutional methodologies precipitate unprecedented developmental paradigm restructuring.\n');
+		const r = run(f);
+		expect(r.status).toBe(1);
+		expect(r.stdout).toContain('[document-grade]');
+		const plain = join(dir, 'plain.md');
+		writeFileSync(plain, 'We ship it in the morning. The plan is small. The team likes it. All is well now.\n');
+		const p = run(plain);
+		expect(p.status).toBe(0);
+		expect(p.stdout).not.toContain('[document-grade]');
+	});
+
 	it('path with spaces is read and checked', () => {
 		const f = join(dir, 'my draft notes.md');
 		writeFileSync(f, 'The team ships small tools.\n');

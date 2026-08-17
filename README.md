@@ -17,7 +17,7 @@ Two layers:
   and qualifier count gets a length-scaled target.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
   playbook governs each fix and knows when a flag is a false alarm. Passive
-  voice with an irrelevant actor stays. A load-bearing hedge stays. Your em
+  voice with an irrelevant actor stays. A hedge that is the claim stays. Your em
   dashes stay if your voice template says so.
 
 ## Install
@@ -61,7 +61,9 @@ node scripts/style-check.mjs draft.md --max-grade 8
 node scripts/style-check.mjs draft.md --json
 ```
 
-Exit code is nonzero when flags remain, so it works as a CI gate.
+Exit code is nonzero when flags remain, so it works as a CI gate. A
+document at or above the target grade fails the check even when each
+sentence passes on its own.
 
 ## Develop
 
