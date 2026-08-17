@@ -5,8 +5,9 @@ description: "Proofread a document for grammar, spelling, and punctuation only. 
 
 # Proof
 
-Fix correctness errors and nothing else. This is the Grammarly-replacement
-pass: it must leave style, structure, and voice exactly as found. A user
+Fix correctness errors and nothing else. This pass replaces a standalone
+grammar assistant: it must leave style, structure, and voice exactly as
+found. A user
 who wants style fixes runs `/terse:edit`.
 
 ## Scope

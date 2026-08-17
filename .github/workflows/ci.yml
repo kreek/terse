@@ -17,4 +17,4 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: Self-check README prose
-        run: node scripts/style-check.mjs README.md
+        run: node scripts/style-check.mjs README.md ROADMAP.md evals/README.md
