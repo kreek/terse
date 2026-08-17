@@ -1,0 +1,25 @@
+{
+  "name": "terse",
+  "owner": {
+    "name": "Alastair Dawson",
+    "url": "https://github.com/kreek"
+  },
+  "metadata": {
+    "description": "Terse: a writing editor for Claude Code.",
+    "version": "0.1.0",
+    "license": "MIT"
+  },
+  "plugins": [
+    {
+      "name": "terse",
+      "description": "Mechanical style checks plus AI edits that keep your voice. Everything the classic readability editors did, on your existing Claude subscription.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Alastair Dawson"
+      },
+      "homepage": "https://github.com/kreek/terse",
+      "license": "MIT",
+      "source": "./"
+    }
+  ]
+}
