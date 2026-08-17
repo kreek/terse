@@ -99,6 +99,30 @@ prose on the checker in CI.
 
 Proof: eval cases per command, passing.
 
+## Milestone 7: Verified quotes
+
+Model-written documents sometimes invent quotes or drift from the
+source wording. Terse should treat an unverified quote like a grammar
+error. A machine finds it; the fix lands before the document ships.
+
+- [ ] `scripts/quote-check.mjs`: find each quotation and its nearby
+      source link. Fetch the source and prove the quote appears
+      verbatim. Normalize only whitespace and quote marks. Same exit
+      contract as the style checker: clean, findings, or error.
+- [ ] A `/terse:cite` skill for writing quotes in. Fetch the source,
+      copy the exact text, and link it. Never quote from memory.
+- [ ] Anchor-deep links. Web sources get text-fragment URLs
+      (`#:~:text=`), so the link opens with the quote highlighted.
+      PDF sources get a page anchor (`#page=12`). A plain URL is the
+      fallback, never the goal.
+- [ ] Offline mode: when the fetch fails, the checker marks the quote
+      unverified. No quote passes without its source.
+- [ ] An eval case: a seeded document with one altered quote and one
+      invented quote. The with-arm must catch both.
+
+Proof: against a fixture source, the checker rejects a tampered quote.
+It accepts the verbatim one. The eval case passes.
+
 ## Parity scorecard
 
 | Capability | Readability editors | Grammar assistants | Terse today |
@@ -112,5 +136,6 @@ Proof: eval cases per command, passing.
 | Colored highlight view | yes | yes | not yet (M3) |
 | Always-on checking | app only | everywhere | not yet (M5) |
 | Proven ablation delta | no | no | pending (M1) |
+| Verified verbatim quotes | no | plagiarism scan only | not yet (M7) |
 
 Neither incumbent can claim the last row. Landing M1 makes it ours.
