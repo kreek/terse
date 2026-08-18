@@ -7,10 +7,10 @@ description: "Use when writing or editing prose in any document: voice, clarity,
 
 ## Iron Law
 
-`EVERY SENTENCE EARNS ITS PLACE. PLAIN WORDS, ACTIVE VOICE, THE READER'S VOCABULARY.`
+`EVERY SENTENCE INFORMS, ADVANCES THE POINT, OR TEACHES. PLAIN WORDS, ACTIVE VOICE, THE READER'S VOCABULARY.`
 
-Terse produces load-bearing prose: every sentence informs, advances the
-document's point, or builds the reader's knowledge. A sentence doing none of
+In a Terse document, every sentence informs, advances the document's
+point, or builds the reader's knowledge. A sentence doing none of
 those is cut. The mechanical layer (`scripts/style-check.mjs`) finds what a
 pattern-matcher can find; this skill owns the judgment the patterns cannot
 make. The findings contract in `references/findings.md` defines the
@@ -22,27 +22,34 @@ shares.
 1. **Plain, direct, concrete language.** Keep sentences short, but vary
    their length so the text has a natural cadence rather than blunt,
    isolated statements.
-2. **Prefer the word the reader already has.** A technical term earns its
-   place only when it is more precise than the plain description and the
+2. **Prefer the word the reader already has.** Use a technical term
+   only when it is more precise than the plain description and the
    audience owns it. Write the plain version first; keep the term of art
    only if the plain version is longer, vaguer, or wrong. Titles and
    headings get the strictest reading.
-3. **Active voice, strong verbs, direct claims.** Prefer a named actor
+3. **Say the action outright.** A stock figure ("earns its place",
+   "moves the needle", "does the heavy lifting") is a fancy phrase the
+   way a five-dollar word is a fancy word: the reader must translate
+   it back to the real action. The test is translation: if the literal
+   verb loses nothing, use it ("you should adopt it", not "it earns
+   its place"). Metaphor is for explaining something the reader has
+   not seen yet, not for stating a decision, verdict, or action.
+4. **Active voice, strong verbs, direct claims.** Prefer a named actor
    doing the action, a strong verb over a verb propped up by an adverb, and
    a plain statement over one padded with qualifiers. Passive voice is
    right when the actor is irrelevant or unknown ("the token is signed"); a
    qualifier is right when the hedge is the claim itself.
-4. **The known-new contract.** Open a sentence with what the reader
+5. **The known-new contract.** Open a sentence with what the reader
    already has; the new or important information goes at the end,
    where the emphasis falls. A run of sentences that each open with
    new information loses the reader, however clean each one is.
-5. **Never comment on the writing.** No significance announcements ("worth
+6. **Never comment on the writing.** No significance announcements ("worth
    noting", "importantly"), no rhetorical questions answered by the next
    sentence, no "it's not just X, it's Y". The test is deletion: cut the
    phrase, and if the passage loses no information, it was a signpost.
-6. **Length is a cost the reader pays.** Cut by selecting what to include,
+7. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
-7. **The author's voice survives the edit.** When editing someone else's
+8. **The author's voice survives the edit.** When editing someone else's
    text, make the smallest change that fixes the issue. Never rewrite their
    sentences into your own cadence.
 
@@ -63,12 +70,13 @@ closing summaries).
 |---|---|---|
 | "Passive voice reads as more formal" | Name the actor and use active voice. | The actor is irrelevant or unknown. |
 | "The sentence is long, but it all belongs together" | Split it, or turn an in-sentence list into a bulleted list. | The items are few and parallel, and the sentence stays readable on one pass. |
-| "A qualifier softens the claim politely" | Delete the qualifier or state the evidence. | The hedge is the claim: marking a statement uncertain is load-bearing. |
+| "A qualifier softens the claim politely" | Delete the qualifier or state the evidence. | The hedge is the claim: the sentence exists to mark the uncertainty. |
 | "An adverb strengthens the verb" | Pick a stronger verb or give the number. | The adverb changes meaning, not intensity ("only", "never", "no longer"). |
 | "The five-dollar word is more precise" | Write the plain version first; keep the term only if the plain version is longer, vaguer, or wrong for this audience. | The readers are specialists and the term is their working vocabulary. |
 | "Rewrite the paragraph while I'm here" | Make the smallest edit that fixes the flagged issue. | The author asked for a rewrite. |
 | "The aside is too useful to cut" | Cut it, promote it to its own sentence, or shorten it below six words. | The aside is a citation, cross-reference, or required wording that cannot stand alone. |
 | "The em dash reads best as parentheses" | Prefer a period, colon, or comma; a parenthetical of six or more words trades the em-dash flag for an aside flag. | An approved voice template keeps em dashes. |
+| "The turn of phrase reads better than the plain claim" | State the decision or action with its literal verb. | The figure explains a mechanism the reader has not seen, or an approved voice template uses it. |
 
 ## The user's voice
 

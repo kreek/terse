@@ -41,6 +41,9 @@ them; they are model tendencies and need active suppression when editing:
 - Significance announcements ("importantly", "it's worth noting").
 - Inflated verbs and vocabulary: leverage, delve, robust, seamless,
   crucial, foster, streamline.
+- Stock figures where a decision or action wants its plain verb:
+  "earns its place", "moves the needle", "does the heavy lifting",
+  "low-hanging fruit".
 - A closing summary that restates what the reader just read.
 - Mid-sentence bold for emphasis.
 
@@ -50,6 +53,9 @@ mechanically: the tell phrases ("worth noting", "at its core",
 "not only X but also Y" structures, alongside the existing em-dash and
 simpler-alternative flags. What remains the editor's responsibility is
 what no pattern can see: synonym cycling, compulsive triplets,
-participial analysis tails, closing summaries, and mid-sentence bold.
-When `/terse:edit` runs, hunt those in the same pass and treat them as
-flags of equal standing.
+participial analysis tails, closing summaries, mid-sentence bold, and
+stock figures beyond the listed phrases. No lexicon can enumerate
+figures of speech, so apply the translation test from the `writing`
+skill's Core Ideas: if the literal verb loses nothing, the figure is a
+finding. When `/terse:edit` runs, hunt those in the same pass and
+treat them as flags of equal standing.

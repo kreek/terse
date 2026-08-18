@@ -35,6 +35,10 @@ const LABELED_TELLS = [
 	{ text: "Whether you're a founder, a writer, or a student, it fits.", tell: "whether you're X, Y, or Z" },
 	{ text: 'Four questions settle it. Ask them before you adopt.', tell: 'slogan opener' },
 	{ text: 'Intro paragraph sits here.\n\nThree things matter here.', tell: 'slogan opener' },
+	{ text: 'The new cache earns its place in the request path.', tell: 'earns its place' },
+	{ text: 'The redesign moves the needle on churn.', tell: 'moves the needle' },
+	{ text: 'The runtime does the heavy lifting for you.', tell: 'heavy lifting' },
+	{ text: 'Start with the low-hanging fruit in the backlog.', tell: 'low-hanging fruit' },
 ];
 
 const WEAK_VERBS = [

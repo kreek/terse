@@ -95,6 +95,11 @@ const AI_TELLS = [
 	'journey', 'ecosystem', 'multifaceted', 'transformative', 'cutting-edge',
 	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
 	'and that matters', 'carry the argument', 'carries the argument',
+	// stock figures that mask the literal action; say adopt/use/choose/cut
+	'earns its place', 'earn its place', 'earns their place',
+	'moves the needle', 'move the needle', 'heavy lifting',
+	'low-hanging fruit', 'secret sauce', 'table stakes',
+	'at the end of the day',
 	// harvested from model-written launch posts and product copy
 	'thrilled to announce', 'excited to announce', 'excited to share',
 	'proud to announce', 'under the hood', 'this is just the beginning',
