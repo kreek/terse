@@ -45,12 +45,20 @@ layer: the checker finds, this skill judges and rewrites.
    would change what the sentence claims, skip it and say so.
 5. Re-run the checker. Iterate until the remaining flags are all documented
    false alarms.
-6. Also fix mechanics found while editing (spelling, agreement,
+6. Re-read every touched section whole. A flag list is a worklist, not
+   an edit plan: fifteen correct local fixes can leave a paragraph
+   reading as chopped fragments. Check the cadence against the voice
+   template's measured spread (`--json` gives `stats.sentenceLengths`);
+   a collapsed spread means the splits flattened the rhythm. Restore
+   flow with the author's own devices, connective openers, asymmetric
+   splits, a short verdict against a long analysis, not by undoing the
+   fixes.
+7. Also fix mechanics found while editing (spelling, agreement,
    homophones), following `/terse:proof`'s scope and safeguards: quoted
    material keeps its original errors, and the document's spelling
    convention (US or UK) stays as found.
-7. Report: flags fixed per category, flags kept with reasons, and the
-   before/after stats line.
+8. Report: flags fixed per category, flags kept with reasons, the
+   before/after stats line, and the cadence spread before and after.
 
 ## Verification
 
@@ -62,3 +70,5 @@ layer: the checker finds, this skill judges and rewrites.
 - [ ] The report shows before/after stats.
 - [ ] The user's stated scope was honored exactly; out-of-scope flags
       appear in the report as decided keeps.
+- [ ] Every touched section was re-read whole after the fixes, and the
+      cadence spread did not collapse against the voice range.

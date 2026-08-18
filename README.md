@@ -47,6 +47,7 @@ Add this repo as a marketplace, then install the plugin:
 | `/terse:proof <file>` | Fix grammar, spelling, and punctuation only. No style opinions. |
 | `/terse:tone <file> <preset>` | Shift tone: confident, formal, friendly, casual, persuasive, shorter, more-detail, simpler. |
 | `/terse:review <file>` | Editor feedback without edits: readability, structure, voice, AI tells. |
+| `/terse:draft <subject>` | Compose outline-first: polish the structure as bullets, sign off, then expand into prose. |
 
 The `writing` skill also loads on its own when Claude writes or edits
 prose. It carries the voice rules into everyday document work.

@@ -169,6 +169,27 @@ error. A machine finds it; the fix lands before the document ships.
 Proof: against a fixture source, the checker rejects a tampered quote.
 It accepts the verbatim one. The eval case passes.
 
+## Milestone 8: Compose first
+
+Done, 2026-08-17. Editing a real ADR taught the lesson. Fifteen correct
+sentence fixes flattened the document's rhythm, because a flag list is
+a worklist, not an edit plan. Structure problems want structure tools.
+
+- [x] `/terse:draft` composes outline-first. The user polishes the
+      structure as bullets, one claim per section, checked for
+      knowledge order and one-theme discipline. They sign off before
+      any prose exists. Expansion then writes each section knowing its
+      place in the whole, in the approved voice. A whole-document read
+      ends the pass.
+- [x] `/terse:edit` gained the same ending. Re-read every touched
+      section whole, and check the cadence spread against the voice
+      range. Local fixes can no longer flatten the rhythm unnoticed.
+
+Proof: the skills carry the steps and their verification items. The
+cadence numbers from the ADR session set the bar. The choppy pass
+collapsed spread from 16.7 to 6.3; the flow-aware pass restored the
+connective tissue.
+
 ## Parity scorecard
 
 | Capability | Readability editors | Grammar assistants | Terse today |
@@ -183,5 +204,6 @@ It accepts the verbatim one. The eval case passes.
 | Always-on checking | app only | everywhere | not yet (M5) |
 | Proven ablation delta | no | no | pending (M1) |
 | Verified verbatim quotes | no | plagiarism scan only | not yet (M7) |
+| Outline-first composition | no | no | yes |
 
 Neither incumbent can claim the last row. Landing M1 makes it ours.
