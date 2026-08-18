@@ -56,26 +56,34 @@ parity with 16 of 16 planted errors fixed in both arms.
 
 ## Milestone 2: Detection breadth
 
-The lexicons are seeds. The incumbents grew theirs from corpora over
-years. Ours came from intuition and one review pass.
+Done, 2026-08-17. Both sides grew from corpora. Model text drove
+recall. Edited human prose set the false-positive bar and the targets.
 
-- [ ] Harvest tells from real model-written text. Run the checker over a
-      corpus, read what survives, and grow the lists from the misses.
-- [ ] Grow the simpler-alternatives table toward the incumbents'
-      coverage.
-- [ ] Detect weak verb phrases such as "is a reflection of", where
-      "reflects" does the job.
-- [ ] Tune the length-scaled targets against edited human prose. The
-      goals should match editors, not guesses. Seed corpus: five
-      public-domain Hemingway news pieces. One example is "At the End
-      of the Ambulance Run". Reportage, not fiction: the register this
-      plugin targets. Source:
-      americanliterature.com/author/ernest-hemingway.
-- [ ] Keep every property test green: conservation, metamorphic
-      relations, and the CLI contract.
+- [x] Harvest tells from real model-written text. Four fresh sessions
+      wrote a launch post, product copy, a tutorial, and a wiki page. The old lexicon flagged none of it. The
+      harvest added the launch-post register
+      (`thrilled to announce`, `under the hood`). It also added three
+      structural patterns: negation triples, stop-start slogans, and
+      triadic `whether` openers. Rerun on the same corpus: 0 tells
+      before, 8 after.
+- [x] Grow the simpler-alternatives table: 26 new entries, wordy
+      connectors included (`for the purpose of`, `each and every`).
+- [x] Detect weak verb phrases such as `is a reflection of`, where
+      `reflects` does the job. The new `weak-verb` category holds 27
+      phrase patterns. Each one hints the plain verb to use.
+- [x] Tune the length-scaled targets against edited human prose. The
+      yardstick is 7,355 words of Hemingway journalism, committed
+      under `test/fixtures/human-prose/` and `samples/`. Measured
+      rates per 1,000 words: 7.5 adverbs, 8.2 passives, 2.4
+      qualifiers. Targets moved from guesses to n/134, n/123, n/400.
+- [x] Keep every property test green: conservation, metamorphic
+      relations, and the CLI contract. 77 tests pass.
 
-Proof: measured recall on a labeled corpus of tells. Zero new false
-positives on clean human prose.
+Proof, met: `test/corpus.test.js` pins total recall on a labeled
+corpus of 27 planted tells and weak verbs. It also pins zero lexical
+false positives on the committed human-prose fixtures. The pass
+surfaced two real hits in this repo's own docs. We rewrote the
+README's old negation-triple slogan; we did not whitelist it.
 
 ## Milestone 3: The highlight view
 

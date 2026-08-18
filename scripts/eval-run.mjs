@@ -34,23 +34,25 @@ function loadCases(filter) {
 	for (const entry of readdirSync(EVALS, { withFileTypes: true })) {
 		if (!entry.isDirectory() || entry.name === 'results') continue;
 		if (filter && entry.name !== filter) continue;
-		const dir = join(EVALS, entry.name);
-		const { meta, body } = parseFrontmatter(readFileSync(join(dir, 'prompt.md'), 'utf8'));
-		const graders = [];
-		for (const g of readdirSync(join(dir, 'graders'))) {
-			const raw = readFileSync(join(dir, 'graders', g), 'utf8');
-			const parsed = parseFrontmatter(raw);
-			graders.push({ name: g.replace(/\.md$/, ''), ...parsed.meta });
-		}
-		cases.push({
-			name: meta.name ?? entry.name,
-			runs: Number(meta.runs) || 1,
-			maxTurns: Number(meta.max_turns) || 10,
-			prompt: body,
-			graders,
-		});
+		cases.push(loadCase(join(EVALS, entry.name), entry.name));
 	}
 	return cases;
+}
+
+function loadCase(dir, fallbackName) {
+	const { meta, body } = parseFrontmatter(readFileSync(join(dir, 'prompt.md'), 'utf8'));
+	const graders = [];
+	for (const g of readdirSync(join(dir, 'graders'))) {
+		const parsed = parseFrontmatter(readFileSync(join(dir, 'graders', g), 'utf8'));
+		graders.push({ name: g.replace(/\.md$/, ''), ...parsed.meta });
+	}
+	return {
+		name: meta.name ?? fallbackName,
+		runs: Number(meta.runs) || 1,
+		maxTurns: Number(meta.max_turns) || 10,
+		prompt: body,
+		graders,
+	};
 }
 
 // Grader patterns are written for the eval tool with a YAML double-quoted
@@ -97,7 +99,14 @@ async function runOnce(c, arm) {
 	return { dir, files, error, graders: gradeFiles(c.graders, files) };
 }
 
+const KNOWN_FLAGS = new Set(['--runs', '--case', '--out']);
 const args = process.argv.slice(2);
+const unknown = args.filter((a, i) => a.startsWith('--') && !KNOWN_FLAGS.has(a)
+	|| !a.startsWith('--') && !KNOWN_FLAGS.has(args[i - 1]));
+if (unknown.length > 0) {
+	console.error('usage: node eval-run.mjs [--runs N] [--case name] [--out path.json]');
+	process.exit(2);
+}
 const opt = (name, dflt) => {
 	const i = args.indexOf(name);
 	return i >= 0 ? args[i + 1] : dflt;
@@ -113,24 +122,29 @@ if (cases.length === 0) {
 }
 mkdirSync(dirname(outPath), { recursive: true });
 
-const report = { schemaVersion: 1, suite: 'terse (fallback runner)', cases: [] };
-for (const c of cases) {
-	const n = runs ?? c.runs;
+async function runCase(c, n) {
 	console.error(`case ${c.name}: ${n} run(s) per arm`);
 	const arms = { with: [], without: [] };
 	for (let i = 0; i < n; i++) {
 		const [w, wo] = await Promise.all([runOnce(c, 'with'), runOnce(c, 'without')]);
 		arms.with.push(w);
 		arms.without.push(wo);
-		for (const [arm, r] of [['with', w], ['without', wo]]) {
-			const verdicts = r.graders.filter((g) => g.scored)
-				.map((g) => `${g.name}:${g.pass ? 'pass' : 'FAIL'}`).join(' ');
-			console.error(`  ${arm} run ${i + 1}: ` +
-				`${Object.keys(r.files).length} file(s)` +
-				`${r.error ? ` [${r.error}]` : ''} ${verdicts}`);
-		}
+		reportRun('with', w, i);
+		reportRun('without', wo, i);
 	}
-	report.cases.push({ name: c.name, arms });
+	return arms;
+}
+
+function reportRun(arm, r, i) {
+	const verdicts = r.graders.filter((g) => g.scored)
+		.map((g) => `${g.name}:${g.pass ? 'pass' : 'FAIL'}`).join(' ');
+	console.error(`  ${arm} run ${i + 1}: ${Object.keys(r.files).length} file(s)` +
+		`${r.error ? ` [${r.error}]` : ''} ${verdicts}`);
+}
+
+const report = { schemaVersion: 1, suite: 'terse (fallback runner)', cases: [] };
+for (const c of cases) {
+	report.cases.push({ name: c.name, arms: await runCase(c, runs ?? c.runs) });
 }
 
 writeFileSync(outPath, JSON.stringify(report, null, 2));

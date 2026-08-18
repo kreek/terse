@@ -24,32 +24,28 @@ function extractDocs(run) {
 	};
 	if (run.files && typeof run.files === 'object') fromMap(run.files);
 	for (const key of ['createdFiles', 'artifacts', 'outputs']) {
-		for (const f of Array.isArray(run[key]) ? run[key] : []) {
-			if (typeof f === 'string' && f.endsWith('.md') && existsSync(f)) {
-				docs.push({ name: f, content: readFileSync(f, 'utf8') });
-			} else if (f && typeof f.path === 'string' && f.path.endsWith('.md')) {
-				if (typeof f.content === 'string') docs.push({ name: f.path, content: f.content });
-				else if (existsSync(f.path)) {
-					docs.push({ name: f.path, content: readFileSync(f.path, 'utf8') });
-				}
-			}
-		}
+		collectListedDocs(Array.isArray(run[key]) ? run[key] : [], docs);
 	}
 	return docs;
 }
 
-function scoreArm(runs) {
-	let words = 0, flags = 0, tells = 0, docs = 0, gradeSum = 0;
-	for (const run of runs) {
-		for (const doc of extractDocs(run)) {
-			const r = checkText(doc.content, { file: doc.name });
-			words += r.stats.words;
-			flags += r.flags.length;
-			tells += r.stats.aiTells;
-			gradeSum += r.stats.grade;
-			docs++;
+function collectListedDocs(entries, docs) {
+	for (const f of entries) {
+		if (typeof f === 'string' && f.endsWith('.md') && existsSync(f)) {
+			docs.push({ name: f, content: readFileSync(f, 'utf8') });
+		} else if (f && typeof f.path === 'string' && f.path.endsWith('.md')) {
+			if (typeof f.content === 'string') docs.push({ name: f.path, content: f.content });
+			else if (existsSync(f.path)) {
+				docs.push({ name: f.path, content: readFileSync(f.path, 'utf8') });
+			}
 		}
 	}
+}
+
+function scoreArm(runs) {
+	const totals = { words: 0, flags: 0, tells: 0, docs: 0, gradeSum: 0 };
+	for (const run of runs) scoreRunDocs(extractDocs(run), totals);
+	const { words, flags, tells, docs, gradeSum } = totals;
 	if (docs === 0) return null;
 	return {
 		docs,
@@ -57,6 +53,17 @@ function scoreArm(runs) {
 		aiTells: tells,
 		meanGrade: gradeSum / docs,
 	};
+}
+
+function scoreRunDocs(docs, totals) {
+	for (const doc of docs) {
+		const r = checkText(doc.content, { file: doc.name });
+		totals.words += r.stats.words;
+		totals.flags += r.flags.length;
+		totals.tells += r.stats.aiTells;
+		totals.gradeSum += r.stats.grade;
+		totals.docs++;
+	}
 }
 
 function fmt(n) { return n.toFixed(1); }
@@ -73,22 +80,25 @@ if (cases.length === 0) {
 	process.exit(2);
 }
 
+function scoreAndPrintArms(c) {
+	const scores = {};
+	for (const arm of ARM_NAMES) {
+		scores[arm] = scoreArm(c.arms?.[arm] ?? []);
+		if (!scores[arm]) continue;
+		const s = scores[arm];
+		console.log(`${(c.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
+			`${String(s.docs).padEnd(6)}${fmt(s.flagsPerKword).padEnd(10)}` +
+			`${String(s.aiTells).padEnd(10)}${fmt(s.meanGrade)}`);
+	}
+	return scores;
+}
+
 let failures = 0;
 let scoredAny = false;
 console.log('case                    arm      docs  flags/kw  AI tells  grade');
 for (const c of cases) {
-	const scores = {};
-	for (const arm of ARM_NAMES) {
-		const runs = c.arms?.[arm] ?? [];
-		scores[arm] = scoreArm(runs);
-		if (scores[arm]) {
-			scoredAny = true;
-			const s = scores[arm];
-			console.log(`${(c.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
-				`${String(s.docs).padEnd(6)}${fmt(s.flagsPerKword).padEnd(10)}` +
-				`${String(s.aiTells).padEnd(10)}${fmt(s.meanGrade)}`);
-		}
-	}
+	const scores = scoreAndPrintArms(c);
+	if (scores.with || scores.without) scoredAny = true;
 	const w = scores.with, wo = scores.without;
 	if (w && w.aiTells > 0) {
 		console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);

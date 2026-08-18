@@ -50,6 +50,18 @@ const SIMPLER = {
 	'despite the fact that': 'although', 'at this point in time': 'now',
 	'a number of': 'several', 'with regard to': 'about',
 	'in the process of': '(delete)', 'on a daily basis': 'daily',
+	accordingly: 'so', consequently: 'so', approximately: 'about',
+	regarding: 'about', concerning: 'about', component: 'part',
+	components: 'parts', individuals: 'people', modification: 'change',
+	modifications: 'changes', necessitates: 'requires',
+	'in the near future': 'soon', 'at this time': 'now',
+	'in excess of': 'more than', 'with the exception of': 'except',
+	'for the purpose of': 'for', 'in conjunction with': 'with',
+	'in the event of': 'if', 'first and foremost': 'first',
+	'each and every': 'every', 'whether or not': 'whether',
+	'last but not least': 'finally', 'in the majority of cases': 'usually',
+	'a wide variety of': 'many', 'a large number of': 'many',
+	'take action': 'act', 'takes action': 'acts',
 };
 
 const SIMPLER_PATTERNS = Object.entries(SIMPLER).map(([phrase, simpler]) => ({
@@ -70,6 +82,16 @@ const AI_TELLS = [
 	'journey', 'ecosystem', 'multifaceted', 'transformative', 'cutting-edge',
 	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
 	'and that matters', 'carry the argument', 'carries the argument',
+	// harvested from model-written launch posts and product copy
+	'thrilled to announce', 'excited to announce', 'excited to share',
+	'proud to announce', 'under the hood', 'this is just the beginning',
+	"can't wait to see", 'game-changer', 'game changer', 'game-changing',
+	'revolutionize', 'revolutionizes', 'revolutionary', 'supercharge',
+	'supercharges', 'empower', 'empowers', 'empowering', 'unleash',
+	'unleashes', 'unleashing', 'effortless', 'effortlessly', 'blazing fast',
+	'blazingly', 'deep dive', "in today's fast-paced world",
+	'state-of-the-art', 'next-level', 'say goodbye to', 'look no further',
+	'frictionless', 'the possibilities are endless', 'with confidence',
 ];
 
 const AI_TELL_PATTERNS = AI_TELLS.map((q) => ({ phrase: q,
@@ -91,7 +113,36 @@ const AI_TELL_STRUCTURES = [
 		re: /\b(?:that|this|it)(?:['’]s|\s+is)\s+(?:not\s+nothing|real)\b/gi },
 	{ phrase: 'punchy fragment',
 		re: /\bNot\s+(?:a|an|the|just)\s+[\w-]+\.\s+(?:A|An|The)\s+[\w-]+\b/g },
+	{ phrase: 'no X, no Y, no Z',
+		re: /\bno\s+[^,.;\n]{2,30},\s*no\s+[^,.;\n]{2,30},\s*(?:and\s+)?no\b/gi },
+	{ phrase: 'stop Xing, start Ying',
+		re: /\bstop\s+\w+ing\b[^.!?;\n]{0,40}[.!?;]?\s*(?:and\s+)?start\s+\w+ing\b/gi },
+	{ phrase: "whether you're X, Y, or Z",
+		re: /\bwhether you['’]re\b[^.;:\n]{5,80},[^.;:\n]{5,80},\s*or\b/gi },
 ];
+
+// Weak verb phrases: a be-verb or light verb propping up a noun where a
+// plain verb does the job.
+const WEAK_VERBS = {
+	'is a reflection of': 'reflects', 'is indicative of': 'indicates',
+	'is representative of': 'represents', 'has the ability to': 'can',
+	'have the ability to': 'can', 'has the capability to': 'can',
+	'is capable of': 'can', 'is able to': 'can', 'are able to': 'can',
+	'makes use of': 'uses', 'make use of': 'use',
+	'gives consideration to': 'considers', 'take into consideration': 'consider',
+	'makes a decision': 'decides', 'make a decision': 'decide',
+	'performs an analysis of': 'analyzes', 'perform an analysis of': 'analyze',
+	'provides a summary of': 'summarizes', 'provide a summary of': 'summarize',
+	'is dependent on': 'depends on', 'is dependent upon': 'depends on',
+	'places emphasis on': 'emphasizes', 'put emphasis on': 'emphasize',
+	'is supportive of': 'supports', 'is in agreement with': 'agrees with',
+	'serves as': 'is', 'serve as': 'are', 'functions as': 'is',
+	'stands as': 'is', 'stand as': 'are',
+};
+
+const WEAK_VERB_PATTERNS = Object.entries(WEAK_VERBS).map(([phrase, verb]) => ({
+	phrase, verb,
+	re: new RegExp(`\\b${phrase.replace(/ /g, '\\s+')}\\b`, 'gi') }));
 
 const IRREGULAR_PARTICIPLES = new Set([
 	'begun', 'bought', 'brought', 'broken', 'built', 'caught', 'chosen',
@@ -150,17 +201,25 @@ export function splitSentences(text) {
 	// item stands alone.
 	const blockRe = /[^\n][^]*?(?=\n\s*\n|\n#|$)/g;
 	for (const block of text.matchAll(blockRe)) {
-		for (const seg of splitListItems(block[0])) {
-			for (const s of splitSegment(seg.text)) {
-				const trimmed = s.text.trim();
-				if (trimmed.length === 0) continue;
-				// A bare list marker is not a sentence; "1945." still is.
-				if (/^(?:[-*+]|\d{1,2}[.)])$/.test(trimmed)) continue;
-				sentences.push({ text: s.text, offset: block.index + seg.offset + s.offset });
-			}
-		}
+		collectBlockSentences(block[0], block.index, sentences);
 	}
 	return sentences;
+}
+
+function collectBlockSentences(block, base, sentences) {
+	for (const seg of splitListItems(block)) {
+		collectSegmentSentences(seg.text, base + seg.offset, sentences);
+	}
+}
+
+function collectSegmentSentences(seg, base, sentences) {
+	for (const s of splitSegment(seg)) {
+		const trimmed = s.text.trim();
+		if (trimmed.length === 0) continue;
+		// A bare list marker is not a sentence; "1945." still is.
+		if (/^(?:[-*+]|\d{1,2}[.)])$/.test(trimmed)) continue;
+		sentences.push({ text: s.text, offset: base + s.offset });
+	}
 }
 
 function splitListItems(block) {
@@ -259,24 +318,35 @@ function checkSentence(sentence, maxGrade, flags, file, line) {
 	}
 }
 
+// One flag per occurrence of re in text.
+function pushMatches(text, re, flags, flag) {
+	for (const m of text.matchAll(re)) flags.push({ ...flag });
+}
+
+// Same, for whole-document scans where each match needs its own line.
+function pushMatchesWithLine(text, re, lineAt, flags, flag) {
+	for (const m of text.matchAll(re)) {
+		flags.push({ ...flag, line: lineAt(m.index) });
+	}
+}
+
 function checkLexicon(sentence, flags, file, line) {
 	for (const { phrase, re } of QUALIFIER_PATTERNS) {
-		for (const m of sentence.matchAll(re)) {
-			flags.push({ file, line, category: 'qualifier', match: phrase,
-				hint: 'delete it or state the evidence; keep only if the hedge is the claim' });
-		}
+		pushMatches(sentence, re, flags, { file, line, category: 'qualifier',
+			match: phrase,
+			hint: 'delete it or state the evidence; keep only if the hedge is the claim' });
 	}
 	for (const { phrase, simpler, re } of SIMPLER_PATTERNS) {
-		for (const m of sentence.matchAll(re)) {
-			flags.push({ file, line, category: 'simpler-alternative', match: phrase,
-				hint: `use "${simpler}"` });
-		}
+		pushMatches(sentence, re, flags, { file, line,
+			category: 'simpler-alternative', match: phrase, hint: `use "${simpler}"` });
 	}
 	for (const { phrase, re } of AI_TELL_PATTERNS) {
-		for (const m of sentence.matchAll(re)) {
-			flags.push({ file, line, category: 'ai-tell', match: phrase,
-				hint: 'an AI tell; state the claim plainly' });
-		}
+		pushMatches(sentence, re, flags, { file, line, category: 'ai-tell',
+			match: phrase, hint: 'an AI tell; state the claim plainly' });
+	}
+	for (const { phrase, verb, re } of WEAK_VERB_PATTERNS) {
+		pushMatches(sentence, re, flags, { file, line, category: 'weak-verb',
+			match: phrase, hint: `use the verb: "${verb}"` });
 	}
 }
 
@@ -300,10 +370,8 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 	}
 	// Structural tells can span sentence boundaries, so scan the whole text.
 	for (const { phrase, re } of AI_TELL_STRUCTURES) {
-		for (const m of text.matchAll(re)) {
-			flags.push({ file, line: lineAt(m.index), category: 'ai-tell', match: phrase,
-				hint: 'an AI tell; state the claim plainly' });
-		}
+		pushMatchesWithLine(text, re, lineAt, flags, { file, category: 'ai-tell',
+			match: phrase, hint: 'an AI tell; state the claim plainly' });
 	}
 	const allWords = [];
 	const sentenceLengths = [];
@@ -341,9 +409,13 @@ function docStats(words, sentenceLengths, flags) {
 		grade: n === 0 || sentenceCount === 0 ? 0
 			: Math.max(0, Math.ceil(4.71 * (alnumCount(words) / n) +
 				0.5 * (n / sentenceCount) - 21.43)),
-		adverbs: { count: count('adverb'), target: Math.max(2, Math.round(n / 130)) },
-		passive: { count: count('passive-voice'), target: Math.max(2, Math.round(n / 200)) },
-		qualifiers: { count: count('qualifier'), target: Math.max(2, Math.round(n / 250)) },
+		// Targets calibrated against 7,355 words of Hemingway's newspaper
+		// journalism (test/fixtures/human-prose plus samples/hemingway):
+		// measured 7.5 adverbs, 8.2 passives, and 2.4 qualifiers per
+		// 1,000 words of edited prose.
+		adverbs: { count: count('adverb'), target: Math.max(2, Math.round(n / 134)) },
+		passive: { count: count('passive-voice'), target: Math.max(2, Math.round(n / 123)) },
+		qualifiers: { count: count('qualifier'), target: Math.max(2, Math.round(n / 400)) },
 		aiTells: count('ai-tell'),
 		hardSentences: count('hard-sentence') + count('very-hard-sentence'),
 	};
@@ -384,9 +456,7 @@ function main() {
 		total += flags.length + (gradeExceeded ? 1 : 0);
 		results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });
 		if (json) continue;
-		for (const f of flags) {
-			console.log(`${f.file}:${f.line}  [${f.category}] "${f.match}" - ${f.hint}`);
-		}
+		printFlags(flags);
 		if (gradeExceeded) {
 			console.log(`${file}  [document-grade] "grade ${stats.grade}, target below ` +
 				`${maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
@@ -400,6 +470,12 @@ function main() {
 	if (json) console.log(JSON.stringify(results, null, 2));
 	else console.log(total === 0 ? 'style-check: clean' : `style-check: ${total} flag(s)`);
 	process.exit(total === 0 ? 0 : 1);
+}
+
+function printFlags(flags) {
+	for (const f of flags) {
+		console.log(`${f.file}:${f.line}  [${f.category}] "${f.match}" - ${f.hint}`);
+	}
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

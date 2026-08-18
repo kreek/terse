@@ -10,7 +10,8 @@ Claude subscription you already pay for.
 Two layers:
 
 - **Mechanical** (`scripts/style-check.mjs`): pattern matching, word lists,
-  and readability arithmetic. No AI, no network, no dependencies. It grades
+  and readability arithmetic. It runs offline with zero dependencies and
+  never calls a model. It grades
   each sentence with ARI and flags the hard ones. It flags passive voice,
   adverbs, qualifiers, wordy phrases, long asides, and em dashes. Document
   stats cover word count, reading time, and grade. Each adverb, passive,

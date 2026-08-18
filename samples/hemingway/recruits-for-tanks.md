@@ -1,0 +1,9 @@
+A line of men wound from the front room of the third floor of the Army recruiting station, Twelfth and Grand Avenue, through the hall and half way downstairs. Some of the men were jostling and laughing, others looked sober and looked thoughtfully at the posters on the wall. Mechanics in overalls, bookkeepers, stenographers, school teachers who would have difficulty with the physical examination, and athletic college students, all were in line.
+
+The head of the line stopped at the door of a room where a freckled faced young second lieutenant sat at a desk. He nodded, a man was admitted, asked a few questions, sized up by the lieutenant and then either told he was not wanted or given a card to sign.
+
+"It's the spirit of adventure which brings them up here," said Lieut. Frank E. Cooter, of the Tank Corps, the latest branch of the United States Army. "Every man in line there is a potential crusader. They may not have realized it until today. Then they came up to enlist. We do not offer anything easy. The tank corps is no place for those that want noncombatant jobs and desk soldiers needn't apply. But we guarantee quick action, active service, a good chance for a commission and adventure. The tank work is dangerous, of course, but men will always apply for clean, dangerous work with a chance for quick advancement."
+
+More than fifty men applied at the recruiting office yesterday and Lieutenant Cooter recommended the enlistment of eighteen. Men of mechanical skill are wanted especially but an order from Col. I.C. Welborn, of the tank corps authorized Lieutenant Cooter to accept any men "qualified by soldierly qualities."
+
+Arthur McKnight and Albert Findley, Kansas City newspapermen, enlisted in the new service yesterday. The other men enlisted ranged in occupation from truck drivers to school teachers. Letters and telegrams of application were received from all over the Middle West yesterday.
