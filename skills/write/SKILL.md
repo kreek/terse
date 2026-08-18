@@ -23,9 +23,22 @@ afterwards should find residue, not problems.
    continue in the `writing` skill's default voice if the user
    declines. Load the `writing` skill's rules either way.
 3. Expand section by section, each drafted knowing its place in the
-   whole. Run the checker as you go and fix flags at draft time; do not
-   save a cleanup pass for later.
-4. When every section exists, do the whole-document read. This step is
+   whole. Run the checker as you go and fix flags at draft time; do
+   not save a cleanup pass for later. The checker is the only
+   mid-draft critic: no open-ended polishing passes while sections
+   remain unwritten. Quality judgment belongs to the edit gate. Craft
+   the prose as it lands:
+   - one point per paragraph, stated in the topic sentence
+   - the known-new contract: open with what the reader already has;
+     end on the new information, where the emphasis falls
+   - characters in subjects, actions in verbs
+4. A section that resists the outline is data: the outline was wrong,
+   or the section does not belong. Break the outline on purpose and
+   record in the outline file what changed and why; never drift from
+   it in silence. On a document running to thousands of words, expect
+   the outline to update mid-draft. The recorded decisions keep later
+   sections consistent with earlier ones.
+5. When every section exists, do the whole-document read. This step is
    not optional:
    - cadence: compare the sentence-length spread (`--json` gives
      `stats.sentenceLengths`) against the voice template's measured
@@ -33,9 +46,10 @@ afterwards should find residue, not problems.
    - connective flow: each section's opening should catch the previous
      section's throw; each paragraph's first sentence should need the
      one before it
-   - the outline promise: every section still makes the claim the
-     approved outline assigned it
-5. Run the full checker last and report the stats line. Offer the
+   - the outline promise: every approved section appears in order and
+     makes its assigned claim; the outline file records every
+     deviation
+6. Run the full checker last and report the stats line. Offer the
    highlight preview and `/terse:edit` for the final gate.
 
 ## Verification
@@ -45,6 +59,10 @@ afterwards should find residue, not problems.
 - [ ] The expansion honors the approved voice template when one exists;
       when none exists, the user heard the offer to learn one.
 - [ ] Flags were fixed at draft time, not banked for a cleanup pass.
+- [ ] Each paragraph makes one point, and sentences follow the
+      known-new contract.
+- [ ] The outline file records every deviation from the approved
+      outline, none silent.
 - [ ] The whole-document read happened: cadence against the voice
       range, transitions in sequence, outline claims intact.
 - [ ] The final checker run and stats line appear in the report.

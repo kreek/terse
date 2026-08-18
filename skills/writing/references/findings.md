@@ -28,7 +28,10 @@ one report, one preview, and one fix loop serve every category.
 
 Collect once, before the report and before any fix. One checker run
 gathers the mechanical flags. One model read emits the `grammar`,
-`voice-drift`, and `structure` findings in the shape above. Do not
+`voice-drift`, and `structure` findings in the shape above. The
+`structure` findings come from a reverse outline: one line per
+paragraph, built in the same read. Audit the list for jumps,
+repetition, misordering, and paragraphs carrying two points. Do not
 re-read the prose per category.
 
 ## Suppression
@@ -56,6 +59,10 @@ Grammar goes last on every sentence. A rewrite in stages 1 and 2
 discards that sentence's collected `grammar` findings; re-proof the new
 wording instead. Never carry a grammar finding across a rewrite. The
 loop never fixes `report-only` findings; it routes them to the report.
+In fix mode, `structure` findings surface before the first sentence
+visit: report them and take the user's direction. Polishing a sentence
+in a section the user then cuts wastes the work. The loop never
+rewrites structure; the user's direction does.
 
 After all visits, re-run the checker once and do the whole-document
 read the `edit` skill ends with. Converged means every remaining

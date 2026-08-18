@@ -11,7 +11,9 @@ report or fix as the user directs. This is Terse's publish gate, run
 like a linter: prose written under `/terse:write` should arrive nearly
 clean, and imported or older text gets full repair. The checker finds,
 this skill judges and rewrites, and grammar lands last on every
-sentence it touches.
+sentence it touches. Every rewrite traces to a finding, because the
+model cannot judge its own prose without an outside standard. The
+findings contract is that standard.
 
 ## Modes
 
@@ -39,18 +41,27 @@ every mode.
 1. Collect per the contract: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` (add
    `--max-grade N` for a target reading level) for the mechanical
-   flags, and read the document once for the `grammar`, `voice-drift`,
-   and `structure` findings. Work from the findings, not from a
-   free-form read.
-2. If `.terse/voice.md` exists with `status: approved`, load it: its
+   flags, and read the document once for the `grammar` and
+   `voice-drift` findings. In the same read, build the reverse
+   outline: one line per paragraph stating its point. Work from the
+   findings, not from a free-form read.
+2. Audit the reverse outline before any fix. Read the list for jumps,
+   repetition, misordering, and paragraphs carrying two points. When
+   an approved outline file exists, check each section against its
+   assigned claim. Each problem is a `structure` finding. In fix mode,
+   report these and take the user's direction before the sentence
+   loop starts. Polishing a sentence in a section the user then cuts
+   wastes the work. Structural rewrites happen only on the user's
+   explicit direction, never on your own.
+3. If `.terse/voice.md` exists with `status: approved`, load it: its
    exceptions suppress matching findings, and its measured ranges bound
    every rewrite. Ignore a `draft` template and say so.
-3. Load the `writing` skill's Core Ideas and Tripwires, and its
+4. Load the `writing` skill's Core Ideas and Tripwires, and its
    `references/claude-defaults.md`; together they govern every rewrite.
    The defaults reference also lists trained habits the checker cannot
    catch (synonym cycling, compulsive triplets, participial tails,
    closing summaries); hunt those in the same read.
-4. In report-only mode: report the document stats first (words, reading
+5. In report-only mode: report the document stats first (words, reading
    time, grade, and the counts against their targets), then all
    findings grouped by category with `file:line` references and a
    one-sentence fix each. Offer the highlight preview: run
@@ -58,7 +69,7 @@ every mode.
    for a self-contained, read-only page; publish it when the host
    supports pages. The page renders the checker's categories; judgment
    findings ride in the chat report. Stop here.
-5. Otherwise, visit each sentence with findings once, applying them in
+6. Otherwise, visit each sentence with findings once, applying them in
    the contract's stage order. A rewrite in the first two stages
    discards the sentence's collected grammar findings; re-proof the new
    wording.
@@ -79,28 +90,36 @@ every mode.
    Skip a finding only when it matches a documented false alarm or a
    voice-template exception; keep a list of skips with the reason.
    Report-only findings (`structure`) go to the report, not the loop.
-6. Preserve the author's voice: no rewrites beyond the flagged sentence,
+7. Preserve the author's voice: no rewrites beyond the flagged sentence,
    no reordering, no added content. Meaning must survive every edit;
    when a fix would change what the sentence claims, skip it and say so.
-7. Re-run the checker. Iterate until the remaining flags are all
-   documented keeps.
-8. Re-read every touched section whole. A findings list is a worklist,
+8. Re-run the checker. Iterate until the remaining flags are all
+   documented keeps. Stop when a pass changes only cosmetics. Revert
+   a pass that makes the stats worse. Most of the gain lands in the
+   first round or two.
+9. Re-read every touched section whole. A findings list is a worklist,
    not an edit plan: fifteen correct local fixes can leave a paragraph
    reading as chopped fragments. Check the cadence against the voice
    template's measured spread (`--json` gives `stats.sentenceLengths`);
-   a collapsed spread means the splits flattened the rhythm. Restore
-   flow with the author's own devices, connective openers, asymmetric
-   splits, a short verdict against a long analysis, not by undoing the
-   fixes.
-9. Report: findings fixed per category, findings kept with reasons, the
-   before/after stats line, and the cadence spread before and after.
+   a collapsed spread means the splits flattened the rhythm. Two more
+   audits ride this read. The first and last sentence of each
+   paragraph, read in sequence, must chain. Key terms must keep their
+   names across sections; a renamed term breaks the reader's thread.
+   Restore flow with the author's own devices,
+   connective openers, asymmetric splits, a short verdict against a
+   long analysis, not by undoing the fixes.
+10. Report: findings fixed per category, findings kept with reasons,
+    the before/after stats line, and the cadence spread before and
+    after.
 
 ## Verification
 
 - [ ] The mode matched the user's direction; report-only left the
       document unmodified.
+- [ ] The reverse outline ran before the sentence loop; in fix mode,
+      `structure` findings got the user's direction first.
 - [ ] The checker ran before and after; remaining flags are named
-      keeps, not leftovers.
+      keeps, not leftovers; iteration stopped at the stop rules.
 - [ ] Each sentence was visited once, stages in order, grammar last; no
       grammar finding was carried across a rewrite.
 - [ ] Every edit is within the flagged sentence; the author's structure
@@ -110,4 +129,6 @@ every mode.
       findings appear in the report as decided keeps.
 - [ ] Every touched section was re-read whole after the fixes, and the
       cadence spread did not collapse against the voice range.
+- [ ] The paragraph transitions chain, and key terms kept their names
+      across sections.
 - [ ] The report shows before/after stats.

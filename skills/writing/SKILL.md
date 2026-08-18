@@ -32,13 +32,17 @@ shares.
    a plain statement over one padded with qualifiers. Passive voice is
    right when the actor is irrelevant or unknown ("the token is signed"); a
    qualifier is right when the hedge is the claim itself.
-4. **Never comment on the writing.** No significance announcements ("worth
+4. **The known-new contract.** Open a sentence with what the reader
+   already has; the new or important information goes at the end,
+   where the emphasis falls. A run of sentences that each open with
+   new information loses the reader, however clean each one is.
+5. **Never comment on the writing.** No significance announcements ("worth
    noting", "importantly"), no rhetorical questions answered by the next
    sentence, no "it's not just X, it's Y". The test is deletion: cut the
    phrase, and if the passage loses no information, it was a signpost.
-5. **Length is a cost the reader pays.** Cut by selecting what to include,
+6. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
-6. **The author's voice survives the edit.** When editing someone else's
+7. **The author's voice survives the edit.** When editing someone else's
    text, make the smallest change that fixes the issue. Never rewrite their
    sentences into your own cadence.
 
