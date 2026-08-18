@@ -187,10 +187,8 @@ aside h1 { font-size: 0.95rem; margin: 0 0 0.2rem; }
 .bulk button { border: 1px solid var(--edge); background: none;
 	color: var(--ink); padding: 0.25rem 0.7rem;
 	font-size: 0.75rem; cursor: pointer; }
-.bulk #accept-all { border-color: var(--accept); color: var(--accept);
-	font-weight: 600; }
-.bulk span { margin-left: auto; align-self: center; font-size: 0.72rem;
-	color: var(--dim); }
+.bulk #accept-all, .bulk #accept-scope { border-color: var(--accept);
+	color: var(--accept); font-weight: 600; }
 #cards { overflow-y: auto; padding: 0.75rem; display: flex;
 	flex-direction: column; gap: 0.55rem; }
 .card { border: 1px solid var(--edge);
@@ -246,9 +244,9 @@ body[data-filter]:not([data-filter=""]) .card:not(.matched) { display: none; }
 	</header>
 	<nav class="chips">${chipsHtml(flags)}</nav>
 	<div class="bulk">
-		<button id="accept-all">Accept all</button>
+		<button id="accept-scope" hidden></button>
+		<button id="accept-all">Accept all (${flags.length})</button>
 		<button id="clear-all">Clear all</button>
-		<span id="scope">every category</span>
 	</div>
 	<section id="cards">${cards}</section>
 </aside>
@@ -256,7 +254,7 @@ body[data-filter]:not([data-filter=""]) .card:not(.matched) { display: none; }
 <script type="application/json" id="flag-data">${JSON.stringify(flagData)}</script>
 <script>
 const tally = document.getElementById('tally');
-const scope = document.getElementById('scope');
+const acceptScope = document.getElementById('accept-scope');
 const total = ${flags.length};
 let filter = '';
 function marksFor(id) {
@@ -275,9 +273,9 @@ function clearCard(card) {
 		m.removeAttribute('data-dismissed');
 	});
 }
-function inScope() {
-	const sel = filter ? '.card[data-cat="' + filter + '"]' : '.card';
-	return document.querySelectorAll(sel);
+function cardsOf(cat) {
+	return document.querySelectorAll(
+		cat ? '.card[data-cat="' + cat + '"]' : '.card');
 }
 function recount() {
 	const a = document.querySelectorAll('.card[data-accepted]').length;
@@ -290,7 +288,13 @@ function applyFilter() {
 		el.classList.toggle('matched', match);
 	});
 	document.body.setAttribute('data-filter', filter);
-	scope.textContent = filter ? 'category in view' : 'every category';
+	acceptScope.hidden = !filter;
+	if (filter) {
+		const label = document.querySelector('.chip[data-cat="' + filter + '"]')
+			.textContent.replace(/\s*\d+$/, '').trim();
+		acceptScope.textContent = 'Accept ' + label.toLowerCase() +
+			' (' + cardsOf(filter).length + ')';
+	}
 }
 document.getElementById('cards').addEventListener('click', (e) => {
 	const card = e.target.closest('.card');
@@ -316,12 +320,16 @@ document.getElementById('cards').addEventListener('click', (e) => {
 	setTimeout(() => marksFor(card.dataset.id).forEach((el) =>
 		el.classList.remove('flash')), 1200);
 });
+acceptScope.addEventListener('click', () => {
+	cardsOf(filter).forEach((card) => setAccepted(card, true));
+	recount();
+});
 document.getElementById('accept-all').addEventListener('click', () => {
-	inScope().forEach((card) => setAccepted(card, true));
+	cardsOf('').forEach((card) => setAccepted(card, true));
 	recount();
 });
 document.getElementById('clear-all').addEventListener('click', () => {
-	inScope().forEach(clearCard);
+	cardsOf('').forEach(clearCard);
 	recount();
 });
 document.querySelector('main').addEventListener('click', (e) => {
