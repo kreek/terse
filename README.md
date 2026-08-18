@@ -1,6 +1,6 @@
 # Terse
 
-A writing editor for Claude Code. Terse pairs a deterministic style checker
+A writing editor for Claude. Terse pairs a deterministic style checker
 with AI editing skills. It does what the classic readability editors did.
 It also rewrites, and the rewrites keep your voice. All of it runs on the
 Claude subscription you already pay for.
@@ -23,7 +23,14 @@ Two layers:
 
 ## Install
 
-Add this repo as a marketplace in Claude Code, then install the plugin:
+Terse runs anywhere Claude Code plugins run:
+
+- the terminal
+- the Claude desktop app
+- claude.ai/code
+- the IDE extensions
+
+Add this repo as a marketplace, then install the plugin:
 
 ```
 /plugin marketplace add kreek/terse

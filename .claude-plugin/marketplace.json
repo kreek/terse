@@ -5,7 +5,7 @@
     "url": "https://github.com/kreek"
   },
   "metadata": {
-    "description": "Terse: a writing editor for Claude Code.",
+    "description": "Terse: a writing editor for Claude.",
     "version": "0.1.0"
   },
   "plugins": [
