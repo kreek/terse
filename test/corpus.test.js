@@ -102,3 +102,27 @@ describe('render-highlights', async () => {
 		expect(flags.filter((f) => !f.span)).toEqual([]);
 	});
 });
+
+describe('read-accepts', async () => {
+	const { renderPage } = await import('../scripts/render-highlights.mjs');
+	const { parseAccepts } = await import('../scripts/read-accepts.mjs');
+	const doc = 'We utilize retries quite often. The cache was cleared quickly.';
+
+	it('classifies accepted, dismissed, and open verdicts', () => {
+		let html = renderPage(doc);
+		// simulate the viewer: accept card 0, dismiss card 1
+		html = html.replace('data-id="0"', 'data-id="0" data-accepted=""');
+		html = html.replace('data-id="1"', 'data-id="1" data-dismissed=""');
+		const v = parseAccepts(html);
+		expect(v.accepted.map((f) => f.id)).toEqual([0]);
+		expect(v.dismissed.map((f) => f.id)).toEqual([1]);
+		expect(v.accepted.length + v.dismissed.length + v.open.length)
+			.toBe(checkText(doc).flags.length);
+		expect(v.accepted[0]).toHaveProperty('match');
+		expect(v.accepted[0]).toHaveProperty('line');
+	});
+
+	it('rejects a page without flag data', () => {
+		expect(() => parseAccepts('<p>not a review page</p>')).toThrow(/flag-data/);
+	});
+});

@@ -16,6 +16,12 @@ layer: the checker finds, this skill judges and rewrites.
    If `.terse/voice.md` exists with `status: approved`, load it: its
    exceptions suppress matching flags, and its measured ranges bound every
    rewrite. Ignore a `draft` template and say so.
+   If the user reviewed a published Terse page for this document, honor
+   their verdicts: fetch the page's current HTML, save it to a file, and
+   run `node ${CLAUDE_PLUGIN_ROOT}/scripts/read-accepts.mjs <page.html>`.
+   Fix only the `accepted` flags. Treat `dismissed` as decided keeps
+   (report them, do not re-litigate). Ask before touching `open` flags,
+   or leave them for the next review.
 2. Load the `writing` skill's Core Ideas and Tripwires, and its
    `references/claude-defaults.md`; together they govern every rewrite. The
    defaults reference also lists trained habits the checker cannot catch
@@ -56,3 +62,5 @@ layer: the checker finds, this skill judges and rewrites.
       meaning are intact.
 - [ ] Kept flags each carry a reason from the tripwire table.
 - [ ] The report shows before/after stats.
+- [ ] When a reviewed page existed, only accepted flags were fixed;
+      dismissed flags appear in the report as decided keeps.

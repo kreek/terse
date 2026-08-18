@@ -31,8 +31,9 @@ the prose yourself.
    produce a self-contained HTML page with one color per category, the
    hint on hover, and category toggles. When the host can publish pages,
    publish it with the stateful-page capability so the user can click
-   highlights to accept fixes; read the accepted set back before the next
-   `/terse:edit` and apply only those.
+   highlights to accept fixes. Before the next `/terse:edit`, fetch the
+   page and run `read-accepts.mjs` on it; the edit applies only the
+   accepted set.
 6. Do not edit the document. Offer `/terse:edit` if the user wants the
    fixes applied.
 

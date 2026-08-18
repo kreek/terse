@@ -64,7 +64,14 @@ One self-contained HTML page. Each flag category gets a color. Each
 highlight shows its hint on hover, and the legend chips toggle
 categories. Open it in any browser. Published through Claude, the page
 adds one more layer. Click a highlight to accept its fix. The next
-edit pass applies the accepted set.
+edit pass applies the accepted set:
+
+```
+node scripts/read-accepts.mjs page.html
+```
+
+That prints the reviewer's verdicts as JSON: accepted, dismissed, and
+open. Each verdict carries the flag's line, match, and hint.
 
 ## Use the checker standalone
 
