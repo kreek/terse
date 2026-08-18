@@ -6,6 +6,23 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] (2026-08-18)
+
+### Changed
+
+- The `writing` skill is now the `style` skill. Same trigger, same
+  role; the old name sat three letters from `/write` and confused the
+  listing. Voice templates, references, and eval graders follow the
+  new name.
+- The three phase skills open with an Iron Law, each distilled from
+  rules the skill already enforces.
+- The README explains all four skills and how they hand off through
+  the outline file, opens with the three-phase process, and adds a
+  local-testing install recipe. Terse is a writing system, not a
+  writing editor, and the manifests agree.
+- User-facing surfaces say "point" where the skill bodies define and
+  keep "claim".
+
 ## [0.4.0] (2026-08-18)
 
 ### Added
