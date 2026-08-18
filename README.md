@@ -52,18 +52,18 @@ Four skills: three phase commands and the rulebook they share.
 | `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
 
 The three phases hand off through the outline file. You approve it
-before any prose exists, and it records each section's point, budget,
-and evidence. Write drafts to that file and reports back when a
-section resists it. The outline updates, and structural changes need
-your approval again. Edit checks the finished prose against the same
-file. Every section makes its assigned point, deviations logged
-during drafting stand, and undocumented drift is a finding.
+before any prose exists, with each section's point, budget, and
+evidence on record. Write drafts to that file. A section that resists
+goes back to the outline, and structural changes need your approval
+again. Edit then checks the finished prose against the same record.
+Logged deviations stand, undocumented drift is a finding, and every
+section must make its assigned point.
 
 The style skill holds the rules the other three follow: plain words,
-active voice, the reader's vocabulary. It names the false alarms that
-keep a flag from becoming a bad edit. It also loads on its own whenever
-Claude writes or edits prose, so everyday document work follows the
-same rules without a command.
+active voice, the reader's vocabulary. It knows the false alarms that
+keep a flag from becoming a bad edit. And because it loads on its own
+whenever Claude writes or edits prose, everyday document work follows
+the same rules without a command.
 
 `/terse:edit` takes direction in chat: "report only", "just fix the
 grammar", "make it casual", "cut 15%", "fix only the AI tells",
