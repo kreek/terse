@@ -6,6 +6,45 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] (2026-08-18)
+
+### Added
+
+- Word budgets. The outline assigns every section a target word count
+  summing to the document's length. Write drafts to the budget and
+  treats big misses as outline signals: a section far under target
+  had a thinner claim, one at double holds two claims. Edit checks
+  length against the budget and flags overruns.
+- Evidence and warrants. Under each claim the outline lists the
+  evidence it needs; disputable claims add one line for why that
+  evidence supports the claim. Edit checks that marked claims still
+  show their evidence.
+- The drafted lead. The outline writes out the first sentence or two
+  as the cheapest test of the entry point, and decides both ends
+  before any middle.
+- Trim mode in edit ("cut 15%", "this runs long"). Cuts are
+  structural: proposed against the reverse outline, approved by the
+  user, and made by removing whole units. Trimming a claim to fit is
+  a meaning change wearing a length excuse.
+- The advance check. Flow and progress are separate: a paragraph can
+  read well and still restate its predecessor. Write and edit both
+  read consecutive paragraphs in pairs, watching the paragraph after
+  a strong claim and the closing section.
+- Re-approval rules. The outline stays open after approval: cutting,
+  adding, or reordering a section needs the user's approval again;
+  re-budgeting within approved sections does not.
+
+### Changed
+
+- The shape decides where the answer goes: memos, reports, specs, and
+  design docs open with it, while a narrative shape may hold it for a
+  nut graf. Delay is a placement the shape licenses, never a reveal
+  saved for the end.
+- The reverse-outline audit in edit runs four more checks:
+  restatement, length against target, the outline's promises, and
+  the outline's record. Deviations logged during drafting count as
+  decided keeps.
+
 ## [0.3.0] (2026-08-18)
 
 ### Added
