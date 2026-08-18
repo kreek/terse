@@ -1,0 +1,83 @@
+# The findings contract
+
+Every Terse command reads and writes one findings model. The classic
+editors check everything at once. Terse matches that: collect all
+findings first, then treat each command as a view over them.
+
+## The shape
+
+A finding is what `style-check.mjs --json` emits for a flag: `file`,
+`line`, `category`, `match`, `hint`. Checker flags also carry character
+spans for the highlight view. Judgment findings use the same shape, so
+one report, one preview, and one fix loop serve every category.
+
+## Categories and stages
+
+| Category | Source | Stage |
+|---|---|---|
+| hard-sentence, very-hard-sentence | checker | structural |
+| aside | checker | structural |
+| passive-voice, adverb, qualifier | checker | wording |
+| simpler-alternative, weak-verb, ai-tell | checker | wording |
+| em-dash | checker | wording |
+| grammar | model, `references/grammar-scope.md` | mechanics |
+| voice-drift | model, against the approved template | wording |
+| structure | model: theme, order, unintroduced terms | report-only |
+
+## Collection
+
+Collect once, before the report and before any fix. One checker run
+gathers the mechanical flags. One model read emits the `grammar`,
+`voice-drift`, and `structure` findings in the shape above. Do not
+re-read the prose per category.
+
+## Suppression
+
+Two layers mark keeps before a finding reaches the report or the loop:
+
+1. An approved `.terse/voice.md`: its exceptions remove matching
+   findings, named as covered.
+2. The `writing` skill's tripwires: matching findings stay listed,
+   marked as false alarms with the table's reason.
+
+## The staged fix loop
+
+Order matters: a rewrite makes earlier grammar findings stale. Visit
+each sentence once, applying its findings in stage order:
+
+1. **structural**: split the sentence, convert the in-sentence list to
+   bullets, cut or promote the aside
+2. **wording**: name the actor, swap the flagged word or phrase, delete
+   or evidence the qualifier, replace the em dash
+3. **mechanics**: grammar, spelling, and punctuation, on the wording
+   that now exists
+
+Grammar goes last on every sentence. A rewrite in stages 1 and 2
+discards that sentence's collected `grammar` findings; re-proof the new
+wording instead. Never carry a grammar finding across a rewrite. The
+loop never fixes `report-only` findings; it routes them to the report.
+
+After all visits, re-run the checker once and do the whole-document
+read the `edit` skill ends with. Converged means every remaining
+finding is a marked keep.
+
+## Modes as views
+
+`/terse:edit` is the one command over this model; the user picks the
+view in chat.
+
+| Direction | View |
+|---|---|
+| (default) | run the loop, no filter |
+| "report only", "check this" | collect and report everything; fix nothing |
+| "just fix the grammar" | the loop filtered to `grammar`; nothing rewrites, so nothing invalidates |
+| "review it, don't edit" | report everything, led by the findings no mechanical fix covers |
+| "make it casual" | rewrite toward a tone preset, then run the gate |
+
+`/terse:write` uses the same model at draft time: it fixes findings
+section by section as prose lands, so the gate afterwards finds
+residue, not problems.
+
+Chat filters select findings; they never change the loop. "Fix only the
+AI tells" runs the loop over one category. "Fix everything except the
+quotes" excludes findings whose span falls inside quoted material.

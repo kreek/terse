@@ -1,0 +1,54 @@
+# Voice analysis
+
+Build a voice template from the user's own writing so Terse preserves
+how they sound, not just fixes flags. `/terse:write` and `/terse:edit`
+offer this flow when no approved template exists. The template is a
+contract: the user signs it off before any skill treats it as their
+voice.
+
+Workflow:
+
+1. Resolve the samples directory from the user's request. Read every
+   prose file in it (markdown, text); skip code and generated files.
+   Fewer than three samples or under roughly 1,500 words total is a
+   thin corpus: say so and continue only if the user confirms.
+2. Measure the mechanical profile with `style-check.mjs --json`:
+   average sentence length and its spread (from
+   `stats.sentenceLengths`), document grade, and the rates of adverbs,
+   passive voice, and qualifiers per thousand words. These are the
+   numbers the template records as observed, not aspirational.
+3. Read the samples for the qualitative profile: characteristic
+   sentence openers and connectors, paragraph length, formatting
+   habits, vocabulary register, recurring phrases, how the author
+   handles hedging and emphasis, first or third person, contractions.
+4. Draft `voice.md` in the project's `.terse/` directory (create it)
+   with:
+   - frontmatter: `status: draft`, sample sources, date
+   - the mechanical profile as measured numbers
+   - the qualitative profile as short declarative traits, each with one
+     quoted example from the samples as evidence
+   - an exceptions section: Terse rules this voice deliberately
+     overrides (an author who uses em dashes stays an author who uses
+     em dashes; record it here so the edit gate stops flagging it)
+5. Present the draft trait by trait and ask what to keep, change, or
+   drop. The sign-off is the point: never mark the template approved on
+   your own judgment.
+6. On approval, set `status: approved` in the frontmatter. Tell the
+   user the location and that `/terse:write`, `/terse:edit`, and the
+   `writing` skill will now honor it.
+
+How the template is used:
+
+- The edit gate: exceptions suppress matching findings, and measured
+  ranges bound every rewrite (a 12-word-average author does not get
+  30-word rewrites).
+- `/terse:write`: the expansion lands inside the measured ranges.
+- The skills ignore a `draft` template and say so when they skip it.
+
+Verification:
+
+- [ ] The mechanical profile came from the checker's JSON output, not
+      estimation.
+- [ ] Every qualitative trait carries a quoted example from the samples.
+- [ ] The user explicitly approved; `approved` was never set unprompted.
+- [ ] The exceptions section exists, even if empty.

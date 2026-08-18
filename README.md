@@ -39,28 +39,30 @@ Add this repo as a marketplace, then install the plugin:
 
 ## Commands
 
+Three commands, one per phase: outline, write, edit.
+
 | Command | What it does |
 |---|---|
-| `/terse:check <file>` | Run the checker, report stats and flags. Read-only. |
-| `/terse:edit <file>` | Fix every flag with the smallest edit that clears it. |
-| `/terse:analyze <dir>` | Learn your voice from writing samples into a signed-off `.terse/voice.md`. |
-| `/terse:proof <file>` | Fix grammar, spelling, and punctuation only. No style opinions. |
-| `/terse:tone <file> <preset>` | Shift tone: confident, formal, friendly, casual, persuasive, shorter, more-detail, simpler. |
-| `/terse:review <file>` | Editor feedback without edits: readability, structure, voice, AI tells. |
-| `/terse:draft <subject>` | Compose outline-first: polish the structure as bullets, sign off, then expand into prose. |
+| `/terse:outline <subject>` | Structure first: one claim per section, iterated to your sign-off. |
+| `/terse:write <outline or subject>` | Expand the outline into prose in your voice, checked as it lands. |
+| `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
 
-The `writing` skill also loads on its own when Claude writes or edits
-prose. It carries the voice rules into everyday document work.
+`/terse:edit` takes direction in chat: "report only", "just fix the
+grammar", "make it casual", "fix only the AI tells", "everything
+except the quotes". The `writing` skill also loads on its own when
+Claude writes or edits prose. It carries the voice rules into everyday
+document work.
 
 ## Your voice
 
-`/terse:analyze` reads a directory of your writing. The checker measures
-your habits as numbers. The model names your traits, each with a quoted
+`/terse:write` offers to learn your voice when no template exists.
+Point it at a directory of your writing. The checker measures your
+habits as numbers. The model names your traits, each with a quoted
 example. The result is a draft `.terse/voice.md`. You review and approve
 it trait by trait; Terse honors no template you have not signed off.
 Once approved, your template wins. `/terse:edit` skips the flags your
-voice overrides, and `/terse:check` names them as covered. Rewrites stay
-inside your measured ranges.
+voice overrides and names them as covered. Rewrites stay inside your
+measured ranges.
 
 ## The highlight view
 

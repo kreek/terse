@@ -1,0 +1,44 @@
+---
+name: outline
+description: "Compose a document's structure first: bullets with one claim per section, iterated to explicit sign-off before any prose."
+---
+
+# Outline
+
+Structure while it is cheap to change. An outline is the whole document
+made cheap to reorder; moving bullets takes seconds where moving
+polished prose takes an afternoon. The user approves the outline before
+any prose exists, so human judgment lands at the cheap layer and
+machine effort only after.
+
+## Workflow
+
+1. Pin the subject, the named reader, and the one question the document
+   answers. If the user has not said, ask; do not guess the reader.
+2. Write the outline as its own markdown file from the start, next to
+   where the document will live (`<name>-outline.md`). The file is the
+   artifact; chat is for discussing it. Each section gets a heading and
+   a one-line claim: what this section asserts, not what it "covers". A
+   section that cannot state its claim in one line is two sections or
+   none. Record open judgment calls in the file, not only in chat.
+3. Check the structure, not the style. The checker is useless on
+   bullets; these checks are yours:
+   - the sections sit in knowledge order: each uses only what an
+     earlier section taught
+   - every section advances the one question; a bullet serving a
+     different question moves out
+   - the last section is the ask or the decision, not a trailing summary
+   - nothing critical is missing: name the evidence each claim will
+     need, so gaps surface now
+4. Iterate by editing the outline file until the user approves. Approval
+   is explicit; never proceed on your own judgment. On approval, mark
+   the outline file approved and hand off to `/terse:write`, so the
+   approved structure survives as its own record.
+
+## Verification
+
+- [ ] The reader and the one question were named before outlining.
+- [ ] Every outline section carries a one-line claim.
+- [ ] Open judgment calls live in the outline file, not only in chat.
+- [ ] The user explicitly approved the outline, and the approval is
+      marked in the file.

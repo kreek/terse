@@ -13,7 +13,9 @@ Terse produces load-bearing prose: every sentence informs, advances the
 document's point, or builds the reader's knowledge. A sentence doing none of
 those is cut. The mechanical layer (`scripts/style-check.mjs`) finds what a
 pattern-matcher can find; this skill owns the judgment the patterns cannot
-make.
+make. The findings contract in `references/findings.md` defines the
+finding shape, the fix stages, and the suppression layers every command
+shares.
 
 ## Core Ideas
 
@@ -70,18 +72,17 @@ If the project has `.terse/voice.md` with `status: approved`, that template
 is the author's signed-off voice: its exceptions override this skill's
 rules where they conflict, and its measured ranges (sentence length, grade,
 hedging rate) bound any prose written or edited for that author.
-`/terse:analyze` builds the template from writing samples.
+`/terse:write` offers to build the template from writing samples
+(`references/voice-analysis.md`).
 
 ## Handoffs
 
-- `/terse:check` runs the mechanical checker and reports flags with stats.
-- `/terse:edit` applies fixes for every flag, honoring the false alarms
-  above and the approved voice template.
-- `/terse:analyze` learns the user's voice from samples into
-  `.terse/voice.md`, gated on their sign-off.
-- `/terse:proof` fixes grammar, spelling, and punctuation only, with no
-  style opinions.
-- `/terse:tone` shifts register across presets while keeping claims and
-  the approved voice intact.
-- `/terse:review` reports editor feedback (readability, structure, voice,
-  AI tells) without editing.
+- `/terse:outline` composes structure first: one claim per section,
+  gated on the user's sign-off.
+- `/terse:write` expands an approved outline (or composes directly) in
+  the user's voice, checking as it lands. It offers to learn a voice
+  from samples (`references/voice-analysis.md`) when none exists.
+- `/terse:edit` is the publish gate: it collects every finding and, as
+  directed, reports them, fixes them in stages, proofs grammar alone,
+  or shifts tone, honoring the false alarms above and the approved
+  voice template.

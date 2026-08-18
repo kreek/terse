@@ -6,6 +6,9 @@ pay for.
 This file tracks the distance to that target. Each milestone names its
 proof. A milestone without passing proof is not done.
 
+The surface is three commands, one per phase: outline, write, edit.
+The always-on `writing` skill carries the voice into everyday prose.
+
 ## Principles
 
 1. Correctness before breadth. A checker that never lies beats one that
@@ -88,14 +91,14 @@ README's old negation-triple slogan; we did not whitelist it.
 ## Milestone 3: The highlight view
 
 Done, 2026-08-17. The classic readability editors made their name with
-colored highlights. `/terse:check` now renders them.
+colored highlights. The edit gate's report mode now renders them.
 
 - [x] `scripts/render-highlights.mjs`: document in, one page out. One
       color per category. The hint shows on hover. Legend chips
       toggle categories. Flags now carry character spans.
       Word-level categories mark the phrase; sentence-level ones mark
       the sentence.
-- [x] `/terse:check` offers the rendered view. It publishes the page
+- [x] The report mode offers the rendered view. It publishes the page
       when the host supports pages. The preview stays read-only by
       design: you look at the page and direct fixes in chat, as in
       "fix all" or "fix only AI tells". We built and shipped a
@@ -137,13 +140,13 @@ prose on the checker in CI.
 
 ## Milestone 6: Editor depth
 
-- [ ] Harden `/terse:proof`: detect the document's spelling convention,
-      test that quotes keep their original errors.
+- [ ] Harden the grammar mode: detect the document's spelling
+      convention, test that quotes keep their original errors.
 - [ ] A before-and-after eval case per tone preset.
-- [ ] Tune `/terse:review` on documents from writers other than the
+- [ ] Tune the review lenses on documents from writers other than the
       author.
 
-Proof: eval cases per command, passing.
+Proof: eval cases per mode, passing.
 
 ## Milestone 7: Verified quotes
 
@@ -155,8 +158,9 @@ error. A machine finds it; the fix lands before the document ships.
       source link. Fetch the source and prove the quote appears
       verbatim. Normalize only whitespace and quote marks. Same exit
       contract as the style checker: clean, findings, or error.
-- [ ] A `/terse:cite` skill for writing quotes in. Fetch the source,
-      copy the exact text, and link it. Never quote from memory.
+- [ ] Quote writing lives in `/terse:write`: fetch the source, copy the
+      exact text, and link it. Never quote from memory. The gate treats
+      an unverified quote as a finding, not a new command.
 - [ ] Anchor-deep links. Web sources get text-fragment URLs
       (`#:~:text=`), so the link opens with the quote highlighted.
       PDF sources get a page anchor (`#page=12`). A plain URL is the
@@ -175,12 +179,13 @@ Done, 2026-08-17. Editing a real ADR taught the lesson. Fifteen correct
 sentence fixes flattened the document's rhythm, because a flag list is
 a worklist, not an edit plan. Structure problems want structure tools.
 
-- [x] `/terse:draft` composes outline-first. The user polishes the
-      structure as bullets, one claim per section, checked for
-      knowledge order and one-theme discipline. They sign off before
-      any prose exists. Expansion then writes each section knowing its
-      place in the whole, in the approved voice. A whole-document read
-      ends the pass.
+- [x] Outline-first composition, shipped first as one draft command and
+      now split into `/terse:outline` and `/terse:write`. The user
+      polishes the structure as bullets, one claim per section, checked
+      for knowledge order and one-theme discipline. They sign off
+      before any prose exists. Expansion then writes each section
+      knowing its place in the whole, in the approved voice. A
+      whole-document read ends the pass.
 - [x] `/terse:edit` gained the same ending. Re-read every touched
       section whole, and check the cadence spread against the voice
       range. Local fixes can no longer flatten the rhythm unnoticed.
@@ -190,6 +195,28 @@ cadence numbers from the ADR session set the bar. The choppy pass
 collapsed spread from 16.7 to 6.3; the flow-aware pass restored the
 connective tissue.
 
+## Milestone 9: Three phases, one contract
+
+Done, 2026-08-18. Seven commands confused the surface. The product is
+three phases: outline, write, edit.
+
+- [x] The findings contract
+      (`skills/writing/references/findings.md`): one finding shape,
+      categories mapped to stages, collect-once, and a staged fix
+      loop. Grammar lands last on every sentence; a rewrite discards
+      that sentence's stale grammar findings.
+- [x] Three commands, one per phase. `/terse:outline` and
+      `/terse:write` split the old draft command. `/terse:edit` is the
+      publish gate; check, review, proof, and tone became chat-directed
+      modes backed by reference files.
+- [x] The `writing` skill stays always on and carries the voice into
+      everyday prose. Voice analysis moved to an offer inside
+      `/terse:write`.
+
+Proof: the skills directory holds four skills. No stale command
+references remain in the README or the skills. All 84 tests pass, and
+the contract file passes the checker it describes.
+
 ## Parity scorecard
 
 | Capability | Readability editors | Grammar assistants | Terse today |
@@ -197,13 +224,14 @@ connective tissue.
 | Readability grading | yes | partial | yes |
 | Passive, adverbs, wordiness | yes | yes | yes |
 | AI-tell detection | no | tagging only | yes, with removal |
-| Grammar repair | paid tier | yes | model layer, eval pending |
-| Tone presets | paid tier | yes | yes, eval pending |
+| Grammar repair | paid tier | yes | yes, parity eval (M1) |
+| Tone presets | paid tier | yes | yes, eval pending (M6) |
 | Voice capture with sign-off | no | partial | yes |
-| Colored highlight view | yes | yes | not yet (M3) |
+| Colored highlight view | yes | yes | yes (M3) |
 | Always-on checking | app only | everywhere | not yet (M5) |
-| Proven ablation delta | no | no | pending (M1) |
+| Proven ablation delta | no | no | yes, by ablation (M1) |
 | Verified verbatim quotes | no | plagiarism scan only | not yet (M7) |
 | Outline-first composition | no | no | yes |
 
-Neither incumbent can claim the last row. Landing M1 makes it ours.
+Neither incumbent can claim the last row. The real-tool rerun in M1
+hardens the delta claim.
