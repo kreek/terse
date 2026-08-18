@@ -33,6 +33,8 @@ const LABELED_TELLS = [
 	{ text: 'No staging queue, no broken builds, no waiting.', tell: 'no X, no Y, no Z' },
 	{ text: 'Stop guessing. Start shipping.', tell: 'stop Xing, start Ying' },
 	{ text: "Whether you're a founder, a writer, or a student, it fits.", tell: "whether you're X, Y, or Z" },
+	{ text: 'Four questions settle it. Ask them before you adopt.', tell: 'slogan opener' },
+	{ text: 'Intro paragraph sits here.\n\nThree things matter here.', tell: 'slogan opener' },
 ];
 
 const WEAK_VERBS = [
