@@ -15,10 +15,13 @@ spent at the cheap layer and machine effort only after.
 
 1. Pin the subject, the named reader, and the one question the document
    answers. If the user has not said, ask; do not guess the reader.
-2. Produce the outline as bullets. Each section gets a heading and a
-   one-line claim: what this section asserts, not what it "covers". A
-   section that cannot state its claim in one line is two sections or
-   none.
+2. Write the outline as its own markdown file from the start, next to
+   where the document will live (`<name>-outline.md`). The file is the
+   artifact; chat is for discussing it. Each section gets a heading
+   and a one-line claim: what this section asserts, not what it
+   "covers". A section that cannot state its claim in one line is two
+   sections or none. Record open judgment calls in the file, not only
+   in chat.
 3. Check the structure, not the style. The checker is useless on
    bullets; these checks are yours:
    - the sections sit in knowledge order: each uses only what an
@@ -28,9 +31,11 @@ spent at the cheap layer and machine effort only after.
    - the last section is the ask or the decision, not a trailing summary
    - nothing load-critical is missing: name the evidence each claim
      will need, so gaps surface now
-4. Iterate with the user in chat until they approve. Approval is
-   explicit; never begin Phase 2 on your own judgment. Record the
-   approved outline at the top of the working file as a comment.
+4. Iterate by editing the outline file until the user approves.
+   Approval is explicit; never begin Phase 2 on your own judgment. On
+   approval, mark the outline file approved and expand into a separate
+   document file, so the approved structure survives as its own
+   record.
 
 ## Phase 2: the expansion
 
