@@ -5,24 +5,25 @@ description: "Compose a document's structure first: bullets with one claim per s
 
 # Outline
 
-Structure while it is cheap to change. An outline is the whole document
-made cheap to reorder; moving bullets takes seconds where moving
-polished prose takes an afternoon. The user approves the outline before
-any prose exists, so human judgment lands at the cheap layer and
-machine effort only after.
+An outline's job is the logical flow of information: which points come
+in what order, and how each section builds on the last. Moving bullets
+takes seconds where moving polished prose takes an afternoon. So
+iterate with the user toward an outline they approve, one that walks
+the reader from question to answer and expands into prose later.
 
 ## Workflow
 
-1. Pin the subject, the named reader, and the one question the document
+1. Name the subject, the reader, and the one question the document
    answers. If the user has not said, ask; do not guess the reader.
-   Then state the governing thought: the answer to that question in one
-   sentence. An answer that will not fit one sentence means two
-   documents, or a subject still too wide.
+   Then state the governing thought: a short summary of the
+   answer. The final document supplies the detail. If you cannot keep
+   the summary short, check whether the subject is too wide or you
+   are writing two documents.
 2. Write the outline as its own markdown file from the start, next to
    where the document will live (`<name>-outline.md`). The file is the
    artifact; chat is for discussing it. The governing thought goes at
    the top. Pick the shape for the document type from
-   `references/structures.md`. Whatever the shape, the answer lands
+   `references/structures.md`. Whatever the shape, the answer comes
    early and the sections support it; never hold it for a reveal at
    the end.
    Each section gets a heading and a one-line claim: what this section
@@ -53,11 +54,11 @@ machine effort only after.
 
 ## Verification
 
-- [ ] The reader and the one question were named before outlining.
-- [ ] The governing thought is one sentence at the top of the outline
-      file, and every section supports it.
+- [ ] You named the reader and the one question before outlining.
+- [ ] The governing thought is a short summary at the top of the
+      outline file, and every section supports it.
 - [ ] The sections pass the question-answer chain and MECE checks.
 - [ ] Every outline section carries a one-line claim.
 - [ ] Open judgment calls live in the outline file, not only in chat.
-- [ ] The user explicitly approved the outline, and the approval is
-      marked in the file.
+- [ ] The user explicitly approved the outline, and the file records
+      the approval.

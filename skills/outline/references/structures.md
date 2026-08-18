@@ -22,6 +22,6 @@ resists is the wrong shape.
   facts first, so a reader who stops after one sentence still has the
   story.
 
-Every shape keeps the same spine. The governing thought lands early.
-Each section earns its place. The piece ends on the ask or the
+Every shape keeps the same spine. The governing thought comes early.
+Each section supports it. The piece ends on the ask or the
 resolution, not a summary.
