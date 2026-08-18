@@ -1,9 +1,9 @@
 ---
-name: writing
+name: style
 description: "Use when writing or editing prose in any document: voice, clarity, readability, word choice."
 ---
 
-# Writing
+# Style
 
 ## Iron Law
 
@@ -92,7 +92,7 @@ hedging rate) bound any prose written or edited for that author.
 - `/terse:outline` composes structure first: one claim per section,
   gated on the user's sign-off.
 - `/terse:write` expands an approved outline (or composes directly) in
-  the user's voice, checking as it lands. It offers to learn a voice
+  the user's voice, checking at draft time. It offers to learn a voice
   from samples (`references/voice-analysis.md`) when none exists.
 - `/terse:edit` is the publish gate: it collects every finding and, as
   directed, reports them, fixes them in stages, proofs grammar alone,

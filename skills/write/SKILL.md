@@ -5,6 +5,10 @@ description: "Write a document from an approved outline, or compose directly: pr
 
 # Write
 
+## Iron Law
+
+`WRITE IN THE USER'S VOICE, TO THE APPROVED OUTLINE. NEVER DRIFT IN SILENCE.`
+
 Turn an approved outline into finished prose, or compose a document
 when the user asks for one without an outline. Write in the user's
 voice and run the checker at draft time; the edit gate afterwards
@@ -22,9 +26,9 @@ toward the governing thought.
 2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
    the expansion writes in the user's measured voice, not the model's
    default. If none exists, offer to learn one from a samples directory
-   (the flow is the `writing` skill's `references/voice-analysis.md`).
-   If the user declines, continue in the `writing` skill's default
-   voice. Load the `writing` skill's rules either way.
+   (the flow is the `style` skill's `references/voice-analysis.md`).
+   If the user declines, continue in the `style` skill's default
+   voice. Load the `style` skill's rules either way.
 3. Expand section by section, each drafted knowing its place in the
    whole and written to the word budget the outline assigned it. Run
    the checker as you go and fix flags at draft time; do not save a

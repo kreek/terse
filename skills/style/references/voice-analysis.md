@@ -35,7 +35,7 @@ Workflow:
    your own judgment.
 6. On approval, set `status: approved` in the frontmatter. Tell the
    user the location and that `/terse:write`, `/terse:edit`, and the
-   `writing` skill will now honor it.
+   `style` skill will now honor it.
 
 How the template is used:
 

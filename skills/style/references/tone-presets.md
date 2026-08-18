@@ -24,7 +24,7 @@ Workflow:
      fragments
    - "more-detail" adds only material grounded in the document or
      provided by the user; never invent facts
-   - the `writing` skill's rules still apply
+   - the `style` skill's rules still apply
 4. Re-run the checker with the same arguments as the baseline; a tone
    pass may not add new flags, and "simpler" must clear the
    hard-sentence flags at the target grade.

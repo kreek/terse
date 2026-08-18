@@ -5,7 +5,11 @@ description: "The publish gate: collect every finding across readability, style,
 
 # Edit
 
-Run the findings contract (the `writing` skill's
+## Iron Law
+
+`EVERY REWRITE TRACES TO A FINDING. MEANING AND VOICE SURVIVE EVERY EDIT.`
+
+Run the findings contract (the `style` skill's
 `references/findings.md`) end to end: collect everything at once, then
 report or fix as the user directs. This is Terse's publish gate, run
 like a linter: prose written under `/terse:write` should need little
@@ -23,7 +27,7 @@ every mode.
 - **fix** (default): run the staged loop over every finding.
 - **report only** ("check this", "review it, don't edit"): report the
   findings and stop. Lead with the `structure` and `voice-drift`
-  findings no mechanical fix covers, assess through the `writing`
+  findings no mechanical fix covers, assess through the `style`
   skill's `references/review-lenses.md`, and offer the highlight
   preview. The document stays unmodified.
 - **grammar only** ("proofread", "just fix the grammar"): the mechanics
@@ -81,7 +85,7 @@ every mode.
 3. If `.terse/voice.md` exists with `status: approved`, load it: its
    exceptions suppress matching findings, and its measured ranges bound
    every rewrite. Ignore a `draft` template and say so.
-4. Load the `writing` skill's Core Ideas and Tripwires, and its
+4. Load the `style` skill's Core Ideas and Tripwires, and its
    `references/claude-defaults.md`; together they govern every rewrite.
    The defaults reference also lists trained habits the checker cannot
    catch. Hunt those in the same read: synonym cycling, compulsive

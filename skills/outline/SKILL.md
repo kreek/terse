@@ -1,9 +1,13 @@
 ---
 name: outline
-description: "Compose a document's structure first: bullets with one claim per section, iterated to explicit sign-off before any prose."
+description: "Compose a document's structure first: bullets with one point per section, iterated to explicit sign-off before any prose."
 ---
 
 # Outline
+
+## Iron Law
+
+`THE READER, ONE QUESTION, ONE GOVERNING THOUGHT. NO PROSE BEFORE THE USER APPROVES.`
 
 An outline's job is the logical flow of information: which points come
 in what order, and how each section builds on the last. Moving bullets

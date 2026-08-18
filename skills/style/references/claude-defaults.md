@@ -55,7 +55,7 @@ simpler-alternative flags. What remains the editor's responsibility is
 what no pattern can see: synonym cycling, compulsive triplets,
 participial analysis tails, closing summaries, mid-sentence bold, and
 stock figures beyond the listed phrases. No lexicon can enumerate
-figures of speech, so apply the translation test from the `writing`
+figures of speech, so apply the translation test from the `style`
 skill's Core Ideas: if the literal verb loses nothing, the figure is a
 finding. When `/terse:edit` runs, hunt those in the same pass and
 treat them as flags of equal standing.

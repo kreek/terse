@@ -1,9 +1,12 @@
 # Terse
 
-A writing editor for Claude. Terse pairs a deterministic style checker
-with AI editing skills. It does what the classic readability editors did.
-It also rewrites, and the rewrites keep your voice. All of it runs on the
-Claude subscription you already pay for.
+Terse is a writing system that runs inside Claude. A document moves
+through three phases. You approve an outline, Claude expands it into
+prose, and an edit pass clears what remains before you publish. At
+each phase a mechanical checker finds the problems the classic
+readability editors found: hard sentences, passive voice, adverbs,
+qualifiers, AI tells. Claude fixes them, and the fixes keep your
+voice. It all runs on the subscription you already pay for.
 
 ## How it works
 
@@ -18,7 +21,7 @@ Two layers:
   and qualifier count gets a length-scaled target.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
   playbook governs each fix and knows when a flag is a false alarm. Passive
-  voice with an irrelevant actor stays. A hedge that is the claim stays. Your em
+  voice with an irrelevant actor stays. A hedge that is the point stays. Your em
   dashes stay if your voice template says so.
 
 ## Install
@@ -37,21 +40,34 @@ Add this repo as a marketplace, then install the plugin:
 /plugin install terse@terse
 ```
 
-## Commands
+## Skills
 
-Three commands, one per phase: outline, write, edit.
+Four skills: three phase commands and the rulebook they share.
 
-| Command | What it does |
+| Skill | What it does |
 |---|---|
-| `/terse:outline <subject>` | Structure first: one claim per section, iterated to your sign-off. |
-| `/terse:write <outline or subject>` | Expand the outline into prose in your voice, checked as it lands. |
+| `/terse:outline <subject>` | Structure first: one point and a word budget per section, iterated to your sign-off. |
+| `/terse:write <outline or subject>` | Expand the approved outline into prose in your voice, checked at draft time. |
 | `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
+| `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
+
+The three phases hand off through the outline file. You approve it
+before any prose exists, and it records each section's point, budget,
+and evidence. Write drafts to that file and reports back when a
+section resists it. The outline updates, and structural changes need
+your approval again. Edit checks the finished prose against the same
+file. Every section makes its assigned point, deviations logged
+during drafting stand, and undocumented drift is a finding.
+
+The style skill holds the rules the other three follow: plain words,
+active voice, the reader's vocabulary. It names the false alarms that
+keep a flag from becoming a bad edit. It also loads on its own whenever
+Claude writes or edits prose, so everyday document work follows the
+same rules without a command.
 
 `/terse:edit` takes direction in chat: "report only", "just fix the
-grammar", "make it casual", "fix only the AI tells", "everything
-except the quotes". The `writing` skill also loads on its own when
-Claude writes or edits prose. It carries the voice rules into everyday
-document work.
+grammar", "make it casual", "cut 15%", "fix only the AI tells",
+"everything except the quotes".
 
 ## Your voice
 
@@ -94,6 +110,16 @@ sentence passes on its own.
 npm install
 npm test
 ```
+
+To try local changes before pushing, add your checkout as a
+marketplace and install from it:
+
+```
+/plugin marketplace add ./path/to/terse
+/plugin install terse@terse
+```
+
+Run `/reload-plugins` if the install summary asks for it.
 
 ## License
 

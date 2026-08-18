@@ -40,7 +40,7 @@ Two layers mark keeps before a finding reaches the report or the loop:
 
 1. An approved `.terse/voice.md`: its exceptions remove matching
    findings, named as covered.
-2. The `writing` skill's tripwires: matching findings stay listed,
+2. The `style` skill's tripwires: matching findings stay listed,
    marked as false alarms with the table's reason.
 
 ## The staged fix loop
