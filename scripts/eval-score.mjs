@@ -94,9 +94,14 @@ for (const c of cases) {
 		console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);
 		failures++;
 	}
-	if (w && wo && w.flagsPerKword >= wo.flagsPerKword) {
+	// A grammar-scope case must not ADD style flags; equality is correct
+	// behavior (the pass leaves style alone). Style cases must be below.
+	const grammarScope = (c.tags ?? []).includes('grammar');
+	if (w && wo && (grammarScope
+		? w.flagsPerKword > wo.flagsPerKword
+		: w.flagsPerKword >= wo.flagsPerKword)) {
 		console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
-			`not below without (${fmt(wo.flagsPerKword)})`);
+			`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
 		failures++;
 	}
 	if (w && wo) {

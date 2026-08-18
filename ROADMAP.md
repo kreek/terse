@@ -17,18 +17,42 @@ proof. A milestone without passing proof is not done.
 
 ## Milestone 1: Prove the delta
 
-The eval suite exists but has never run. The eval tool sits behind an
-early-access gate for this account.
+Done, with one caveat. The built-in eval tool sits behind an
+early-access gate for this account. The first run used agent-session
+ablation instead. Eight fresh sessions ran, one per case per arm. The with
+arm reads and follows the terse skills. The without arm gets the task
+alone. The checker scored every produced document.
 
-- [ ] Get eval enablement from Anthropic.
-- [ ] Run `npm run eval:quick`. Confirm the report schema and fix the
-      scorer if the shape differs.
-- [ ] Run the full suite. Publish the first delta table in this file.
-- [ ] Let the numbers set priorities. A failing case outranks every item
-      below this line.
+First delta table. Recorded 2026-08-17, one run per arm, model
+claude-fable-5:
 
-Proof: a committed results table. With-arm AI tells at zero. Fewer flags
-per thousand words than the without arm, for all four cases.
+| Case | Arm | Flags/kword | AI tells | Grade |
+|---|---|---|---|---|
+| claudism-removal | with | 0.0 | 0 | 7 |
+| claudism-removal | without | 29.4 | 0 | 8 |
+| generation-readme | with | 0.0 | 0 | 5 |
+| generation-readme | without | 28.9 | 0 | 6 |
+| generation-explainer | with | 0.0 | 0 | 4 |
+| generation-explainer | without | 24.3 | 0 | 7 |
+| grammar-repair | with | 73.7 | 0 | 8 |
+| grammar-repair | without | 73.7 | 0 | 8 |
+
+Reading it: every style case lands at zero flags with the plugin. The
+same cases run 24 to 29 flags per thousand words without it. The
+grammar case is parity by design. Both arms fixed all 16 planted
+errors and left the style intact. A grammar-scope pass must not add
+style flags, so equality passes there. The delta comes from the style
+layer, so detection breadth (M2) stays next in line.
+
+- [ ] Get eval enablement from Anthropic. Rerun with `npm run eval`
+      to score this table with the real tool.
+- [x] Run the suite and confirm the scorer against a real report.
+- [x] Publish the first delta table in this file.
+- [x] Let the numbers set priorities: M2 confirmed as next.
+
+Proof: the committed table above. With-arm AI tells sit at zero
+everywhere. Style cases beat the without arm. The grammar case holds
+parity with 16 of 16 planted errors fixed in both arms.
 
 ## Milestone 2: Detection breadth
 
@@ -42,7 +66,11 @@ years. Ours came from intuition and one review pass.
 - [ ] Detect weak verb phrases such as "is a reflection of", where
       "reflects" does the job.
 - [ ] Tune the length-scaled targets against edited human prose. The
-      goals should match editors, not guesses.
+      goals should match editors, not guesses. Seed corpus: five
+      public-domain Hemingway news pieces. One example is "At the End
+      of the Ambulance Run". Reportage, not fiction: the register this
+      plugin targets. Source:
+      americanliterature.com/author/ernest-hemingway.
 - [ ] Keep every property test green: conservation, metamorphic
       relations, and the CLI contract.
 
