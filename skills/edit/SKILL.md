@@ -17,7 +17,9 @@ layer: the checker finds, this skill judges and rewrites.
    exceptions suppress matching flags, and its measured ranges bound every
    rewrite. Ignore a `draft` template and say so.
    If the user reviewed a published Terse page for this document, honor
-   their verdicts: fetch the page's current HTML, save it to a file, and
+   their verdicts. Confirm they pressed Save review (clicks alone live
+   in view-state; Save review bakes them into the page source). Then
+   fetch the page's current HTML, save it to a file, and
    run `node ${CLAUDE_PLUGIN_ROOT}/scripts/read-accepts.mjs <page.html>`.
    Fix only the `accepted` flags. Treat `dismissed` as decided keeps
    (report them, do not re-litigate). Ask before touching `open` flags,

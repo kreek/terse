@@ -123,7 +123,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 		line: f.line, match: f.match, hint: f.hint }));
 	const catRules = Object.keys(CATEGORIES).map((c) => catCss(c)).join('\n');
 	return `<title>${escapeHtml(basename(file))} · Terse</title>
-<style>
+<style id="page-css">
 :root {
 	--ground: #FFFFFF; --ink: #22261F; --dim: #6E7268; --chrome: #FAFAF8;
 	--edge: #E6E5E0; --accept: #2F7D4F; --wash: 30%;
@@ -189,6 +189,8 @@ aside h1 { font-size: 0.95rem; margin: 0 0 0.2rem; }
 	font-size: 0.75rem; cursor: pointer; }
 .bulk #accept-all, .bulk #accept-scope { border-color: var(--accept);
 	color: var(--accept); font-weight: 600; }
+.bulk #save-review { margin-left: auto; }
+.bulk #save-review[data-dirty] { border-color: var(--ink); font-weight: 600; }
 #cards { overflow-y: auto; padding: 0.75rem; display: flex;
 	flex-direction: column; gap: 0.55rem; }
 .card { border: 1px solid var(--edge);
@@ -247,12 +249,13 @@ body[data-filter]:not([data-filter=""]) .card:not(.matched) { display: none; }
 		<button id="accept-scope" hidden></button>
 		<button id="accept-all">Accept all (${flags.length})</button>
 		<button id="clear-all">Clear all</button>
+		<button id="save-review" hidden>Save review</button>
 	</div>
 	<section id="cards">${cards}</section>
 </aside>
 </div></artifact-sync>
 <script type="application/json" id="flag-data">${JSON.stringify(flagData)}</script>
-<script>
+<script id="page-js">
 const tally = document.getElementById('tally');
 const acceptScope = document.getElementById('accept-scope');
 const total = ${flags.length};
@@ -289,9 +292,10 @@ function applyFilter() {
 	});
 	document.body.setAttribute('data-filter', filter);
 	acceptScope.hidden = !filter;
+	document.getElementById('accept-all').hidden = !!filter;
 	if (filter) {
 		const label = document.querySelector('.chip[data-cat="' + filter + '"]')
-			.textContent.replace(/\s*\d+$/, '').trim();
+			.textContent.replace(/\\s*\\d+$/, '').trim();
 		acceptScope.textContent = 'Accept ' + label.toLowerCase() +
 			' (' + cardsOf(filter).length + ')';
 	}
@@ -351,6 +355,57 @@ document.querySelector('.chips').addEventListener('click', (e) => {
 	applyFilter();
 });
 recount();
+// Save review: republish this page with the verdicts baked into its
+// source, so a plain fetch of the artifact can read them. Only shown
+// where the runtime grants the artifact capability.
+(async () => {
+	const saveBtn = document.getElementById('save-review');
+	const artifact = window.claude?.use ? await claude.use('artifact') : null;
+	if (!artifact || typeof artifact.publish !== 'function') return;
+	saveBtn.hidden = false;
+	document.getElementById('cards').addEventListener('click', () =>
+		saveBtn.setAttribute('data-dirty', ''));
+	document.querySelector('.bulk').addEventListener('click', (e) => {
+		if (e.target.id !== 'save-review') saveBtn.setAttribute('data-dirty', '');
+	});
+	saveBtn.addEventListener('click', async () => {
+		saveBtn.textContent = 'Saving...';
+		// Clone and normalize: strip transient view state so the saved
+		// source reloads clean. The wrapper injects its own <style> and
+		// <title>, so ours are addressed by id, never by tag.
+		const app = document.getElementById('app').cloneNode(true);
+		app.querySelectorAll('.flash, .matched').forEach((el) =>
+			el.classList.remove('flash', 'matched'));
+		app.querySelectorAll('.chip').forEach((c) =>
+			c.setAttribute('aria-pressed', String(c.dataset.cat === '')));
+		const aAll = app.querySelector('#accept-all');
+		if (aAll) aAll.removeAttribute('hidden');
+		const aScope = app.querySelector('#accept-scope');
+		if (aScope) { aScope.setAttribute('hidden', ''); aScope.textContent = ''; }
+		const sBtn = app.querySelector('#save-review');
+		if (sBtn) {
+			sBtn.setAttribute('hidden', '');
+			sBtn.removeAttribute('data-dirty');
+			sBtn.textContent = 'Save review';
+		}
+		const parts = [
+			'<title>' + document.title.replace(/</g, '&lt;') + '</title>',
+			document.getElementById('page-css').outerHTML,
+			'<artifact-sync>' + app.outerHTML + '</artifact-sync>',
+			document.getElementById('flag-data').outerHTML,
+			document.getElementById('page-js').outerHTML,
+		];
+		try {
+			await artifact.publish(parts.join('\\n'));
+			saveBtn.removeAttribute('data-dirty');
+			saveBtn.textContent = 'Saved';
+			setTimeout(() => { saveBtn.textContent = 'Save review'; }, 2000);
+		} catch (err) {
+			saveBtn.textContent = err?.code === 'conflict'
+				? 'Conflict; reload and retry' : 'Save failed';
+		}
+	});
+})();
 </script>`;
 }
 

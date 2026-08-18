@@ -126,3 +126,18 @@ describe('read-accepts', async () => {
 		expect(() => parseAccepts('<p>not a review page</p>')).toThrow(/flag-data/);
 	});
 });
+
+describe('page script integrity', async () => {
+	const { renderPage } = await import('../scripts/render-highlights.mjs');
+
+	it('the emitted page script parses as JavaScript', () => {
+		const html = renderPage('We utilize retries quite often (more than anyone would like to admit).');
+		const src = html.match(/<script id="page-js">([\s\S]*?)<\/script>/)[1];
+		expect(() => new Function(src)).not.toThrow();
+		// template-literal escapes must survive into the page verbatim
+		expect(src).toContain("join('\\n')");
+		expect(html).toContain('<style id="page-css">');
+		expect(src).toContain("getElementById('page-css')");
+		expect(src).toMatch(/\\s\*\\d\+/);
+	});
+});
