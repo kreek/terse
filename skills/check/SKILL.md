@@ -26,7 +26,14 @@ the prose yourself.
    wording) so the user can keep them deliberately. If an approved
    `.terse/voice.md` exists, also name the flags its exceptions cover;
    `/terse:edit` will skip those.
-5. Do not edit the document. Offer `/terse:edit` if the user wants the
+5. Offer the highlight view: run
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/render-highlights.mjs <file>` to
+   produce a self-contained HTML page with one color per category, the
+   hint on hover, and category toggles. When the host can publish pages,
+   publish it with the stateful-page capability so the user can click
+   highlights to accept fixes; read the accepted set back before the next
+   `/terse:edit` and apply only those.
+6. Do not edit the document. Offer `/terse:edit` if the user wants the
    fixes applied.
 
 ## Verification

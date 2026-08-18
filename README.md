@@ -54,6 +54,18 @@ Once approved, your template wins. `/terse:edit` skips the flags your
 voice overrides, and `/terse:check` names them as covered. Rewrites stay
 inside your measured ranges.
 
+## The highlight view
+
+```
+node scripts/render-highlights.mjs draft.md
+```
+
+One self-contained HTML page. Each flag category gets a color. Each
+highlight shows its hint on hover, and the legend chips toggle
+categories. Open it in any browser. Published through Claude, the page
+adds one more layer. Click a highlight to accept its fix. The next
+edit pass applies the accepted set.
+
 ## Use the checker standalone
 
 ```

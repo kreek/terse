@@ -326,8 +326,29 @@ function pushMatches(text, re, flags, flag) {
 // Same, for whole-document scans where each match needs its own line.
 function pushMatchesWithLine(text, re, lineAt, flags, flag) {
 	for (const m of text.matchAll(re)) {
-		flags.push({ ...flag, line: lineAt(m.index) });
+		flags.push({ ...flag, line: lineAt(m.index),
+			span: [m.index, m.index + m[0].length] });
 	}
+}
+
+// Stripping preserves offsets, so spans index into the original text.
+// Word-level categories refine to the matched phrase inside the sentence;
+// sentence-level categories keep the whole sentence.
+const SENTENCE_LEVEL = new Set(['hard-sentence', 'very-hard-sentence']);
+
+function assignSpans(text, flags, from, span) {
+	for (let i = from; i < flags.length; i++) {
+		if (flags[i].span) continue;
+		flags[i].span = SENTENCE_LEVEL.has(flags[i].category)
+			? span : refineSpan(text, span, flags[i].match) ?? span;
+	}
+}
+
+function refineSpan(text, span, match) {
+	const re = new RegExp(match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+		.replace(/\s+/g, '\\s+').replace(/['’]/g, "['’]"), 'i');
+	const m = re.exec(text.slice(span[0], span[1]));
+	return m ? [span[0] + m.index, span[0] + m.index + m[0].length] : null;
 }
 
 function checkLexicon(sentence, flags, file, line) {
@@ -356,7 +377,7 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 	const flags = [];
 	for (const m of text.matchAll(/—/g)) {
 		flags.push({ file, line: lineAt(m.index), category: 'em-dash',
-			match: '—',
+			match: '—', span: [m.index, m.index + 1],
 			hint: 'use a period, colon, or comma; parentheses only under six words' });
 	}
 	for (const a of findAsides(text)) {
@@ -365,6 +386,7 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 			const cp = [...inner]; // slice by code points so emoji survive the cut
 			flags.push({ file, line: lineAt(a.offset), category: 'aside',
 				match: `(${cp.slice(0, 40).join('')}${cp.length > 40 ? '...' : ''})`,
+				span: [a.offset, a.offset + a.inner.length + 2],
 				hint: 'cut the aside, or promote it to its own sentence' });
 		}
 	}
@@ -381,8 +403,10 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 			.replace(/^(?:[-*+]|\d{1,2}[.)])\s+/, '');
 		const words = wordsOf(clean);
 		if (words.length === 0) continue; // horizontal rules, stray symbols
+		const before = flags.length;
 		checkSentence(clean, maxGrade, flags, file, line);
 		checkLexicon(clean, flags, file, line);
+		assignSpans(text, flags, before, [s.offset, s.offset + s.text.length]);
 		allWords.push(...words);
 		sentenceLengths.push(words.length);
 	}

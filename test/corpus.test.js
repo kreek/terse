@@ -73,3 +73,32 @@ describe('edited human prose: zero lexical false positives', () => {
 		});
 	}
 });
+
+describe('render-highlights', async () => {
+	const { renderPage } = await import('../scripts/render-highlights.mjs');
+	const doc = "Here's the thing — the cache was cleared quickly.\n\nWe utilize retries (which nobody had reviewed before the deadline arrived).";
+
+	it('conserves the document text through rendering', () => {
+		const html = renderPage(doc);
+		const main = html.match(/<main>([\s\S]*?)<\/main>/)[1];
+		const text = main.replace(/<[^>]+>/g, '')
+			.replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+			.replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+		expect(text).toBe(doc);
+	});
+
+	it('marks every category present with a hint tooltip', () => {
+		const html = renderPage(doc);
+		expect(html).toContain('class="ai-tell');
+		expect(html).toContain('em-dash');
+		expect(html).toContain('passive-voice');
+		expect(html).toContain('aside');
+		expect(html).toMatch(/title="[^"]*state the claim plainly/);
+	});
+
+	it('emits spans on every flag it paints', () => {
+		const { flags } = checkText(doc);
+		expect(flags.length).toBeGreaterThan(4);
+		expect(flags.filter((f) => !f.span)).toEqual([]);
+	});
+});

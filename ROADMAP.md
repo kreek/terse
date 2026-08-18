@@ -87,17 +87,22 @@ README's old negation-triple slogan; we did not whitelist it.
 
 ## Milestone 3: The highlight view
 
-The classic readability editors made their name with colored highlights.
-`/terse:check` prints a list. It should also render the document with
-every flag marked in place.
+Done, 2026-08-17. The classic readability editors made their name with
+colored highlights. `/terse:check` now renders them.
 
-- [ ] `scripts/render-highlights.mjs`: checker JSON in, one HTML page
-      out. One color per category, hint on hover, stats header.
-- [ ] `/terse:check` offers the rendered view and publishes it when the
-      host supports pages.
+- [x] `scripts/render-highlights.mjs`: document in, one page out. One
+      color per category. The hint shows on hover. Legend chips
+      toggle categories. Flags now carry character spans.
+      Word-level categories mark the phrase; sentence-level ones mark
+      the sentence.
+- [x] `/terse:check` offers the rendered view. It publishes the page
+      when the host supports pages. A published page adds
+      click-to-accept on every highlight. The next edit pass applies
+      the accepted set.
 
-Proof: a rendered page for a seeded document. All categories visible,
-readable in light and dark themes.
+Proof, met: a published page for a seeded document shows every
+category. It holds in light and dark themes. A rendering test pins
+text conservation. The page's text content equals the document.
 
 ## Milestone 4: Voice depth
 
