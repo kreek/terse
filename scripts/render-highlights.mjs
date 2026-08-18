@@ -72,6 +72,55 @@ function runHtml(run, flags) {
 		`title="${escapeHtml(tip)}">${inner}</mark>`;
 }
 
+// Renders markdown structure around the marks. The marked text preserves
+// the document's characters, so headings, fences, lists, bold, links, and
+// inline code are transformed after highlighting. Marks never cross blank
+// lines (sentence spans stop at block boundaries), so block splitting
+// cannot tear one.
+function inlineMd(s) {
+	return s
+		.replace(/`([^`\n]+)`/g, '<code>$1</code>')
+		.replace(/\*\*((?:[^*]|\*(?!\*))+)\*\*/g, '<strong>$1</strong>')
+		.replace(/\[((?:[^\]]|<[^>]+>)*)\]\(([^)\s]*(?:\([^)]*\)[^)\s]*)*)\)/g,
+			'<a href="$2">$1</a>');
+}
+
+function blockHtml(block) {
+	const text = block.join('\n');
+	const heading = /^(#{1,4})\s+(.*)$/.exec(block[0]);
+	if (block.length === 1 && heading) {
+		const level = heading[1].length;
+		return `<h${level}>${inlineMd(heading[2])}</h${level}>`;
+	}
+	if (block[0].startsWith('```')) {
+		return `<pre>${block.slice(1, block[block.length - 1].startsWith('```')
+			? -1 : undefined).join('\n')}</pre>`;
+	}
+	if (block.every((l) => /^\s*-\s+/.test(l))) {
+		const items = block.map((l) =>
+			`<li>${inlineMd(l.replace(/^\s*-\s+/, ''))}</li>`);
+		return `<ul>\n${items.join('\n')}\n</ul>`;
+	}
+	return `<p>${inlineMd(text)}</p>`;
+}
+
+function renderMarkdown(marked) {
+	const blocks = [];
+	let current = [];
+	let inFence = false;
+	for (const line of marked.split('\n')) {
+		if (line.startsWith('```')) inFence = !inFence;
+		if (line.trim() === '' && !inFence) {
+			if (current.length) blocks.push(current);
+			current = [];
+			continue;
+		}
+		current.push(line);
+	}
+	if (current.length) blocks.push(current);
+	return blocks.map(blockHtml).join('\n');
+}
+
 function chipsHtml(flags) {
 	const counts = {};
 	for (const f of flags) counts[f.category] = (counts[f.category] ?? 0) + 1;
@@ -104,7 +153,8 @@ mark.u-${cat} { text-decoration-line: underline; text-decoration-color: var(--c-
 
 export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	const { flags, stats } = checkText(rawText, { maxGrade, file });
-	const body = buildRuns(rawText, flags).map((r) => runHtml(r, flags)).join('');
+	const body = renderMarkdown(
+		buildRuns(rawText, flags).map((r) => runHtml(r, flags)).join(''));
 	const score = qualityScore(stats, flags.length);
 	const flagData = flags.map((f, id) => ({ id, category: f.category,
 		line: f.line, match: f.match, hint: f.hint }));
@@ -159,8 +209,20 @@ nav { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
 .chip i { width: 8px; height: 8px; border-radius: 50%; }
 .chip[aria-pressed="true"] { border-color: var(--ink); }
 .chip b { color: var(--dim); font-weight: 600; }
-main { max-width: 72ch; margin: 0 auto; padding: 2.5rem 1.2rem 5rem;
-	white-space: pre-wrap; overflow-wrap: break-word; }
+main { max-width: 72ch; margin: 0 auto; padding: 2rem 1.2rem 5rem;
+	overflow-wrap: break-word; }
+main p { white-space: pre-wrap; margin: 0 0 1rem; }
+main h1 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 1rem; }
+main h2 { font-size: 1.2rem; margin: 1.6rem 0 0.7rem; }
+main h3, main h4 { font-size: 1.02rem; margin: 1.3rem 0 0.6rem; }
+main ul { margin: 0 0 1rem; padding-left: 1.4rem; }
+main li { margin: 0.15rem 0; }
+main pre { background: var(--chrome); border: 1px solid var(--edge);
+	padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem;
+	margin: 0 0 1rem; }
+main code { background: var(--chrome); border: 1px solid var(--edge);
+	padding: 0 0.25em; font-size: 0.88em; }
+main a { color: inherit; text-decoration-color: var(--dim); }
 mark { background: none; color: inherit; padding: 0.04em 0;
 	text-decoration-thickness: 2px; text-underline-offset: 3px; }
 ${catRules}

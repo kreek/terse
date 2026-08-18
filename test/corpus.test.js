@@ -78,13 +78,27 @@ describe('render-highlights', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 	const doc = "Here's the thing — the cache was cleared quickly.\n\nWe utilize retries (which nobody had reviewed before the deadline arrived).";
 
-	it('conserves the document text through rendering', () => {
+	it('conserves the prose through rendering', () => {
 		const html = renderPage(doc);
 		const main = html.match(/<main>([\s\S]*?)<\/main>/)[1];
 		const text = main.replace(/<[^>]+>/g, '')
 			.replace(/&amp;/g, '&').replace(/&lt;/g, '<')
 			.replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-		expect(text).toBe(doc);
+		// markdown structure renders as elements, so compare prose lines
+		const lines = (s) => s.split('\n').map((l) => l.trim()).filter(Boolean);
+		expect(lines(text)).toEqual(lines(doc));
+	});
+
+	it('renders markdown structure around the marks', () => {
+		const md = '# Title\n\nWe **utilize** the `cache` in [docs](https://x.test/a).\n\n- first item\n- second item\n\n```\ncode here\n```';
+		const html = renderPage(md).match(/<main>([\s\S]*?)<\/main>/)[1];
+		expect(html).toContain('<h1>Title</h1>');
+		expect(html).toMatch(/<strong><mark[^>]*>utilize<\/mark><\/strong>/);
+		expect(html).toContain('<code>cache</code>');
+		expect(html).toContain('<a href="https://x.test/a">');
+		expect(html).toContain('<li>first item</li>');
+		expect(html).toContain('<pre>code here</pre>');
+		expect(html).not.toMatch(/^#/m);
 	});
 
 	it('marks every category present with a hint tooltip', () => {
