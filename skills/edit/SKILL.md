@@ -31,6 +31,13 @@ every mode.
 - **tone** ("make it casual", "simpler, grade 8"): rewrite toward a
   preset per `references/tone-presets.md`, then run the gate; a tone
   pass must not add new findings.
+- **trim** ("cut 15%", "this runs long"): the user sets the target as a
+  percent or a word count. Cutting is structural, so it runs like any
+  `structure` finding. Propose the cuts against the reverse outline,
+  take the user's direction, then run the gate over what remains. Spend
+  the cut where the document is not working, on sections that restate,
+  asides, and paragraphs the outline never asked for. Shaving the same
+  share out of every sentence hits the number and flattens the prose.
 - **scoped fix** ("fix only the AI tells", "everything except the
   quotes"): filters select findings; they never change the loop.
   Findings outside the scope become decided keeps for this pass,
@@ -41,21 +48,36 @@ every mode.
 1. Collect per the contract: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` for
    the mechanical flags, and read the document once for the `grammar`
-   and `voice-drift` findings. Add `--max-grade N` for a target
-   reading level. In the same read, build the reverse
-   outline: one line per paragraph stating its point. Work from the
-   findings, not from a free-form read.
+   and `voice-drift` findings. `--max-grade N` sets the target reading
+   level. When the voice template or the document type fixes a grade,
+   that is the default and the flag overrides it. In the same read,
+   build the reverse outline: one line per paragraph stating its point.
+   Work from the findings, not from a free-form read.
 2. Audit the reverse outline before any fix. Read the list for jumps,
-   repetition, misordering, and paragraphs carrying two points. Check
-   the flow at every level. Each subsection makes one point, that
-   point supports its section's claim, and the sections in order walk
-   the reader from question to answer. When an approved outline file
-   exists, check each section against its assigned claim. Each
-   problem is a `structure` finding. In fix mode,
-   report these and take the user's direction before the sentence
-   loop starts. Polishing a sentence in a section the user then cuts
-   wastes the work. Structural rewrites happen only on the user's
-   explicit direction, never on your own.
+   misordering, and paragraphs carrying two points. Check the flow at
+   every level. Each subsection makes one point, that point supports
+   its section's claim, and the sections in order walk the reader from
+   question to answer. Four more checks run against the list:
+   - restatement: adjacent lines making the same point in different
+     words are a restatement, not emphasis. One of them merges or goes.
+     Two places need a closer look. The paragraph after a strong claim
+     tends to reassert the claim instead of supporting it, and the
+     closing section tends toward summary
+   - length: compare the document against its target, and each section
+     against its budget when an approved outline sets one. An overrun
+     is a finding even when the user did not ask for a trim
+   - the outline's promises, when an approved outline file exists:
+     every section makes its assigned claim. The lead still sets up
+     the governing thought, and the last section is the ask or the
+     decision. Claims the outline marked disputable still show their
+     evidence
+   - the outline's record: deviations logged during drafting count as
+     decided keeps, not findings. Only undocumented drift counts
+   Each problem is a `structure` finding. In fix mode, report these and
+   take the user's direction before the sentence loop starts. Polishing
+   a sentence in a section the user then cuts wastes the work.
+   Structural rewrites happen only on the user's explicit direction,
+   never on your own.
 3. If `.terse/voice.md` exists with `status: approved`, load it: its
    exceptions suppress matching findings, and its measured ranges bound
    every rewrite. Ignore a `draft` template and say so.
@@ -95,10 +117,14 @@ every mode.
      spelling, and punctuation, under `references/grammar-scope.md`.
    Skip a finding only when it matches a documented false alarm or a
    voice-template exception; keep a list of skips with the reason.
-   Report-only findings (`structure`) go to the report, not the loop.
+   Report-only findings (`structure`, `length`) go to the report, not
+   the loop.
 7. Preserve the author's voice: no rewrites beyond the flagged sentence,
    no reordering, no added content. Meaning must survive every edit;
    when a fix would change what the sentence claims, skip it and say so.
+   Cuts the user approved are the one exception, and they remove whole
+   units: a section, a paragraph, an aside. Trimming a claim down to
+   fit is a meaning change wearing a length excuse.
 8. Re-run the checker. Iterate until the remaining flags are all
    documented keeps. Stop when a pass changes only cosmetics. Revert
    a pass that makes the stats worse. Most of the gain comes in the
@@ -107,16 +133,17 @@ every mode.
    not an edit plan: fifteen correct local fixes can leave a paragraph
    reading as chopped fragments. Check the cadence against the voice
    template's measured spread (`--json` gives `stats.sentenceLengths`);
-   a collapsed spread means the splits flattened the rhythm. Two more
+   a collapsed spread means the splits flattened the rhythm. Three more
    audits happen in this read. The first and last sentence of each
    paragraph, read in sequence, must chain. Key terms must keep their
    names across sections; a renamed term breaks the reader's thread.
-   Restore flow with the author's own devices: connective openers,
-   asymmetric splits, a short verdict against a long analysis. Never
-   restore it by undoing the fixes.
+   Where a cut or a merge landed, the paragraphs on either side must
+   still meet. Restore flow with the author's own devices: connective
+   openers, asymmetric splits, a short verdict against a long analysis.
+   Never restore it by undoing the fixes.
 10. Report: findings fixed per category, findings kept with reasons,
-    the before/after stats line, and the cadence spread before and
-    after.
+    and the before/after stats line including length against target.
+    Include the cadence spread before and after.
 
 ## Verification
 
@@ -124,6 +151,9 @@ every mode.
       document unmodified.
 - [ ] The reverse outline ran before the sentence loop; in fix mode,
       `structure` findings got the user's direction first.
+- [ ] The audit covered restatement, length against target and budget,
+      and, when an outline file exists, its recorded claims and
+      promises.
 - [ ] The flow check covered every level: subsection points support
       their sections, and the sections walk the reader from question
       to answer.
@@ -134,11 +164,13 @@ every mode.
       and carried no grammar finding across a rewrite.
 - [ ] Every edit is within the flagged sentence; the author's structure
       and meaning are intact.
+- [ ] Cuts removed whole units under the user's direction, and no
+      claim shrank to fit a number.
 - [ ] Kept findings each carry a tripwire or voice-template reason.
 - [ ] You honored the user's stated scope; out-of-scope findings
       appear in the report as decided keeps.
 - [ ] Every touched section was re-read whole after the fixes, and the
       cadence spread did not collapse against the voice range.
-- [ ] The paragraph transitions chain, and key terms kept their names
-      across sections.
-- [ ] The report shows before/after stats.
+- [ ] The paragraph transitions chain across cuts and merges, and key
+      terms kept their names across sections.
+- [ ] The report shows before/after stats and length against target.
