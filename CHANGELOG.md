@@ -6,6 +6,33 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] (2026-08-18)
+
+### Added
+
+- Stock figures as AI tells. The checker lexicon catches the common
+  ones (earns its place, moves the needle, heavy lifting, low-hanging
+  fruit, secret sauce, table stakes, at the end of the day). The
+  writing skill carries the translation test for the rest: if the
+  literal verb loses nothing, the figure is a finding. Metaphor stays
+  for explaining mechanisms, not for stating decisions.
+- Flow at every level. The write skill's whole-document read and the
+  edit skill's reverse-outline audit both check that each subsection
+  makes one point, that point supports its section's claim, and the
+  sections in order walk the reader from question to answer.
+
+### Changed
+
+- The skill docs pass their own checker. Slogan openers cut,
+  figurative verbs replaced with plain ones, passives given actors,
+  hard sentences split into sub-bullets.
+- The outline intro states the goal: the logical flow of information,
+  iterated with the user to an approved outline that walks the reader
+  from question to answer.
+- The governing thought is a short summary of the answer, not a
+  one-sentence absolute; failing to keep it short is a signal to
+  check the subject's width, not a verdict.
+
 ## [0.2.0] (2026-08-18)
 
 ### Added
