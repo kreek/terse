@@ -60,18 +60,11 @@ inside your measured ranges.
 node scripts/render-highlights.mjs draft.md
 ```
 
-One self-contained HTML page. Each flag category gets a color. Each
-highlight shows its hint on hover, and the legend chips toggle
-categories. Open it in any browser. Published through Claude, the page
-adds one more layer. Click a highlight to accept its fix. The next
-edit pass applies the accepted set:
-
-```
-node scripts/read-accepts.mjs page.html
-```
-
-That prints the reviewer's verdicts as JSON: accepted, dismissed, and
-open. Each verdict carries the flag's line, match, and hint.
+One self-contained, read-only HTML page. Each flag category gets a
+color. Each highlight shows its hint on hover, and the chips at the top
+filter by category. Open it in any browser, or let Claude publish it as
+a page. The preview is for looking. You direct the fixes in chat: "fix
+all", "fix only the AI tells", "fix everything except the quotes".
 
 ## Use the checker standalone
 

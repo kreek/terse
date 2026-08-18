@@ -103,41 +103,20 @@ describe('render-highlights', async () => {
 	});
 });
 
-describe('read-accepts', async () => {
-	const { renderPage } = await import('../scripts/render-highlights.mjs');
-	const { parseAccepts } = await import('../scripts/read-accepts.mjs');
-	const doc = 'We utilize retries quite often. The cache was cleared quickly.';
-
-	it('classifies accepted, dismissed, and open verdicts', () => {
-		let html = renderPage(doc);
-		// simulate the viewer: accept card 0, dismiss card 1
-		html = html.replace('data-id="0"', 'data-id="0" data-accepted=""');
-		html = html.replace('data-id="1"', 'data-id="1" data-dismissed=""');
-		const v = parseAccepts(html);
-		expect(v.accepted.map((f) => f.id)).toEqual([0]);
-		expect(v.dismissed.map((f) => f.id)).toEqual([1]);
-		expect(v.accepted.length + v.dismissed.length + v.open.length)
-			.toBe(checkText(doc).flags.length);
-		expect(v.accepted[0]).toHaveProperty('match');
-		expect(v.accepted[0]).toHaveProperty('line');
-	});
-
-	it('rejects a page without flag data', () => {
-		expect(() => parseAccepts('<p>not a review page</p>')).toThrow(/flag-data/);
-	});
-});
-
 describe('page script integrity', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 
-	it('the emitted page script parses as JavaScript', () => {
+	it('the emitted page script parses and the stylesheet keeps its id', () => {
 		const html = renderPage('We utilize retries quite often (more than anyone would like to admit).');
 		const src = html.match(/<script id="page-js">([\s\S]*?)<\/script>/)[1];
 		expect(() => new Function(src)).not.toThrow();
-		// template-literal escapes must survive into the page verbatim
-		expect(src).toContain("join('\\n')");
 		expect(html).toContain('<style id="page-css">');
-		expect(src).toContain("getElementById('page-css')");
-		expect(src).toMatch(/\\s\*\\d\+/);
+	});
+
+	it('the preview is read-only: no accept controls, no publish call', () => {
+		const html = renderPage('We utilize retries quite often.');
+		expect(html).not.toContain('data-act=');
+		expect(html).not.toContain('artifact.publish');
+		expect(html).not.toContain('<artifact-sync>');
 	});
 });

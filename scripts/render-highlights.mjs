@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Renders a checked document as a self-contained review page: washes for
-// longer passages and underlines for short changes in the text, plus an
-// ordered issue panel with per-item and bulk accept/dismiss. No
-// dependencies, no network.
+// Renders a checked document as a read-only highlight preview: category
+// chips and stats at the top, washes for longer passages and underlines
+// for word-level fixes in the text, the hint on hover. Visualization
+// only; fixes are requested in chat ("fix all", "fix only AI tells").
+// No dependencies, no network.
 // Usage: node render-highlights.mjs <file> [--out page.html] [--max-grade N]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
@@ -68,18 +69,7 @@ function runHtml(run, flags) {
 		`${CATEGORIES[flags[id].category] ?? flags[id].category}: ${flags[id].hint}`)
 		.join('\n');
 	return `<mark class="${cats.join(' ')} ${channels.join(' ')}" ` +
-		`data-flags="${run.ids.join(' ')}" title="${escapeHtml(tip)}" ` +
-		`tabindex="0">${inner}</mark>`;
-}
-
-function cardHtml(flag, id) {
-	const quote = flag.match.length > 60 ? flag.match.slice(0, 60) + '...' : flag.match;
-	return `<article class="card ${flag.category}" data-id="${id}" data-cat="${flag.category}">
-	<header><i></i>${CATEGORIES[flag.category] ?? flag.category}<span>line ${flag.line}</span></header>
-	<blockquote>${escapeHtml(quote)}</blockquote>
-	<p>${escapeHtml(flag.hint)}</p>
-	<div><button data-act="accept">Accept</button><button data-act="dismiss">Dismiss</button></div>
-</article>`;
+		`title="${escapeHtml(tip)}">${inner}</mark>`;
 }
 
 function chipsHtml(flags) {
@@ -106,18 +96,15 @@ function statsHtml(stats) {
 		`AI tells ${stats.aiTells}`;
 }
 
-function catCss(cat, selectorPrefix = '') {	// one rule pair per category
-	return `mark.w-${cat}${selectorPrefix} { background: color-mix(in srgb, var(--c-${cat}) var(--wash), transparent); }
-mark.u-${cat}${selectorPrefix} { text-decoration-line: underline; text-decoration-color: var(--c-${cat}); }
-.card.${cat} header i, .chip.${cat} i { background: var(--c-${cat}); }`;
+function catCss(cat) {
+	return `mark.w-${cat} { background: color-mix(in srgb, var(--c-${cat}) var(--wash), transparent); }
+mark.u-${cat} { text-decoration-line: underline; text-decoration-color: var(--c-${cat}); }
+.chip.${cat} i { background: var(--c-${cat}); }`;
 }
 
 export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	const { flags, stats } = checkText(rawText, { maxGrade, file });
 	const body = buildRuns(rawText, flags).map((r) => runHtml(r, flags)).join('');
-	const ordered = flags.map((f, id) => ({ f, id }))
-		.sort((a, b) => (a.f.span?.[0] ?? 0) - (b.f.span?.[0] ?? 0));
-	const cards = ordered.map(({ f, id }) => cardHtml(f, id)).join('\n');
 	const score = qualityScore(stats, flags.length);
 	const flagData = flags.map((f, id) => ({ id, category: f.category,
 		line: f.line, match: f.match, hint: f.hint }));
@@ -126,7 +113,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 <style id="page-css">
 :root {
 	--ground: #FFFFFF; --ink: #22261F; --dim: #6E7268; --chrome: #FAFAF8;
-	--edge: #E6E5E0; --accept: #2F7D4F; --wash: 30%;
+	--edge: #E6E5E0; --accent: #2F7D4F; --wash: 30%;
 	--c-very-hard-sentence: #F26D6D; --c-hard-sentence: #F5C842;
 	--c-aside: #A8ACB8; --c-ai-tell: #F08A2E; --c-passive-voice: #46B26E;
 	--c-adverb: #4E9BE8; --c-qualifier: #A574E0;
@@ -136,7 +123,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
 		--ground: #17191C; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1E2125;
-		--edge: #2E3236; --accept: #6FCB93; --wash: 26%;
+		--edge: #2E3236; --accent: #6FCB93; --wash: 26%;
 		--c-very-hard-sentence: #E87878; --c-hard-sentence: #E0C050;
 		--c-aside: #9296A4; --c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 		--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
@@ -146,7 +133,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 }
 :root[data-theme="dark"] {
 	--ground: #17191C; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1E2125;
-	--edge: #2E3236; --accept: #6FCB93; --wash: 26%;
+	--edge: #2E3236; --accent: #6FCB93; --wash: 26%;
 	--c-very-hard-sentence: #E87878; --c-hard-sentence: #E0C050;
 	--c-aside: #9296A4; --c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 	--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
@@ -156,25 +143,15 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 * { box-sizing: border-box; }
 body { background: var(--ground); color: var(--ink); margin: 0;
 	font: 16px/1.7 Charter, Georgia, 'Iowan Old Style', serif; }
-#app { display: grid; grid-template-columns: minmax(0, 1fr) 360px;
-	max-width: 1200px; margin: 0 auto; }
-main { padding: 2.5rem 2.5rem 5rem; white-space: pre-wrap;
-	overflow-wrap: break-word; max-width: 72ch; }
-aside { border-left: 1px solid var(--edge); background: var(--chrome);
-	font-family: system-ui, sans-serif; height: 100vh; position: sticky;
-	top: 0; display: flex; flex-direction: column; }
-aside > header { padding: 1rem 1.1rem 0.75rem; border-bottom: 1px solid var(--edge); }
-aside h1 { font-size: 0.95rem; margin: 0 0 0.2rem; }
-.scoreline { display: flex; align-items: center; gap: 0.6rem;
-	font-size: 0.8rem; color: var(--dim); }
-.scoreline b { color: var(--accept); font-size: 1.05rem;
+header { position: sticky; top: 0; background: var(--chrome);
+	border-bottom: 1px solid var(--edge); padding: 0.7rem 1.2rem;
+	font-family: system-ui, sans-serif; }
+.scoreline { display: flex; align-items: baseline; gap: 0.6rem; }
+.scoreline h1 { font-size: 0.95rem; margin: 0; }
+.scoreline b { color: var(--accent); font-variant-numeric: tabular-nums; }
+.stats { font-size: 0.74rem; color: var(--dim); margin-top: 0.2rem;
 	font-variant-numeric: tabular-nums; }
-.bar { flex: 1; height: 4px; background: var(--edge); }
-.bar i { display: block; height: 100%; width: ${score}%;
-	background: var(--accept); }
-.stats { font-size: 0.72rem; color: var(--dim); margin-top: 0.45rem;
-	font-variant-numeric: tabular-nums; }
-.chips { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.6rem 1.1rem 0.4rem; }
+nav { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
 .chip { display: inline-flex; align-items: center; gap: 0.35rem;
 	border: 1px solid var(--edge); background: none; color: var(--ink);
 	border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.74rem;
@@ -182,230 +159,37 @@ aside h1 { font-size: 0.95rem; margin: 0 0 0.2rem; }
 .chip i { width: 8px; height: 8px; border-radius: 50%; }
 .chip[aria-pressed="true"] { border-color: var(--ink); }
 .chip b { color: var(--dim); font-weight: 600; }
-.bulk { display: flex; gap: 0.4rem; padding: 0.35rem 1.1rem 0.6rem;
-	border-bottom: 1px solid var(--edge); }
-.bulk button { border: 1px solid var(--edge); background: none;
-	color: var(--ink); padding: 0.25rem 0.7rem;
-	font-size: 0.75rem; cursor: pointer; }
-.bulk #accept-all, .bulk #accept-scope { border-color: var(--accept);
-	color: var(--accept); font-weight: 600; }
-.bulk #save-review { margin-left: auto; }
-.bulk #save-review[data-dirty] { border-color: var(--ink); font-weight: 600; }
-#cards { overflow-y: auto; padding: 0.75rem; display: flex;
-	flex-direction: column; gap: 0.55rem; }
-.card { border: 1px solid var(--edge);
-	padding: 0.65rem 0.75rem; font-size: 0.8rem; background: var(--ground); }
-.card header { display: flex; align-items: center; gap: 0.45rem;
-	font-weight: 600; font-size: 0.76rem; }
-.card header span { margin-left: auto; color: var(--dim); font-weight: 400;
-	font-variant-numeric: tabular-nums; }
-.card header i { width: 9px; height: 9px; border-radius: 50%;
-	background: var(--dim); flex: none; }
-.card blockquote { margin: 0.4rem 0 0.25rem; padding: 0 0 0 0.55rem;
-	border-left: 2px solid var(--edge); color: var(--dim); font-style: italic; }
-.card p { margin: 0.2rem 0 0.5rem; color: var(--dim); }
-.card button { border: 1px solid var(--edge); background: none;
-	color: var(--ink); padding: 0.2rem 0.65rem;
-	font-size: 0.74rem; cursor: pointer; margin-right: 0.35rem; }
-.card button[data-act="accept"] { border-color: var(--accept);
-	color: var(--accept); font-weight: 600; }
-.card[data-accepted] { border-color: var(--accept); }
-.card[data-accepted] button[data-act="accept"] { background: var(--accept);
-	color: var(--ground); }
-.card[data-dismissed] { opacity: 0.45; }
-mark { background: none; color: inherit; cursor: pointer;
-	padding: 0.04em 0;
+main { max-width: 72ch; margin: 0 auto; padding: 2.5rem 1.2rem 5rem;
+	white-space: pre-wrap; overflow-wrap: break-word; }
+mark { background: none; color: inherit; padding: 0.04em 0;
 	text-decoration-thickness: 2px; text-underline-offset: 3px; }
-mark:focus-visible { outline: 2px solid var(--dim); }
 ${catRules}
 /* The commonest flag gets the faintest wash, or the page reads as tinted. */
 mark.w-hard-sentence { background: color-mix(in srgb,
 	var(--c-hard-sentence) 14%, transparent); }
-mark[data-accepted], mark[data-dismissed] {
-	background: none !important; text-decoration: none !important; }
-mark.flash { outline: 2px solid var(--ink); }
 body[data-filter]:not([data-filter=""]) mark:not(.matched) {
 	background: none !important; text-decoration: none !important; }
-body[data-filter]:not([data-filter=""]) .card:not(.matched) { display: none; }
-@media (max-width: 920px) {
-	#app { grid-template-columns: 1fr; }
-	aside { height: auto; position: static; border-left: none;
-		border-top: 1px solid var(--edge); }
-	#cards { max-height: 45vh; }
-}
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
 </style>
-<artifact-sync><div id="app">
+<header>
+	<div class="scoreline"><h1>${escapeHtml(basename(file))}</h1>
+		<b>${score}</b><span class="stats">· ${flags.length} issues</span></div>
+	<div class="stats">${statsHtml(stats)}</div>
+	<nav>${chipsHtml(flags)}</nav>
+</header>
 <main>${body}</main>
-<aside>
-	<header>
-		<h1>${escapeHtml(basename(file))}</h1>
-		<div class="scoreline"><b id="score">${score}</b><div class="bar"><i></i></div>
-			<span id="tally">${flags.length} issues</span></div>
-		<div class="stats">${statsHtml(stats)}</div>
-	</header>
-	<nav class="chips">${chipsHtml(flags)}</nav>
-	<div class="bulk">
-		<button id="accept-scope" hidden></button>
-		<button id="accept-all">Accept all (${flags.length})</button>
-		<button id="clear-all">Clear all</button>
-		<button id="save-review" hidden>Save review</button>
-	</div>
-	<section id="cards">${cards}</section>
-</aside>
-</div></artifact-sync>
 <script type="application/json" id="flag-data">${JSON.stringify(flagData)}</script>
 <script id="page-js">
-const tally = document.getElementById('tally');
-const acceptScope = document.getElementById('accept-scope');
-const total = ${flags.length};
-let filter = '';
-function marksFor(id) {
-	return document.querySelectorAll('mark[data-flags~="' + id + '"]');
-}
-function setAccepted(card, on) {
-	card.toggleAttribute('data-accepted', on);
-	card.removeAttribute('data-dismissed');
-	marksFor(card.dataset.id).forEach((m) => m.toggleAttribute('data-accepted', on));
-}
-function clearCard(card) {
-	card.removeAttribute('data-accepted');
-	card.removeAttribute('data-dismissed');
-	marksFor(card.dataset.id).forEach((m) => {
-		m.removeAttribute('data-accepted');
-		m.removeAttribute('data-dismissed');
-	});
-}
-function cardsOf(cat) {
-	return document.querySelectorAll(
-		cat ? '.card[data-cat="' + cat + '"]' : '.card');
-}
-function recount() {
-	const a = document.querySelectorAll('.card[data-accepted]').length;
-	tally.textContent = a > 0 ? a + ' of ' + total + ' accepted' : total + ' issues';
-}
-function applyFilter() {
-	document.querySelectorAll('mark, .card').forEach((el) => {
-		const match = !filter || el.classList.contains(filter) ||
-			el.dataset.cat === filter;
-		el.classList.toggle('matched', match);
-	});
-	document.body.setAttribute('data-filter', filter);
-	acceptScope.hidden = !filter;
-	document.getElementById('accept-all').hidden = !!filter;
-	if (filter) {
-		const label = document.querySelector('.chip[data-cat="' + filter + '"]')
-			.textContent.replace(/\\s*\\d+$/, '').trim();
-		acceptScope.textContent = 'Accept ' + label.toLowerCase() +
-			' (' + cardsOf(filter).length + ')';
-	}
-}
-document.getElementById('cards').addEventListener('click', (e) => {
-	const card = e.target.closest('.card');
-	if (!card) return;
-	const act = e.target.closest('button')?.dataset.act;
-	if (act === 'accept') {
-		setAccepted(card, !card.hasAttribute('data-accepted'));
-		recount();
-		return;
-	}
-	if (act === 'dismiss') {
-		const on = !card.hasAttribute('data-dismissed');
-		clearCard(card);
-		card.toggleAttribute('data-dismissed', on);
-		marksFor(card.dataset.id).forEach((m) => m.toggleAttribute('data-dismissed', on));
-		recount();
-		return;
-	}
-	const m = marksFor(card.dataset.id)[0];
-	if (!m) return;
-	m.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	marksFor(card.dataset.id).forEach((el) => el.classList.add('flash'));
-	setTimeout(() => marksFor(card.dataset.id).forEach((el) =>
-		el.classList.remove('flash')), 1200);
-});
-acceptScope.addEventListener('click', () => {
-	cardsOf(filter).forEach((card) => setAccepted(card, true));
-	recount();
-});
-document.getElementById('accept-all').addEventListener('click', () => {
-	cardsOf('').forEach((card) => setAccepted(card, true));
-	recount();
-});
-document.getElementById('clear-all').addEventListener('click', () => {
-	cardsOf('').forEach(clearCard);
-	recount();
-});
-document.querySelector('main').addEventListener('click', (e) => {
-	const mark = e.target.closest('mark');
-	if (!mark) return;
-	const card = document.querySelector(
-		'.card[data-id="' + mark.dataset.flags.split(' ')[0] + '"]');
-	if (!card) return;
-	card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	card.style.outline = '2px solid var(--accept)';
-	setTimeout(() => { card.style.outline = ''; }, 1200);
-});
-document.querySelector('.chips').addEventListener('click', (e) => {
+document.querySelector('nav').addEventListener('click', (e) => {
 	const chip = e.target.closest('.chip');
 	if (!chip) return;
 	document.querySelectorAll('.chip').forEach((c) =>
 		c.setAttribute('aria-pressed', String(c === chip)));
-	filter = chip.dataset.cat;
-	applyFilter();
+	const filter = chip.dataset.cat;
+	document.querySelectorAll('mark').forEach((m) =>
+		m.classList.toggle('matched', !filter || m.classList.contains(filter)));
+	document.body.setAttribute('data-filter', filter);
 });
-recount();
-// Save review: republish this page with the verdicts baked into its
-// source, so a plain fetch of the artifact can read them. Only shown
-// where the runtime grants the artifact capability.
-(async () => {
-	const saveBtn = document.getElementById('save-review');
-	const artifact = window.claude?.use ? await claude.use('artifact') : null;
-	if (!artifact || typeof artifact.publish !== 'function') return;
-	saveBtn.hidden = false;
-	document.getElementById('cards').addEventListener('click', () =>
-		saveBtn.setAttribute('data-dirty', ''));
-	document.querySelector('.bulk').addEventListener('click', (e) => {
-		if (e.target.id !== 'save-review') saveBtn.setAttribute('data-dirty', '');
-	});
-	saveBtn.addEventListener('click', async () => {
-		saveBtn.textContent = 'Saving...';
-		// Clone and normalize: strip transient view state so the saved
-		// source reloads clean. The wrapper injects its own <style> and
-		// <title>, so ours are addressed by id, never by tag.
-		const app = document.getElementById('app').cloneNode(true);
-		app.querySelectorAll('.flash, .matched').forEach((el) =>
-			el.classList.remove('flash', 'matched'));
-		app.querySelectorAll('.chip').forEach((c) =>
-			c.setAttribute('aria-pressed', String(c.dataset.cat === '')));
-		const aAll = app.querySelector('#accept-all');
-		if (aAll) aAll.removeAttribute('hidden');
-		const aScope = app.querySelector('#accept-scope');
-		if (aScope) { aScope.setAttribute('hidden', ''); aScope.textContent = ''; }
-		const sBtn = app.querySelector('#save-review');
-		if (sBtn) {
-			sBtn.setAttribute('hidden', '');
-			sBtn.removeAttribute('data-dirty');
-			sBtn.textContent = 'Save review';
-		}
-		const parts = [
-			'<title>' + document.title.replace(/</g, '&lt;') + '</title>',
-			document.getElementById('page-css').outerHTML,
-			'<artifact-sync>' + app.outerHTML + '</artifact-sync>',
-			document.getElementById('flag-data').outerHTML,
-			document.getElementById('page-js').outerHTML,
-		];
-		try {
-			await artifact.publish(parts.join('\\n'));
-			saveBtn.removeAttribute('data-dirty');
-			saveBtn.textContent = 'Saved';
-			setTimeout(() => { saveBtn.textContent = 'Save review'; }, 2000);
-		} catch (err) {
-			saveBtn.textContent = err?.code === 'conflict'
-				? 'Conflict; reload and retry' : 'Save failed';
-		}
-	});
-})();
 </script>`;
 }
 

@@ -26,14 +26,13 @@ the prose yourself.
    wording) so the user can keep them deliberately. If an approved
    `.terse/voice.md` exists, also name the flags its exceptions cover;
    `/terse:edit` will skip those.
-5. Offer the highlight view: run
+5. Offer the highlight preview: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/render-highlights.mjs <file>` to
-   produce a self-contained HTML page with one color per category, the
-   hint on hover, and category toggles. When the host can publish pages,
-   publish it with the stateful-page capability so the user can click
-   highlights to accept fixes. Before the next `/terse:edit`, fetch the
-   page and run `read-accepts.mjs` on it; the edit applies only the
-   accepted set.
+   produce a self-contained, read-only HTML page: chips and stats on
+   top, washes and underlines in the text, the hint on hover. Publish
+   it as a page when the host supports that; no capabilities needed.
+   The preview is for looking; the user directs fixes in chat ("fix
+   all", "fix only AI tells") and `/terse:edit` carries them out.
 6. Do not edit the document. Offer `/terse:edit` if the user wants the
    fixes applied.
 

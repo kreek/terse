@@ -96,13 +96,18 @@ colored highlights. `/terse:check` now renders them.
       Word-level categories mark the phrase; sentence-level ones mark
       the sentence.
 - [x] `/terse:check` offers the rendered view. It publishes the page
-      when the host supports pages. A published page adds
-      click-to-accept on every highlight. The next edit pass applies
-      the accepted set.
+      when the host supports pages. The preview stays read-only by
+      design: you look at the page and direct fixes in chat, as in
+      "fix all" or "fix only AI tells". We built and shipped a
+      click-to-accept round trip first, then removed it. Chat says
+      scope better than checkboxes, and a page without state cannot
+      break.
 
 Proof, met: a published page for a seeded document shows every
 category. It holds in light and dark themes. A rendering test pins
-text conservation. The page's text content equals the document.
+text conservation. The page's text content equals the document. The
+full cycle ran live: preview, an edit directed from chat, and a clean
+republish at score 100.
 
 ## Milestone 4: Voice depth
 
