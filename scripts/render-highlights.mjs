@@ -1,23 +1,26 @@
 #!/usr/bin/env node
-// Renders a checked document as a self-contained highlight page: one color
-// per category, the flag's hint on hover, stats in the header, click a
-// highlight to accept its fix. No dependencies, no network.
+// Renders a checked document as a self-contained review page: Hemingway
+// style sentence washes and word underlines in the text, and a Grammarly
+// style ordered issue panel with per-item accept and dismiss. No
+// dependencies, no network.
 // Usage: node render-highlights.mjs <file> [--out page.html] [--max-grade N]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { checkText } from './style-check.mjs';
 
+// Two visual channels: sentence-level categories wash the background;
+// word-level categories underline. Hues repeat only across channels.
 const CATEGORIES = {
-	'hard-sentence': 'Hard sentence',
-	'very-hard-sentence': 'Very hard sentence',
-	'passive-voice': 'Passive voice',
-	adverb: 'Adverb',
-	qualifier: 'Qualifier',
-	'simpler-alternative': 'Wordy',
-	'weak-verb': 'Weak verb',
-	'ai-tell': 'AI tell',
-	aside: 'Aside',
-	'em-dash': 'Em dash',
+	'very-hard-sentence': { label: 'Very hard sentence', kind: 'wash' },
+	'hard-sentence': { label: 'Hard sentence', kind: 'wash' },
+	aside: { label: 'Aside', kind: 'wash' },
+	'ai-tell': { label: 'AI tell', kind: 'line' },
+	'passive-voice': { label: 'Passive voice', kind: 'line' },
+	adverb: { label: 'Adverb', kind: 'line' },
+	qualifier: { label: 'Qualifier', kind: 'line' },
+	'simpler-alternative': { label: 'Wordy', kind: 'line' },
+	'weak-verb': { label: 'Weak verb', kind: 'line' },
+	'em-dash': { label: 'Em dash', kind: 'line' },
 };
 
 function escapeHtml(s) {
@@ -25,9 +28,6 @@ function escapeHtml(s) {
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// Paint each character with the ids of the flags covering it, then emit
-// flat runs. Overlaps (a word flag inside a sentence flag) become runs
-// carrying both classes.
 function paintSpan(charFlags, span, id) {
 	for (let i = span[0]; i < Math.min(span[1], charFlags.length); i++) {
 		charFlags[i].push(id);
@@ -54,20 +54,39 @@ function runHtml(run, flags) {
 	if (run.ids.length === 0) return inner;
 	const cats = [...new Set(run.ids.map((id) => flags[id].category))];
 	const tip = run.ids.map((id) =>
-		`${CATEGORIES[flags[id].category] ?? flags[id].category}: ${flags[id].hint}`)
+		`${CATEGORIES[flags[id].category]?.label ?? flags[id].category}: ${flags[id].hint}`)
 		.join('\n');
 	return `<mark class="${cats.join(' ')}" data-flags="${run.ids.join(' ')}" ` +
 		`title="${escapeHtml(tip)}" tabindex="0">${inner}</mark>`;
 }
 
-function legendHtml(flags) {
+function cardHtml(flag, id) {
+	const cat = CATEGORIES[flag.category] ?? { label: flag.category };
+	const quote = flag.match.length > 60 ? flag.match.slice(0, 60) + '...' : flag.match;
+	return `<article class="card ${flag.category}" data-id="${id}" data-cat="${flag.category}">
+	<header><i></i>${cat.label}<span>line ${flag.line}</span></header>
+	<blockquote>${escapeHtml(quote)}</blockquote>
+	<p>${escapeHtml(flag.hint)}</p>
+	<div><button data-act="accept">Accept</button><button data-act="dismiss">Dismiss</button></div>
+</article>`;
+}
+
+function chipsHtml(flags) {
 	const counts = {};
 	for (const f of flags) counts[f.category] = (counts[f.category] ?? 0) + 1;
-	return Object.entries(CATEGORIES)
+	const chips = Object.entries(CATEGORIES)
 		.filter(([cat]) => counts[cat])
-		.map(([cat, label]) => `<label class="chip ${cat}"><input type="checkbox" ` +
-			`checked data-cat="${cat}"><span>${label}</span><b>${counts[cat]}</b></label>`)
-		.join('\n');
+		.map(([cat, { label }]) => `<button class="chip ${cat}" data-cat="${cat}" ` +
+			`aria-pressed="false">${label} <b>${counts[cat]}</b></button>`);
+	return `<button class="chip" data-cat="" aria-pressed="true">All <b>${flags.length}</b></button>\n${chips.join('\n')}`;
+}
+
+// 100 for clean prose, falling with flag density; square root keeps dense
+// drafts on the scale instead of pinning them to zero.
+function qualityScore(stats, flagCount) {
+	if (stats.words === 0) return 100;
+	const per1k = (flagCount / stats.words) * 1000;
+	return Math.max(2, 100 - Math.round(6 * Math.sqrt(per1k)));
 }
 
 function statsHtml(stats) {
@@ -81,112 +100,225 @@ function statsHtml(stats) {
 export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	const { flags, stats } = checkText(rawText, { maxGrade, file });
 	const body = buildRuns(rawText, flags).map((r) => runHtml(r, flags)).join('');
+	const ordered = flags.map((f, id) => ({ f, id }))
+		.sort((a, b) => (a.f.span?.[0] ?? 0) - (b.f.span?.[0] ?? 0));
+	const cards = ordered.map(({ f, id }) => cardHtml(f, id)).join('\n');
+	const score = qualityScore(stats, flags.length);
 	const flagData = flags.map((f, id) => ({ id, category: f.category,
 		line: f.line, match: f.match, hint: f.hint }));
 	return `<title>${escapeHtml(basename(file))} · Terse</title>
 <style>
 :root {
 	--ground: #FAFAF7; --ink: #20241F; --dim: #6B6F66; --chrome: #FFFFFF;
-	--edge: #E2E1DA; --accept: #2F7D4F;
-	--c-hard: rgba(245,205,90,.45); --c-vhard: rgba(230,110,100,.40);
-	--c-passive: rgba(120,190,130,.40); --c-adverb: rgba(110,170,225,.40);
-	--c-qual: rgba(180,160,220,.40); --c-wordy: rgba(205,150,215,.40);
-	--c-weak: rgba(90,190,185,.40); --c-tell: rgba(255,165,95,.45);
-	--c-aside: rgba(240,145,180,.35); --c-dash: rgba(255,165,95,.55);
+	--edge: #E2E1DA; --accept: #2F7D4F; --score: #2F7D4F;
+	--w-vhard: rgba(224,96,96,.30); --w-hard: rgba(240,208,96,.38);
+	--w-aside: rgba(150,150,165,.22);
+	--l-tell: #E8862E; --l-passive: #3F9E5F; --l-adverb: #4A8FD4;
+	--l-qual: #9A6BD0; --l-wordy: #D45FA8; --l-weak: #2FA7A0;
+	--l-dash: #E8862E;
 }
-:root:not([data-theme="light"]) { }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
 		--ground: #15181A; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1C2023;
-		--edge: #2C3134; --accept: #6FCB93;
-		--c-hard: rgba(245,205,90,.30); --c-vhard: rgba(230,110,100,.32);
-		--c-passive: rgba(120,190,130,.28); --c-adverb: rgba(110,170,225,.30);
-		--c-qual: rgba(180,160,220,.30); --c-wordy: rgba(205,150,215,.30);
-		--c-weak: rgba(90,190,185,.30); --c-tell: rgba(255,165,95,.32);
-		--c-aside: rgba(240,145,180,.26); --c-dash: rgba(255,165,95,.40);
+		--edge: #2C3134; --accept: #6FCB93; --score: #6FCB93;
+		--w-vhard: rgba(224,96,96,.26); --w-hard: rgba(240,208,96,.20);
+		--w-aside: rgba(160,160,180,.18);
+		--l-tell: #F0A05A; --l-passive: #66BE85; --l-adverb: #74AEE6;
+		--l-qual: #B48FE0; --l-wordy: #E387C2; --l-weak: #58C2BB;
+		--l-dash: #F0A05A;
 	}
 }
 :root[data-theme="dark"] {
 	--ground: #15181A; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1C2023;
-	--edge: #2C3134; --accept: #6FCB93;
-	--c-hard: rgba(245,205,90,.30); --c-vhard: rgba(230,110,100,.32);
-	--c-passive: rgba(120,190,130,.28); --c-adverb: rgba(110,170,225,.30);
-	--c-qual: rgba(180,160,220,.30); --c-wordy: rgba(205,150,215,.30);
-	--c-weak: rgba(90,190,185,.30); --c-tell: rgba(255,165,95,.32);
-	--c-aside: rgba(240,145,180,.26); --c-dash: rgba(255,165,95,.40);
+	--edge: #2C3134; --accept: #6FCB93; --score: #6FCB93;
+	--w-vhard: rgba(224,96,96,.26); --w-hard: rgba(240,208,96,.20);
+	--w-aside: rgba(160,160,180,.18);
+	--l-tell: #F0A05A; --l-passive: #66BE85; --l-adverb: #74AEE6;
+	--l-qual: #B48FE0; --l-wordy: #E387C2; --l-weak: #58C2BB;
+	--l-dash: #F0A05A;
 }
+* { box-sizing: border-box; }
 body { background: var(--ground); color: var(--ink); margin: 0;
-	font: 16px/1.65 Charter, Georgia, 'Iowan Old Style', serif; }
-header { position: sticky; top: 0; background: var(--chrome);
-	border-bottom: 1px solid var(--edge); padding: 0.7rem 1.2rem;
-	font-family: system-ui, sans-serif; }
-header h1 { font-size: 1rem; margin: 0 0 0.15rem; }
-header p { margin: 0; color: var(--dim); font-size: 0.82rem;
+	font: 16px/1.7 Charter, Georgia, 'Iowan Old Style', serif; }
+#app { display: grid; grid-template-columns: minmax(0, 1fr) 360px;
+	max-width: 1200px; margin: 0 auto; gap: 0; }
+main { padding: 2.5rem 2.5rem 5rem; white-space: pre-wrap;
+	overflow-wrap: break-word; max-width: 72ch; }
+aside { border-left: 1px solid var(--edge); background: var(--chrome);
+	font-family: system-ui, sans-serif; height: 100vh; position: sticky;
+	top: 0; display: flex; flex-direction: column; }
+aside > header { padding: 1rem 1.1rem 0.75rem; border-bottom: 1px solid var(--edge); }
+aside h1 { font-size: 0.95rem; margin: 0 0 0.2rem; }
+.scoreline { display: flex; align-items: center; gap: 0.6rem;
+	font-size: 0.8rem; color: var(--dim); }
+.scoreline b { color: var(--score); font-size: 1.05rem;
 	font-variant-numeric: tabular-nums; }
-nav { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
-.chip { display: inline-flex; align-items: center; gap: 0.35rem;
-	border: 1px solid var(--edge); border-radius: 3px;
-	padding: 0.15rem 0.5rem; font-size: 0.78rem; cursor: pointer; }
-.chip input { accent-color: var(--dim); margin: 0; }
-.chip b { color: var(--dim); font-weight: 600;
+.bar { flex: 1; height: 4px; background: var(--edge); border-radius: 2px; }
+.bar i { display: block; height: 100%; width: ${score}%;
+	background: var(--score); border-radius: 2px; }
+.stats { font-size: 0.72rem; color: var(--dim); margin-top: 0.45rem;
 	font-variant-numeric: tabular-nums; }
-main { max-width: 68ch; margin: 0 auto; padding: 2rem 1.2rem 4rem;
-	white-space: pre-wrap; overflow-wrap: break-word; }
-mark { color: inherit; border-radius: 2px; padding: 0.05em 0;
+.chips { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.6rem 1.1rem;
+	border-bottom: 1px solid var(--edge); }
+.chip { border: 1px solid var(--edge); background: none; color: var(--ink);
+	border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.74rem;
 	cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--ink); }
+.chip b { color: var(--dim); font-weight: 600; }
+#cards { overflow-y: auto; padding: 0.75rem; display: flex;
+	flex-direction: column; gap: 0.55rem; }
+.card { border: 1px solid var(--edge); border-radius: 8px;
+	padding: 0.65rem 0.75rem; font-size: 0.8rem; background: var(--ground); }
+.card header { display: flex; align-items: center; gap: 0.45rem;
+	font-weight: 600; font-size: 0.76rem; }
+.card header span { margin-left: auto; color: var(--dim); font-weight: 400;
+	font-variant-numeric: tabular-nums; }
+.card header i { width: 9px; height: 9px; border-radius: 50%;
+	background: var(--dim); }
+.card blockquote { margin: 0.4rem 0 0.25rem; padding: 0 0 0 0.55rem;
+	border-left: 2px solid var(--edge); color: var(--dim); font-style: italic; }
+.card p { margin: 0.2rem 0 0.5rem; color: var(--dim); }
+.card button { border: 1px solid var(--edge); background: none;
+	color: var(--ink); border-radius: 5px; padding: 0.2rem 0.65rem;
+	font-size: 0.74rem; cursor: pointer; margin-right: 0.35rem; }
+.card button[data-act="accept"] { border-color: var(--accept);
+	color: var(--accept); font-weight: 600; }
+.card[data-accepted] { border-color: var(--accept); }
+.card[data-accepted] button[data-act="accept"] { background: var(--accept);
+	color: var(--chrome); }
+.card[data-dismissed] { opacity: 0.45; }
+.very-hard-sentence .card header i, .card.very-hard-sentence header i { background: var(--w-vhard); }
+.card.hard-sentence header i { background: var(--w-hard); }
+.card.aside header i { background: var(--w-aside); }
+.card.ai-tell header i { background: var(--l-tell); }
+.card.passive-voice header i { background: var(--l-passive); }
+.card.adverb header i { background: var(--l-adverb); }
+.card.qualifier header i { background: var(--l-qual); }
+.card.simpler-alternative header i { background: var(--l-wordy); }
+.card.weak-verb header i { background: var(--l-weak); }
+.card.em-dash header i { background: var(--l-dash); }
+mark { background: none; color: inherit; cursor: pointer;
+	border-radius: 2px; padding: 0.04em 0; }
 mark:focus-visible { outline: 2px solid var(--dim); }
+.hard-sentence { background: var(--w-hard); }
+.very-hard-sentence { background: var(--w-vhard); }
+.aside { background: var(--w-aside); }
+.ai-tell { text-decoration: underline; text-decoration-color: var(--l-tell);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.passive-voice { text-decoration: underline; text-decoration-color: var(--l-passive);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.adverb { text-decoration: underline; text-decoration-color: var(--l-adverb);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.qualifier { text-decoration: underline; text-decoration-color: var(--l-qual);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.simpler-alternative { text-decoration: underline; text-decoration-color: var(--l-wordy);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.weak-verb { text-decoration: underline; text-decoration-color: var(--l-weak);
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.em-dash { text-decoration: underline; text-decoration-color: var(--l-dash);
+	text-decoration-thickness: 3px; text-underline-offset: 3px; }
 mark[data-accepted] { text-decoration: line-through;
-	text-decoration-color: var(--accept); text-decoration-thickness: 2px;
-	outline: 1px solid var(--accept); }
-.hard-sentence { background: var(--c-hard); }
-.very-hard-sentence { background: var(--c-vhard); }
-.passive-voice { background: var(--c-passive); }
-.adverb { background: var(--c-adverb); }
-.qualifier { background: var(--c-qual); }
-.simpler-alternative { background: var(--c-wordy); }
-.weak-verb { background: var(--c-weak); }
-.ai-tell { background: var(--c-tell); }
-.aside { background: var(--c-aside); }
-.em-dash { background: var(--c-dash); }
-body[data-off~="hard-sentence"] .hard-sentence,
-body[data-off~="very-hard-sentence"] .very-hard-sentence,
-body[data-off~="passive-voice"] .passive-voice,
-body[data-off~="adverb"] .adverb,
-body[data-off~="qualifier"] .qualifier,
-body[data-off~="simpler-alternative"] .simpler-alternative,
-body[data-off~="weak-verb"] .weak-verb,
-body[data-off~="ai-tell"] .ai-tell,
-body[data-off~="aside"] .aside,
-body[data-off~="em-dash"] .em-dash { background: transparent; }
-footer { position: sticky; bottom: 0; background: var(--chrome);
-	border-top: 1px solid var(--edge); padding: 0.5rem 1.2rem;
-	font-family: system-ui, sans-serif; font-size: 0.82rem;
-	color: var(--dim); font-variant-numeric: tabular-nums; }
+	text-decoration-color: var(--accept); text-decoration-thickness: 2px; }
+mark.flash { outline: 2px solid var(--ink); }
+body[data-filter]:not([data-filter=""]) mark { background: none;
+	text-decoration: none; }
+body[data-filter="hard-sentence"] .hard-sentence { background: var(--w-hard); }
+body[data-filter="very-hard-sentence"] .very-hard-sentence { background: var(--w-vhard); }
+body[data-filter="aside"] .aside { background: var(--w-aside); }
+body[data-filter="ai-tell"] mark.ai-tell,
+body[data-filter="passive-voice"] mark.passive-voice,
+body[data-filter="adverb"] mark.adverb,
+body[data-filter="qualifier"] mark.qualifier,
+body[data-filter="simpler-alternative"] mark.simpler-alternative,
+body[data-filter="weak-verb"] mark.weak-verb,
+body[data-filter="em-dash"] mark.em-dash { text-decoration: underline;
+	text-decoration-thickness: 2px; text-underline-offset: 3px; }
+body[data-filter]:not([data-filter=""]) .card { display: none; }
+body[data-filter=""] .card, body:not([data-filter]) .card { display: block; }
+body[data-filter="hard-sentence"] .card.hard-sentence,
+body[data-filter="very-hard-sentence"] .card.very-hard-sentence,
+body[data-filter="aside"] .card.aside,
+body[data-filter="ai-tell"] .card.ai-tell,
+body[data-filter="passive-voice"] .card.passive-voice,
+body[data-filter="adverb"] .card.adverb,
+body[data-filter="qualifier"] .card.qualifier,
+body[data-filter="simpler-alternative"] .card.simpler-alternative,
+body[data-filter="weak-verb"] .card.weak-verb,
+body[data-filter="em-dash"] .card.em-dash { display: block; }
+@media (max-width: 920px) {
+	#app { grid-template-columns: 1fr; }
+	aside { height: auto; position: static; border-left: none;
+		border-top: 1px solid var(--edge); }
+	#cards { max-height: 45vh; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
 </style>
-<header>
-	<h1>${escapeHtml(basename(file))}</h1>
-	<p>${statsHtml(stats)}</p>
-	<nav>${legendHtml(flags)}</nav>
-</header>
-<artifact-sync><main>${body}</main></artifact-sync>
-<footer>Click a highlight to accept its fix. <span id="accepted">0</span>
-of ${flags.length} accepted.</footer>
+<artifact-sync><div id="app">
+<main>${body}</main>
+<aside>
+	<header>
+		<h1>${escapeHtml(basename(file))}</h1>
+		<div class="scoreline"><b id="score">${score}</b><div class="bar"><i></i></div>
+			<span id="tally">${flags.length} issues</span></div>
+		<div class="stats">${statsHtml(stats)}</div>
+	</header>
+	<nav class="chips">${chipsHtml(flags)}</nav>
+	<section id="cards">${cards}</section>
+</aside>
+</div></artifact-sync>
 <script type="application/json" id="flag-data">${JSON.stringify(flagData)}</script>
 <script>
-const counter = document.getElementById('accepted');
-function recount() {
-	counter.textContent = document.querySelectorAll('mark[data-accepted]').length;
+const tally = document.getElementById('tally');
+const total = ${flags.length};
+function marksFor(id) {
+	return document.querySelectorAll('mark[data-flags~="' + id + '"]');
 }
+function recount() {
+	const a = document.querySelectorAll('.card[data-accepted]').length;
+	tally.textContent = a > 0 ? a + ' of ' + total + ' accepted' : total + ' issues';
+}
+document.getElementById('cards').addEventListener('click', (e) => {
+	const card = e.target.closest('.card');
+	if (!card) return;
+	const act = e.target.closest('button')?.dataset.act;
+	const id = card.dataset.id;
+	if (act === 'accept') {
+		card.toggleAttribute('data-accepted');
+		card.removeAttribute('data-dismissed');
+		const on = card.hasAttribute('data-accepted');
+		marksFor(id).forEach((m) => m.toggleAttribute('data-accepted', on));
+		recount();
+		return;
+	}
+	if (act === 'dismiss') {
+		card.toggleAttribute('data-dismissed');
+		card.removeAttribute('data-accepted');
+		marksFor(id).forEach((m) => m.removeAttribute('data-accepted'));
+		recount();
+		return;
+	}
+	const m = marksFor(id)[0];
+	if (!m) return;
+	m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	marksFor(id).forEach((el) => el.classList.add('flash'));
+	setTimeout(() => marksFor(id).forEach((el) => el.classList.remove('flash')), 1200);
+});
 document.querySelector('main').addEventListener('click', (e) => {
 	const mark = e.target.closest('mark');
 	if (!mark) return;
-	mark.toggleAttribute('data-accepted');
-	recount();
+	const id = mark.dataset.flags.split(' ')[0];
+	const card = document.querySelector('.card[data-id="' + id + '"]');
+	if (!card) return;
+	card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	card.style.outline = '2px solid var(--accept)';
+	setTimeout(() => { card.style.outline = ''; }, 1200);
 });
-document.querySelector('nav').addEventListener('change', () => {
-	const off = [...document.querySelectorAll('.chip input:not(:checked)')]
-		.map((el) => el.dataset.cat).join(' ');
-	document.body.setAttribute('data-off', off);
+document.querySelector('.chips').addEventListener('click', (e) => {
+	const chip = e.target.closest('.chip');
+	if (!chip) return;
+	document.querySelectorAll('.chip').forEach((c) =>
+		c.setAttribute('aria-pressed', String(c === chip)));
+	document.body.setAttribute('data-filter', chip.dataset.cat);
 });
 recount();
 </script>`;
