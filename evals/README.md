@@ -10,6 +10,12 @@ Note: `claude plugin eval` is in early access. If it prints an
 early-access message, ask an Anthropic contact for enablement. The case
 files here match the documented format and run unchanged once enabled.
 
+Until then, `npm run eval:fallback` runs the same cases through headless
+`claude -p` sessions: the with arm loads the plugin via `--plugin-dir`,
+the without arm runs `--bare`. Regex graders score both arms; llm and
+tool_used graders wait for the real tool. Run it from a normal terminal,
+not from inside a Claude Code session; nested sessions cannot log in.
+
 ## Run it
 
 ```
