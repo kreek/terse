@@ -5,9 +5,18 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-const HARD_GRADE = 10; // sentences at or above this grade are flagged
-const VERY_HARD_GRADE = 14;
-const MIN_WORDS_FOR_GRADE = 14; // short sentences are never flagged for grade
+const HARD_GRADE = 10; // document grade target; also the hard-sentence floor
+// Sentence flags are length-led, calibrated against 514 sentences of
+// Hemingway's journalism: the old grade-only rule flagged 26.8% of his
+// sentences, because ARI's character counting punishes long vocabulary in
+// otherwise plain sentences. This rule flags 13.2% of the corpus: the
+// genuinely long tail plus the impenetrably dense.
+const HARD_WORDS = 25;        // hard: 25+ words at or above the target grade
+const VHARD_WORDS = 30;       // very hard: 30+ words at grade 14+ ...
+const VHARD_GRADE = 14;
+const DENSE_WORDS = 14;       // ... or any 14+ word sentence at grade 18+
+const DENSE_GRADE = 18;
+const MIN_WORDS_FOR_GRADE = 14; // documents shorter than this skip the gate
 const ASIDE_WORDS = 6; // parenthetical asides at or above this length are flagged
 const READING_WPM = 230;
 
@@ -294,9 +303,12 @@ function wordsOf(sentence) {
 function checkSentence(sentence, maxGrade, flags, file, line) {
 	const words = wordsOf(sentence);
 	const grade = ariGrade(words);
-	if (words.length >= MIN_WORDS_FOR_GRADE && grade >= maxGrade) {
-		const label = grade >= VERY_HARD_GRADE ? 'very-hard-sentence' : 'hard-sentence';
-		flags.push({ file, line, category: label,
+	const veryHard = (words.length >= VHARD_WORDS && grade >= VHARD_GRADE) ||
+		(words.length >= DENSE_WORDS && grade >= DENSE_GRADE);
+	const hard = words.length >= HARD_WORDS && grade >= maxGrade;
+	if (veryHard || hard) {
+		flags.push({ file, line,
+			category: veryHard ? 'very-hard-sentence' : 'hard-sentence',
 			match: `${words.length} words, grade ${grade}`,
 			hint: 'split the sentence or convert an in-sentence list to bullets' });
 	}
