@@ -33,8 +33,12 @@ const QUALIFIERS = [
 
 // Word-boundary patterns so "unrequited" never matches "quite"; a curly
 // apostrophe counts as a straight one.
+// "rather than" is a comparison, not a hedge; only bare "rather" hedges.
+const QUALIFIER_TAILS = { rather: '(?!\\s+than)' };
+
 const QUALIFIER_PATTERNS = QUALIFIERS.map((q) => ({ phrase: q,
-	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b`, 'gi') }));
+	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b` +
+		(QUALIFIER_TAILS[q] ?? ''), 'gi') }));
 
 const SIMPLER = {
 	utilize: 'use', utilizes: 'uses', utilized: 'used', utilization: 'use',

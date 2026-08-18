@@ -222,4 +222,11 @@ describe('checkText', () => {
 		expect(checkText('He noted the worth of the change.').stats.aiTells).toBe(0);
 		expect(checkText('This is an important note.').stats.aiTells).toBe(0);
 	});
+
+	it('does not read "rather than" comparisons as hedges', () => {
+		const { flags } = checkText('The team ships small tools rather than one big system.');
+		expect(flags.filter((f) => f.category === 'qualifier')).toHaveLength(0);
+		const bare = checkText('The plan is rather ambitious.');
+		expect(bare.flags.filter((f) => f.category === 'qualifier')).toHaveLength(1);
+	});
 });
