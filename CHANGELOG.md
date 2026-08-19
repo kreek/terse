@@ -6,6 +6,55 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] (2026-08-19)
+
+### Added
+
+- The `long-opening` check. "Use short sentences. Use short first
+  paragraphs" opened the Kansas City Star style sheet; Terse encoded
+  the first rule and not the second. A first paragraph of 90 words or
+  more now flags, set one word above the longest opening in
+  `samples/hemingway`, which is the regression corpus for it.
+- The `preference` check. A requirement filed as a wish ("I would like
+  this", "it would be nice if") is something a reader can decline, so
+  the checker points at the requirement instead.
+- `--impersonal`, and the `personal-pronoun` check behind it. Issues,
+  specs, and acceptance criteria drop first and second person. Prose
+  written for a reader keeps its "you", so the rule stays opt-in, and
+  the write and edit skills pass the flag for those genres.
+- Two Core Ideas in the `style` skill. "The particular, not the
+  abstraction" asks for the service, the number, and the date. "Say
+  what is, not what isn't" is the Kansas City Star's fourth rule, and
+  it holds hardest for instructions.
+- Issue or bug report and acceptance criteria are outline shapes.
+  Neither existed, which is part of why drafts of both fell back on
+  conversational framing.
+
+### Changed
+
+- Two of the new checks are always on, so drafts that passed 0.5.0 can
+  flag now. Expect `long-opening` and `preference` findings on existing
+  files.
+- Draft-time checking in `/terse:write` means the findings model, not
+  the checker alone. Grammar inside `grammar-scope.md` is fixed in the
+  sentence that raised it, and the skill reads `claude-defaults.md`
+  before drafting. A constraints step front-loads the numbers.
+- `/terse:edit` loads the voice template and the style rules before
+  the collection read that needs them, rather than two steps after.
+  Report-only names what the document does well and closes with the
+  mode that fixes each category. The `length` category, which the
+  findings contract never defined, is gone.
+- `/terse:outline` collects the target length its budgets are measured
+  against, names the `status: approved (user, DATE)` marker the other
+  skills read, and permits recorded deviation rather than forbidding
+  all drift.
+- User-facing surfaces say "claim", reversing the 0.5.0 split that
+  kept "point" outside the skill bodies. One term wherever the
+  section-level unit is meant; "point" stays for the paragraph.
+- A tripwire records why Terse does not borrow Hemingway's iceberg.
+  Omission makes a fiction reader supply the feeling and a document
+  reader supply a guess.
+
 ## [0.5.0] (2026-08-18)
 
 ### Changed

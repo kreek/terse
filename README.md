@@ -16,7 +16,8 @@ Two layers:
   and readability arithmetic. It runs offline with zero dependencies and
   never calls a model. It grades
   each sentence with ARI and flags the hard ones. It flags passive voice,
-  adverbs, qualifiers, wordy phrases, long asides, and em dashes. Document
+  adverbs, qualifiers, wordy phrases, long asides, em dashes, openings
+  that run past 90 words, and requirements filed as wishes. Document
   stats cover word count, reading time, and grade. Each adverb, passive,
   and qualifier count gets a length-scaled target.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
@@ -46,18 +47,18 @@ Four skills: three phase commands and the rulebook they share.
 
 | Skill | What it does |
 |---|---|
-| `/terse:outline <subject>` | Structure first: one point and a word budget per section, iterated to your sign-off. |
+| `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
 | `/terse:write <outline or subject>` | Expand the approved outline into prose in your voice, checked at draft time. |
 | `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
 | `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
 
 The three phases hand off through the outline file. You approve it
-before any prose exists, with each section's point, budget, and
+before any prose exists, with each section's claim, budget, and
 evidence on record. Write drafts to that file. A section that resists
 goes back to the outline, and structural changes need your approval
 again. Edit then checks the finished prose against the same record.
 Logged deviations stand, undocumented drift is a finding, and every
-section must make its assigned point.
+section must make its assigned claim.
 
 The style skill holds the rules the other three follow: plain words,
 active voice, the reader's vocabulary. It knows the false alarms that
@@ -98,11 +99,14 @@ all", "fix only the AI tells", "fix everything except the quotes".
 node scripts/style-check.mjs draft.md
 node scripts/style-check.mjs draft.md --max-grade 8
 node scripts/style-check.mjs draft.md --json
+node scripts/style-check.mjs issue.md --impersonal
 ```
 
 Exit code is nonzero when flags remain, so it works as a CI gate. A
 document at or above the target grade fails the check even when each
-sentence passes on its own.
+sentence passes on its own. `--impersonal` adds the pronoun findings
+for issues, specs, and acceptance criteria, where the requirement
+belongs to the system rather than to whoever filed it.
 
 ## Develop
 

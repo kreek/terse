@@ -1,6 +1,6 @@
 {
   "name": "terse",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Terse: a writing editor for Claude. Mechanical style checks plus AI edits that keep your voice.",
   "type": "module",
   "engines": {
