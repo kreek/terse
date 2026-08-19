@@ -49,15 +49,23 @@ every mode.
 
 ## Workflow
 
-1. Collect per the contract: run
+1. If `.terse/voice.md` exists with `status: approved`, load it: its
+   exceptions suppress matching findings, and its measured ranges bound
+   every rewrite. Ignore a `draft` template and say so.
+2. Load the `style` skill's Core Ideas and Tripwires, and its
+   `references/claude-defaults.md`; together they govern every rewrite.
+   The defaults reference also lists trained habits the checker cannot
+   catch. Hunt them in the collection read that follows: synonym
+   cycling, compulsive triplets, participial tails, closing summaries.
+3. Collect per the contract: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` for
    the mechanical flags, and read the document once for the `grammar`
    and `voice-drift` findings. `--max-grade N` sets the target reading
-   level. When the voice template or the document type fixes a grade,
-   that is the default and the flag overrides it. In the same read,
+   level. A voice template or a document type that fixes a grade
+   supplies the default; the flag overrides it. In the same read,
    build the reverse outline: one line per paragraph stating its point.
    Work from the findings, not from a free-form read.
-2. Audit the reverse outline before any fix. Read the list for jumps,
+4. Audit the reverse outline before any fix. Read the list for jumps,
    misordering, and paragraphs carrying two points. Check the flow at
    every level. Each subsection makes one point, that point supports
    its section's claim, and the sections in order walk the reader from
@@ -82,18 +90,13 @@ every mode.
    a sentence in a section the user then cuts wastes the work.
    Structural rewrites happen only on the user's explicit direction,
    never on your own.
-3. If `.terse/voice.md` exists with `status: approved`, load it: its
-   exceptions suppress matching findings, and its measured ranges bound
-   every rewrite. Ignore a `draft` template and say so.
-4. Load the `style` skill's Core Ideas and Tripwires, and its
-   `references/claude-defaults.md`; together they govern every rewrite.
-   The defaults reference also lists trained habits the checker cannot
-   catch. Hunt those in the same read: synonym cycling, compulsive
-   triplets, participial tails, closing summaries.
 5. In report-only mode, report the document stats first: words,
-   reading time, grade, and the counts against their targets. Then
-   report every finding grouped by category, with `file:line`
-   references and a one-sentence fix each. Offer the highlight preview: run
+   reading time, grade, and the counts against their targets. Name
+   what the document does well in one short paragraph; an editor who
+   only lists faults loses the reader. Then report every finding ordered
+   by impact on the reader, grouped by category within that, each with
+   a `file:line` reference and a one-sentence fix. Close by naming the
+   mode that fixes each category. Offer the highlight preview: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/render-highlights.mjs <file>`
    for a self-contained, read-only page; publish it when the host
    supports pages. The page renders the checker's categories; judgment
@@ -121,11 +124,11 @@ every mode.
      spelling, and punctuation, under `references/grammar-scope.md`.
    Skip a finding only when it matches a documented false alarm or a
    voice-template exception; keep a list of skips with the reason.
-   Report-only findings (`structure`, `length`) go to the report, not
-   the loop.
-7. Preserve the author's voice: no rewrites beyond the flagged sentence,
-   no reordering, no added content. Meaning must survive every edit;
-   when a fix would change what the sentence claims, skip it and say so.
+   `structure` findings go to the report, not the loop.
+7. Preserve the author's voice: every edit stays inside the flagged
+   sentence, and the author's order and content survive untouched.
+   Meaning must survive every edit; when a fix would change what the
+   sentence claims, skip it and say so.
    Cuts the user approved are the one exception, and they remove whole
    units: a section, a paragraph, an aside. Trimming a claim down to
    fit is a meaning change wearing a length excuse.
@@ -135,15 +138,18 @@ every mode.
    first round or two.
 9. Re-read every touched section whole. A findings list is a worklist,
    not an edit plan: fifteen correct local fixes can leave a paragraph
-   reading as chopped fragments. Check the cadence against the voice
-   template's measured spread (`--json` gives `stats.sentenceLengths`);
-   a collapsed spread means the splits flattened the rhythm. Three more
-   audits happen in this read. The first and last sentence of each
-   paragraph, read in sequence, must chain. Key terms must keep their
-   names across sections; a renamed term breaks the reader's thread.
-   Where a cut or a merge landed, the paragraphs on either side must
-   still meet. Restore flow with the author's own devices: connective
-   openers, asymmetric splits, a short verdict against a long analysis.
+   reading as chopped fragments. Four audits happen in this read:
+   - cadence against the voice template's measured spread (`--json`
+     gives `stats.sentenceLengths`); a collapsed spread means the
+     splits flattened the rhythm
+   - the first and last sentence of each paragraph, read in sequence,
+     must chain
+   - key terms keep their names across sections; a renamed term breaks
+     the reader's thread
+   - where a cut or a merge landed, the paragraphs on either side must
+     still meet.
+   Restore flow with the author's own devices: connective openers,
+   asymmetric splits, a short verdict against a long analysis.
    Never restore it by undoing the fixes.
 10. Report: findings fixed per category, findings kept with reasons,
     and the before/after stats line including length against target.
@@ -153,6 +159,8 @@ every mode.
 
 - [ ] The mode matched the user's direction; report-only left the
       document unmodified.
+- [ ] A report named what the document does well and the mode that
+      fixes each category.
 - [ ] The reverse outline ran before the sentence loop; in fix mode,
       `structure` findings got the user's direction first.
 - [ ] The audit covered restatement, length against target and budget,
