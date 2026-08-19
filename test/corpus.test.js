@@ -113,6 +113,54 @@ describe('long opening: calibrated against the journalism it came from', () => {
 	});
 });
 
+// A requirement filed as a wish is the failure mode in issues and
+// acceptance criteria: the reader can decline a preference.
+describe('preference framing: always on', () => {
+	const prefs = (doc) =>
+		checkText(doc).flags.filter((f) => f.category === 'preference').map((f) => f.match);
+
+	for (const [text, phrase] of [
+		['I would like the export to include totals.', 'i would like'],
+		["I'd prefer the job to retry twice.", "i'd prefer"],
+		['It would be nice if the report paginated.', 'it would be nice'],
+		['We would like the flag removed.', 'we would like'],
+		['In my opinion the cache is too small.', 'in my opinion'],
+	]) {
+		it(`flags "${phrase}"`, () => expect(prefs(text)).toContain(phrase));
+	}
+
+	it('leaves a stated requirement alone', () => {
+		expect(prefs('The export includes column totals.')).toEqual([]);
+	});
+});
+
+// Opt-in, because prose written for a reader keeps its "you".
+describe('impersonal mode: pronouns only when asked for', () => {
+	const doc = 'You can see we kept my original design.';
+	const pronouns = (opts) =>
+		checkText(doc, opts).flags.filter((f) => f.category === 'personal-pronoun');
+
+	it('stays silent by default', () => {
+		expect(pronouns({})).toEqual([]);
+	});
+
+	it('flags first and second person under --impersonal', () => {
+		// lexical categories report in lexicon order, not document order
+		expect(pronouns({ impersonal: true }).map((f) => f.match).sort())
+			.toEqual(['You', 'my', 'we']);
+	});
+
+	it('leaves the country alone', () => {
+		expect(checkText('The US region is nightly.', { impersonal: true })
+			.flags.filter((f) => f.category === 'personal-pronoun')).toEqual([]);
+	});
+
+	it('leaves impersonal requirements alone', () => {
+		expect(checkText('The export includes column totals.', { impersonal: true })
+			.flags.filter((f) => f.category === 'personal-pronoun')).toEqual([]);
+	});
+});
+
 describe('render-highlights', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 	const doc = "Here's the thing — the cache was cleared quickly.\n\nWe utilize retries (which nobody had reviewed before the deadline arrived).";

@@ -20,6 +20,8 @@ const CATEGORIES = {
 	qualifier: 'Qualifier',
 	'simpler-alternative': 'Wordy',
 	'weak-verb': 'Weak verb',
+	preference: 'Wish, not requirement',
+	'personal-pronoun': 'Personal pronoun',
 	'em-dash': 'Em dash',
 };
 
@@ -171,7 +173,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--c-ai-tell: #F08A2E; --c-passive-voice: #46B26E;
 	--c-adverb: #4E9BE8; --c-qualifier: #A574E0;
 	--c-simpler-alternative: #E85FB0; --c-weak-verb: #2FB8B0;
-	--c-em-dash: #F08A2E;
+	--c-em-dash: #F08A2E; --c-preference: #8C6FD8;
+	--c-personal-pronoun: #5F8FA8;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -182,7 +185,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 		--c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 		--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 		--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
-		--c-em-dash: #F0A05A;
+		--c-em-dash: #F0A05A; --c-preference: #A48CE6;
+		--c-personal-pronoun: #7FAAC2;
 	}
 }
 :root[data-theme="dark"] {
@@ -193,7 +197,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 	--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 	--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
-	--c-em-dash: #F0A05A;
+	--c-em-dash: #F0A05A; --c-preference: #A48CE6;
+	--c-personal-pronoun: #7FAAC2;
 }
 * { box-sizing: border-box; }
 body { background: var(--ground); color: var(--ink); margin: 0;

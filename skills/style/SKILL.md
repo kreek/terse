@@ -93,6 +93,8 @@ closing summaries).
 | "The turn of phrase reads better than the plain claim" | State the decision or action with its literal verb. | The figure explains a mechanism the reader has not seen, or an approved voice template uses it. |
 | "Leave it implicit; the reader will infer it" | State the fact, the number, or the requirement outright. Omission creates pressure in fiction, where the reader supplies the feeling; in a document it leaves a hole the reader fills with a guess. | The material is out of scope, and the document says so. |
 | "The opening needs to set the scene first" | Open on the fact the reader came for; move the setup below it. | The genre opens on a scene, and the outline placed the answer accordingly. |
+| "I would like this changed" | State the requirement: what the system does once the change lands. A wish is something the reader can decline. | The document is a comment or a note where the preference itself is the content. |
+| "Third person reads stiff here" | In an issue, a spec, or acceptance criteria, name the system, the actor, or the user, and run the checker with `--impersonal`. | The genre writes to a reader, as docs, blog posts, and memos do, where "you" is correct. |
 
 ## The user's voice
 

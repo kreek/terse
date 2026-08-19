@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Terse's mechanical style checker: deterministic pattern matching, word
 // lists, and readability arithmetic. No AI, no network, no dependencies.
-// Usage: node style-check.mjs <file...> [--max-grade N] [--json]
+// Usage: node style-check.mjs <file...> [--max-grade N] [--impersonal] [--json]
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -55,6 +55,32 @@ const QUALIFIER_TAILS = { rather: '(?!\\s+than)' };
 const QUALIFIER_PATTERNS = QUALIFIERS.map((q) => ({ phrase: q,
 	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b` +
 		(QUALIFIER_TAILS[q] ?? ''), 'gi') }));
+
+// A requirement stated as a wish. "I would like the export to include
+// totals" reads as an opinion the reader may decline; "the export includes
+// totals" is the requirement. Weak wherever a document carries a request,
+// and the default failure in issues and acceptance criteria.
+const PREFERENCES = [
+	'i would like', "i'd like", 'i would love', "i'd love", 'i want to see',
+	'i would prefer', "i'd prefer", 'we would like', "we'd like",
+	'it would be nice', 'it would be great', 'my preference is',
+	'in my opinion', 'to my mind',
+];
+
+const PREFERENCE_PATTERNS = PREFERENCES.map((q) => ({ phrase: q,
+	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b`, 'gi') }));
+
+// Opt-in, under --impersonal: the genres that own this rule are issues,
+// specs, and acceptance criteria, where the requirement belongs to the
+// system rather than to whoever filed it. Prose written for a reader keeps
+// its "you", so this stays off by default.
+const PRONOUNS = [
+	'i', 'me', 'my', 'mine', 'myself', 'we', 'us', 'our', 'ours',
+	'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves',
+];
+
+const PRONOUN_PATTERNS = PRONOUNS.map((w) => ({ phrase: w,
+	re: new RegExp(`\\b${w}\\b`, 'gi') }));
 
 const SIMPLER = {
 	utilize: 'use', utilizes: 'uses', utilized: 'used', utilization: 'use',
@@ -398,7 +424,22 @@ function refineSpan(text, span, match) {
 	return m ? [span[0] + m.index, span[0] + m.index + m[0].length] : null;
 }
 
-function checkLexicon(sentence, flags, file, line) {
+function checkLexicon(sentence, flags, file, line, impersonal) {
+	for (const { phrase, re } of PREFERENCE_PATTERNS) {
+		pushMatches(sentence, re, flags, { file, line, category: 'preference',
+			match: phrase,
+			hint: 'state the requirement, not the wish for it' });
+	}
+	if (impersonal) {
+		for (const { phrase, re } of PRONOUN_PATTERNS) {
+			for (const m of sentence.matchAll(re)) {
+				if (m[0] === 'US') continue; // the country, not the pronoun
+				flags.push({ file, line, category: 'personal-pronoun',
+					match: m[0],
+					hint: 'name the system, the actor, or the user; keep the requirement impersonal' });
+			}
+		}
+	}
 	for (const { phrase, re } of QUALIFIER_PATTERNS) {
 		pushMatches(sentence, re, flags, { file, line, category: 'qualifier',
 			match: phrase,
@@ -418,7 +459,8 @@ function checkLexicon(sentence, flags, file, line) {
 	}
 }
 
-export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = {}) {
+export function checkText(rawText,
+		{ maxGrade = HARD_GRADE, file = '(text)', impersonal = false } = {}) {
 	const text = stripMarkdown(rawText);
 	const lineAt = makeLineIndex(text);
 	const flags = [];
@@ -462,7 +504,7 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 		if (words.length === 0) continue; // horizontal rules, stray symbols
 		const before = flags.length;
 		checkSentence(clean, maxGrade, flags, file, line);
-		checkLexicon(clean, flags, file, line);
+		checkLexicon(clean, flags, file, line, impersonal);
 		assignSpans(text, flags, before, [s.offset, s.offset + s.text.length]);
 		allWords.push(...words);
 		sentenceLengths.push(words.length);
@@ -507,10 +549,12 @@ function main() {
 	const files = [];
 	let json = false;
 	let maxGrade = HARD_GRADE;
+	let impersonal = false;
 	let badArg = false;
 	for (let i = 0; i < args.length; i++) {
 		const a = args[i];
 		if (a === '--json') json = true;
+		else if (a === '--impersonal') impersonal = true;
 		else if (a === '--max-grade') maxGrade = Number(args[++i]);
 		else if (a.startsWith('--max-grade=')) {
 			maxGrade = a.length > 12 ? Number(a.slice(12)) : NaN;
@@ -519,7 +563,8 @@ function main() {
 		else files.push(a);
 	}
 	if (files.length === 0 || Number.isNaN(maxGrade) || badArg) {
-		console.error('usage: node style-check.mjs <file...> [--max-grade N] [--json]');
+		console.error('usage: node style-check.mjs <file...> ' +
+			'[--max-grade N] [--impersonal] [--json]');
 		process.exit(2);
 	}
 	let total = 0;
@@ -532,7 +577,7 @@ function main() {
 			console.error(`style-check: cannot read ${file}: ${err.code ?? err.message}`);
 			process.exit(2);
 		}
-		const { flags, stats } = checkText(raw, { maxGrade, file });
+		const { flags, stats } = checkText(raw, { maxGrade, file, impersonal });
 		const gradeExceeded = docGradeExceeded(stats, maxGrade);
 		total += flags.length + (gradeExceeded ? 1 : 0);
 		results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });

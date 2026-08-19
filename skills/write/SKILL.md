@@ -47,6 +47,9 @@ toward the governing thought.
    - adverbs about 1 per 134 words, passive about 1 per 123,
      qualifiers about 1 per 400
    - an approved voice template's measured ranges bound all of these
+   - issues, specs, and acceptance criteria stay impersonal: state the
+     requirement rather than the wish for it, and run the checker with
+     `--impersonal`
    Then the wording. Reach for the plain word: `use`, not `utilize`;
    `strong`, not `robust`; `important`, not `crucial`; `build`, not
    `foster`; `simplify`, not `streamline`. Prefer `is` to `serves as`.

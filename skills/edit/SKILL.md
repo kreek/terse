@@ -62,7 +62,9 @@ every mode.
    the mechanical flags, and read the document once for the `grammar`
    and `voice-drift` findings. `--max-grade N` sets the target reading
    level. A voice template or a document type that fixes a grade
-   supplies the default; the flag overrides it. In the same read,
+   supplies the default; the flag overrides it. `--impersonal` adds
+   the pronoun findings, for issues, specs, and acceptance criteria.
+   In the same read,
    build the reverse outline: one line per paragraph stating its point.
    Work from the findings, not from a free-form read.
 4. Audit the reverse outline before any fix. Read the list for jumps,

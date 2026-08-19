@@ -14,6 +14,12 @@ resists is the wrong shape.
   metrics.
 - **Design doc**: context and problem, proposed solution, alternatives
   considered, trade-offs, rollout.
+- **Issue or bug report**: what happens, what should happen, how to
+  reproduce it, and what it blocks. Impersonal throughout: the
+  requirement belongs to the system, not to whoever filed it.
+- **Acceptance criteria**: one testable condition per line, each
+  stated as behavior the system exhibits. Nothing a reader can
+  decline, so no preferences and no pronouns.
 - **Blog post**: hook, promise, body sections, takeaway.
 - **Narrative feature**: an opening scene, then the "so what"
   paragraph, then sections that weave theme with time, then the
