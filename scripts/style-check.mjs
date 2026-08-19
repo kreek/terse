@@ -18,6 +18,13 @@ const DENSE_WORDS = 14;       // ... or any 14+ word sentence at grade 18+
 const DENSE_GRADE = 18;
 const MIN_WORDS_FOR_GRADE = 14; // documents shorter than this skip the gate
 const ASIDE_WORDS = 6; // parenthetical asides at or above this length are flagged
+// The Kansas City Star style sheet, which Hemingway called the best rules he
+// ever learned in the business of writing, opens "Use short sentences. Use
+// short first paragraphs." The second rule has no sentence-level equivalent:
+// an opening can clear every other flag and still bury the reader before the
+// first fact. Calibrated against samples/hemingway, whose own openings run
+// 25 to 88 words.
+const OPENING_WORDS = 90;
 const READING_WPM = 230;
 
 const ADVERB_WHITELIST = new Set([
@@ -293,6 +300,19 @@ function findAsides(text) {
 	return asides;
 }
 
+// The document's first paragraph of prose. stripMarkdown has already blanked
+// frontmatter, headings, tables, and code; a list or a block quote is not an
+// opening, so both are skipped.
+function firstProseParagraph(text) {
+	for (const block of text.matchAll(/[^\s][^]*?(?=\n[ \t]*\n|$)/g)) {
+		const body = block[0];
+		if (LIST_ITEM.test(body) || /^[ \t]*>/.test(body)) continue;
+		if (wordsOf(body).length === 0) continue;
+		return { text: body, offset: block.index };
+	}
+	return null;
+}
+
 // Automated Readability Index: 4.71*(chars/words) + 0.5*(words/sentence) - 21.43
 function ariGrade(words) {
 	if (words.length === 0) return 0;
@@ -415,6 +435,16 @@ export function checkText(rawText, { maxGrade = HARD_GRADE, file = '(text)' } = 
 				match: `(${cp.slice(0, 40).join('')}${cp.length > 40 ? '...' : ''})`,
 				span: [a.offset, a.offset + a.inner.length + 2],
 				hint: 'cut the aside, or promote it to its own sentence' });
+		}
+	}
+	const opening = firstProseParagraph(text);
+	if (opening) {
+		const openingWords = wordsOf(opening.text).length;
+		if (openingWords >= OPENING_WORDS) {
+			flags.push({ file, line: lineAt(opening.offset),
+				category: 'long-opening', match: `${openingWords} words`,
+				span: [opening.offset, opening.offset + opening.text.length],
+				hint: 'open on the fact the reader needs; move the setup down' });
 		}
 	}
 	// Structural tells can span sentence boundaries, so scan the whole text.

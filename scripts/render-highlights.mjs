@@ -12,6 +12,7 @@ import { checkText } from './style-check.mjs';
 const CATEGORIES = {
 	'very-hard-sentence': 'Very hard sentence',
 	'hard-sentence': 'Hard sentence',
+	'long-opening': 'Long opening',
 	aside: 'Aside',
 	'ai-tell': 'AI tell',
 	'passive-voice': 'Passive voice',
@@ -24,7 +25,8 @@ const CATEGORIES = {
 
 // Channel by extent: a short span reads as "change this word" and gets an
 // underline; a long span reads as "rework this passage" and gets a wash.
-const ALWAYS_WASH = new Set(['hard-sentence', 'very-hard-sentence', 'aside']);
+const ALWAYS_WASH = new Set(['hard-sentence', 'very-hard-sentence', 'aside',
+	'long-opening']);
 const WASH_CHARS = 40;
 
 function channelOf(flag) {
@@ -165,7 +167,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--ground: #FFFFFF; --ink: #22261F; --dim: #6E7268; --chrome: #FAFAF8;
 	--edge: #E6E5E0; --accent: #2F7D4F; --wash: 30%;
 	--c-very-hard-sentence: #F26D6D; --c-hard-sentence: #F5C842;
-	--c-aside: #A8ACB8; --c-ai-tell: #F08A2E; --c-passive-voice: #46B26E;
+	--c-long-opening: #C08552; --c-aside: #A8ACB8;
+	--c-ai-tell: #F08A2E; --c-passive-voice: #46B26E;
 	--c-adverb: #4E9BE8; --c-qualifier: #A574E0;
 	--c-simpler-alternative: #E85FB0; --c-weak-verb: #2FB8B0;
 	--c-em-dash: #F08A2E;
@@ -175,7 +178,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 		--ground: #17191C; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1E2125;
 		--edge: #2E3236; --accent: #6FCB93; --wash: 26%;
 		--c-very-hard-sentence: #E87878; --c-hard-sentence: #E0C050;
-		--c-aside: #9296A4; --c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
+		--c-long-opening: #D0996A; --c-aside: #9296A4;
+		--c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 		--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 		--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
 		--c-em-dash: #F0A05A;
@@ -185,7 +189,8 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--ground: #17191C; --ink: #E8E6E0; --dim: #9A9E96; --chrome: #1E2125;
 	--edge: #2E3236; --accent: #6FCB93; --wash: 26%;
 	--c-very-hard-sentence: #E87878; --c-hard-sentence: #E0C050;
-	--c-aside: #9296A4; --c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
+	--c-long-opening: #D0996A; --c-aside: #9296A4;
+	--c-ai-tell: #F0A05A; --c-passive-voice: #62C288;
 	--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 	--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
 	--c-em-dash: #F0A05A;

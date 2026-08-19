@@ -80,6 +80,39 @@ describe('edited human prose: zero lexical false positives', () => {
 	}
 });
 
+const SAMPLES = join(import.meta.dirname, '..', 'samples', 'hemingway');
+
+// "Use short first paragraphs" is the second Kansas City Star rule. The
+// threshold has to clear the prose it was drawn from, so the journalism is
+// the regression corpus for it.
+describe('long opening: calibrated against the journalism it came from', () => {
+	const openings = (doc) =>
+		checkText(doc).flags.filter((f) => f.category === 'long-opening');
+	const para = (n) => Array.from({ length: n }, () => 'word').join(' ') + '.';
+
+	for (const f of readdirSync(SAMPLES)) {
+		it(`${f} opens short enough`, () => {
+			expect(openings(readFileSync(join(SAMPLES, f), 'utf8'))).toEqual([]);
+		});
+	}
+
+	it('flags an opening at the threshold', () => {
+		expect(openings(`# Title\n\n${para(90)}\n`)[0].match).toBe('90 words');
+	});
+
+	it('leaves an opening below the threshold alone', () => {
+		expect(openings(`# Title\n\n${para(89)}\n`)).toEqual([]);
+	});
+
+	it('measures the first paragraph, not the whole document', () => {
+		expect(openings(`${para(20)}\n\n${para(200)}\n`)).toEqual([]);
+	});
+
+	it('skips a leading list and measures the first prose paragraph', () => {
+		expect(openings(`- ${para(120)}\n\n${para(20)}\n`)).toEqual([]);
+	});
+});
+
 describe('render-highlights', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 	const doc = "Here's the thing — the cache was cleared quickly.\n\nWe utilize retries (which nobody had reviewed before the deadline arrived).";

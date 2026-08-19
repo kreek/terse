@@ -16,6 +16,7 @@ one report, one preview, and one fix loop serve every category.
 | Category | Source | Stage |
 |---|---|---|
 | hard-sentence, very-hard-sentence | checker | structural |
+| long-opening | checker | structural |
 | aside | checker | structural |
 | passive-voice, adverb, qualifier | checker | wording |
 | simpler-alternative, weak-verb, ai-tell | checker | wording |

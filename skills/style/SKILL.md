@@ -27,29 +27,43 @@ shares.
    audience owns it. Write the plain version first; keep the term of art
    only if the plain version is longer, vaguer, or wrong. Titles and
    headings get the strictest reading.
-3. **Say the action outright.** A stock figure ("earns its place",
+3. **The particular, not the abstraction.** Name the service, the
+   number, the date. "Improved reliability" asks the reader to take it
+   on faith; "p99 fell from 800ms to 120ms in March" does not. This is
+   the rule behind Hemingway's narrator finding abstract words obscene
+   beside "the concrete names of villages, the numbers of roads". Keep
+   an abstraction only when it names a category the reader will meet
+   again.
+4. **Say the action outright.** A stock figure ("earns its place",
    "moves the needle", "does the heavy lifting") is a fancy phrase the
    way a five-dollar word is a fancy word: the reader must translate
    it back to the real action. The test is translation: if the literal
    verb loses nothing, use it ("you should adopt it", not "it earns
    its place"). Metaphor is for explaining something the reader has
    not seen yet, not for stating a decision, verdict, or action.
-4. **Active voice, strong verbs, direct claims.** Prefer a named actor
+5. **Active voice, strong verbs, direct claims.** Prefer a named actor
    doing the action, a strong verb over a verb propped up by an adverb, and
    a plain statement over one padded with qualifiers. Passive voice is
    right when the actor is irrelevant or unknown ("the token is signed"); a
    qualifier is right when the hedge is the claim itself.
-5. **The known-new contract.** Open a sentence with what the reader
+6. **Say what is, not what isn't.** State what is true and what to
+   do, rather than what is false and what to avoid. "The cache holds
+   entries for an hour" beats "the cache does not keep entries
+   forever." A negative is right when the reader expects the opposite
+   and the correction is the point. This is the Kansas City Star's
+   fourth rule. It holds hardest for instructions: a reader follows
+   "do y" where "don't do x" leaves them guessing.
+7. **The known-new contract.** Open a sentence with what the reader
    already has; the new or important information goes at the end,
    where the emphasis falls. A run of sentences that each open with
    new information loses the reader, however clean each one is.
-6. **Never comment on the writing.** No significance announcements ("worth
+8. **Never comment on the writing.** No significance announcements ("worth
    noting", "importantly"), no rhetorical questions answered by the next
    sentence, no "it's not just X, it's Y". The test is deletion: cut the
    phrase, and if the passage loses no information, it was a signpost.
-7. **Length is a cost the reader pays.** Cut by selecting what to include,
+9. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
-8. **The author's voice survives the edit.** When editing someone else's
+10. **The author's voice survives the edit.** When editing someone else's
    text, make the smallest change that fixes the issue. Never rewrite their
    sentences into your own cadence.
 
@@ -77,6 +91,8 @@ closing summaries).
 | "The aside is too useful to cut" | Cut it, promote it to its own sentence, or shorten it below six words. | The aside is a citation, cross-reference, or required wording that cannot stand alone. |
 | "The em dash reads best as parentheses" | Prefer a period, colon, or comma; a parenthetical of six or more words trades the em-dash flag for an aside flag. | An approved voice template keeps em dashes. |
 | "The turn of phrase reads better than the plain claim" | State the decision or action with its literal verb. | The figure explains a mechanism the reader has not seen, or an approved voice template uses it. |
+| "Leave it implicit; the reader will infer it" | State the fact, the number, or the requirement outright. Omission creates pressure in fiction, where the reader supplies the feeling; in a document it leaves a hole the reader fills with a guess. | The material is out of scope, and the document says so. |
+| "The opening needs to set the scene first" | Open on the fact the reader came for; move the setup below it. | The genre opens on a scene, and the outline placed the answer accordingly. |
 
 ## The user's voice
 

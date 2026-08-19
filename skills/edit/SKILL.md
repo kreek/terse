@@ -105,9 +105,11 @@ every mode.
    the contract's stage order. A rewrite in the first two stages
    discards the sentence's collected grammar findings; re-proof the new
    wording.
-   - **structural** first: hard sentence: split it, or turn an
-     in-sentence list into bullets; aside: cut it, or promote it to its
-     own sentence
+   - **structural** first:
+     - hard sentence: split it, or turn an in-sentence list into
+       bullets
+     - long opening: cut it back to the fact the reader came for
+     - aside: cut it, or promote it to its own sentence
    - **wording** second:
      - passive voice: name the actor
      - adverb: choose a stronger verb, or give the number

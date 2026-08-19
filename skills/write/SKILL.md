@@ -42,6 +42,8 @@ toward the governing thought.
    them afterwards costs a rewrite:
    - document grade below 10; keep sentences under 25 words, or below
      grade 10 when they run longer
+   - the first paragraph under 90 words, opening on the fact the
+     reader came for
    - adverbs about 1 per 134 words, passive about 1 per 123,
      qualifiers about 1 per 400
    - an approved voice template's measured ranges bound all of these
