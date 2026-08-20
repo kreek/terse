@@ -174,17 +174,24 @@ describe('checkText', () => {
 		expect(flags.filter((f) => f.category === 'qualifier')).toHaveLength(2);
 	});
 
-	it('flags AI-tell phrases and banned vocabulary', () => {
+	it('flags AI-tell phrases, bare tells, and framed tells', () => {
 		const { flags, stats } = checkText(
-			'This sentence is load-bearing. Worth noting: the robust, seamless ecosystem fosters synergy across the landscape.'
+			'This sentence is load-bearing. Worth noting: the synergy across the data ecosystem underscores the need to delve into the landscape of failures.'
 		);
 		const tells = flags.filter((f) => f.category === 'ai-tell').map((f) => f.match);
 		expect(tells).toEqual(expect.arrayContaining([
-			'load-bearing', 'worth noting', 'robust', 'seamless', 'ecosystem',
-			'synergy', 'landscape',
+			'load-bearing', 'worth noting', 'synergy', 'data ecosystem',
+			'underscores the', 'delve', 'landscape of',
 		]));
-		expect(tells).toContain('fosters');
 		expect(stats.aiTells).toBe(tells.length);
+	});
+
+	it('demotes inflated words with literal senses to simpler-alternative', () => {
+		const { flags, stats } = checkText('The robust, seamless plan is crucial.');
+		expect(stats.aiTells).toBe(0);
+		const simpler = flags.filter((f) => f.category === 'simpler-alternative')
+			.map((f) => f.match);
+		expect(simpler).toEqual(expect.arrayContaining(['robust', 'seamless', 'crucial']));
 	});
 
 	it('flags the structural tells with curly or straight apostrophes', () => {
@@ -211,14 +218,11 @@ describe('checkText', () => {
 	});
 
 	it('does not fire ai-tell on innocent look-alikes', () => {
-		const { flags } = checkText(
-			'The load on the bearing wore it down. The horse fostered no journeys across realms of iron.'
+		// split words, phrase fragments, and literal senses all stay silent
+		const { stats } = checkText(
+			'The load on the bearing wore it down. The horse fostered no journey across the iron realms.'
 		);
-		const tells = flags.filter((f) => f.category === 'ai-tell').map((f) => f.match);
-		// literal vocabulary uses still fire (accepted false-positive risk),
-		// but split words and phrase fragments must not
-		expect(tells).not.toContain('load-bearing');
-		expect(tells).not.toContain('load bearing');
+		expect(stats.aiTells).toBe(0);
 		expect(checkText('He noted the worth of the change.').stats.aiTells).toBe(0);
 		expect(checkText('This is an important note.').stats.aiTells).toBe(0);
 	});
@@ -228,5 +232,65 @@ describe('checkText', () => {
 		expect(flags.filter((f) => f.category === 'qualifier')).toHaveLength(0);
 		const bare = checkText('The plan is rather ambitious.');
 		expect(bare.flags.filter((f) => f.category === 'qualifier')).toHaveLength(1);
+	});
+
+	it('flags "very" as a qualifier but not "the very least"', () => {
+		const quals = (t) => checkText(t).flags
+			.filter((f) => f.category === 'qualifier').map((f) => f.match);
+		expect(quals('The rollout is very risky.')).toEqual(['very']);
+		expect(quals('At the very least the tests run.')).toEqual([]);
+	});
+
+	it('flags a spaced en dash but not a range or a double hyphen', () => {
+		const dashes = (t) => checkText(t).flags.filter((f) => f.category === 'em-dash');
+		expect(dashes('Stale entries – every night.')).toHaveLength(1);
+		expect(dashes('Retry 3–5 times before failing.')).toHaveLength(0);
+		expect(dashes('Stale entries -- every night.')).toHaveLength(0);
+	});
+
+	it('does not read "I/O" or "i.e." as personal pronouns', () => {
+		const { flags } = checkText(
+			'Disk I/O spikes, i.e. reads stall until the flush ends.',
+			{ impersonal: true });
+		expect(flags.filter((f) => f.category === 'personal-pronoun')).toEqual([]);
+	});
+
+	it('gives repeated matches in one sentence distinct spans', () => {
+		const { flags } = checkText('Maybe yes, maybe no.');
+		const spans = flags.filter((f) => f.category === 'qualifier').map((f) => f.span);
+		expect(spans).toHaveLength(2);
+		expect(spans[0]).not.toEqual(spans[1]);
+	});
+
+	it('suppresses the next line under a terse-ignore comment', () => {
+		const doc = '<!-- terse-ignore -->\nWe utilize robust things.\n\nWe utilize more.\n';
+		const { flags } = checkText(doc);
+		expect(flags.map((f) => f.line)).toEqual([4]);
+	});
+
+	it('narrows suppression to the named categories', () => {
+		const doc = '<!-- terse-ignore: ai-tell -->\nWe utilize robust things.\n';
+		const cats = checkText(doc).flags.map((f) => f.category);
+		expect(cats).toContain('simpler-alternative');
+		expect(cats).not.toContain('ai-tell');
+	});
+
+	it('never checks the text inside an HTML comment', () => {
+		const { flags } = checkText('Clean prose here.\n\n<!-- utilize robust very -->\n');
+		expect(flags).toEqual([]);
+	});
+
+	it('exempts lexical findings inside quotes and blockquotes', () => {
+		const quoted = checkText('The tripwire lists "worth noting" as an example.');
+		expect(quoted.stats.aiTells).toBe(0);
+		const block = checkText('> We utilize robust spaghetti here.');
+		expect(block.flags.filter((f) => f.category === 'ai-tell')).toEqual([]);
+		expect(block.flags.filter((f) => f.category === 'simpler-alternative')).toEqual([]);
+	});
+
+	it('still flags readability categories inside quoted material', () => {
+		const { flags } = checkText('"Sadly, the server died."');
+		expect(flags.filter((f) => f.category === 'adverb').map((f) => f.match))
+			.toEqual(['Sadly']);
 	});
 });

@@ -43,17 +43,24 @@ const ADVERB_WHITELIST = new Set([
 const QUALIFIERS = [
 	'i think', 'i believe', 'i feel', 'maybe', 'perhaps', 'possibly',
 	'somewhat', 'sort of', 'kind of', 'a bit', 'fairly', 'quite', 'rather',
-	'arguably', 'seemingly', 'generally speaking', 'it could be argued',
-	'it is important to note', "it's important to note", 'needless to say',
+	'very', 'arguably', 'seemingly', 'generally speaking',
+	'it could be argued', 'it is important to note',
+	"it's important to note", 'needless to say',
 ];
 
 // Word-boundary patterns so "unrequited" never matches "quite"; a curly
 // apostrophe counts as a straight one.
 // "rather than" is a comparison, not a hedge; only bare "rather" hedges.
 const QUALIFIER_TAILS = { rather: '(?!\\s+than)' };
+// "the very least/idea/heart" is emphasis on a noun, not a hedge on a claim,
+// and "the same kind of signal" is a noun phrase, not a hedged verb.
+const NOUN_KIND = '(?<!\\b(?:the|this|that|a|same|every|any|one|some|what|which)\\s)';
+const QUALIFIER_HEADS = { very: '(?<!\\bthe\\s)',
+	'kind of': NOUN_KIND, 'sort of': NOUN_KIND };
 
 const QUALIFIER_PATTERNS = QUALIFIERS.map((q) => ({ phrase: q,
-	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b` +
+	re: new RegExp((QUALIFIER_HEADS[q] ?? '') +
+		`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b` +
 		(QUALIFIER_TAILS[q] ?? ''), 'gi') }));
 
 // A requirement stated as a wish. "I would like the export to include
@@ -83,14 +90,22 @@ const PRONOUN_PATTERNS = PRONOUNS.map((w) => ({ phrase: w,
 	re: new RegExp(`\\b${w}\\b`, 'gi') }));
 
 const SIMPLER = {
-	utilize: 'use', utilizes: 'uses', utilized: 'used', utilization: 'use',
-	leverage: 'use', leverages: 'uses', leveraged: 'used',
-	facilitate: 'help', facilitates: 'helps',
-	commence: 'start', commences: 'starts', endeavor: 'try',
-	demonstrate: 'show', demonstrates: 'shows',
+	utilize: 'use', utilizes: 'uses', utilized: 'used', utilizing: 'using',
+	utilization: 'use',
+	leverage: 'use', leverages: 'uses', leveraged: 'used', leveraging: 'using',
+	facilitate: 'help', facilitates: 'helps', facilitated: 'helped',
+	facilitating: 'helping',
+	commence: 'start', commences: 'starts', commenced: 'started',
+	commencing: 'starting', endeavor: 'try', endeavors: 'tries',
+	demonstrate: 'show', demonstrates: 'shows', demonstrated: 'showed',
+	demonstrating: 'showing',
 	numerous: 'many', sufficient: 'enough', additional: 'more',
-	obtain: 'get', obtains: 'gets', purchase: 'buy', attempt: 'try',
-	assist: 'help', assists: 'helps', ascertain: 'find out',
+	obtain: 'get', obtains: 'gets', obtained: 'got', obtaining: 'getting',
+	purchase: 'buy', purchased: 'bought', purchasing: 'buying',
+	attempt: 'try', attempted: 'tried', attempting: 'trying',
+	assist: 'help', assists: 'helps', assisted: 'helped',
+	assisting: 'helping', ascertain: 'find out', ascertained: 'found out',
+	necessitate: 'require', necessitated: 'required',
 	'in order to': 'to', 'prior to': 'before', 'subsequent to': 'after',
 	'in the event that': 'if', 'due to the fact that': 'because',
 	'despite the fact that': 'although', 'at this point in time': 'now',
@@ -108,54 +123,162 @@ const SIMPLER = {
 	'last but not least': 'finally', 'in the majority of cases': 'usually',
 	'a wide variety of': 'many', 'a large number of': 'many',
 	'take action': 'act', 'takes action': 'acts',
+	// inflated words demoted from the tell list: common enough in human
+	// prose that the flag is a plain-word suggestion, not an accusation
+	robust: 'strong', robustly: 'strongly', seamless: 'smooth',
+	seamlessly: 'smoothly', crucial: 'important', pivotal: 'key',
+	effortless: 'easy', effortlessly: 'easily', frictionless: 'smooth',
+	elevate: 'raise', elevates: 'raises', elevating: 'raising',
+	showcase: 'show', showcases: 'shows', showcased: 'showed',
+	showcasing: 'showing', streamline: 'simplify',
+	streamlines: 'simplifies', streamlined: 'simplified',
+	streamlining: 'simplifying', nuanced: 'subtle',
 };
 
 const SIMPLER_PATTERNS = Object.entries(SIMPLER).map(([phrase, simpler]) => ({
 	phrase, simpler,
 	re: new RegExp(`\\b${phrase.replace(/ /g, '\\s+')}\\b`, 'gi') }));
 
+// Inflection families: one base form covers every inflection, so "delved"
+// and "journeys" cannot slip past a hand-enumerated list.
+function verbForms(base) {
+	if (base.endsWith('e')) return `${base.slice(0, -1)}(?:e|es|ed|ing)`;
+	const es = /(?:s|sh|ch|x|z)$/.test(base);
+	return `${base}(?:${es ? 'es' : 's'}|ed|ing)?`;
+}
+
+function nounForms(base) {
+	if (/[^aeiou]y$/.test(base)) return `${base.slice(0, -1)}(?:y|ies)`;
+	const es = /(?:s|sh|ch|x|z)$/.test(base);
+	return `${base}(?:${es ? 'es' : 's'})?`;
+}
+
 // Claudisms and AI tells: phrases and vocabulary that mark machine writing.
-const AI_TELLS = [
+// The families and the worst offenders come from the claudism lists the
+// Claude subreddits keep; every entry is checked against the Hemingway
+// corpus for false positives before admission.
+const AI_TELL_PHRASES = [
+	// anthropomorphized code-speak
 	'load-bearing', 'load bearing', 'doing real work', 'does real work',
-	"here's the thing", 'worth noting', 'importantly', 'at its core',
-	'the key insight', 'in essence',
-	'delve', 'delves', 'delving', 'harness', 'harnesses', 'harnessing',
-	'robust', 'seamless', 'seamlessly', 'crucial', 'crucially', 'pivotal',
-	'foster', 'fosters', 'fostering', 'streamline', 'streamlines',
-	'streamlined', 'underscore', 'underscores', 'underscoring', 'showcase',
-	'showcases', 'showcasing', 'unlock', 'unlocks', 'unlocking', 'elevate',
-	'elevates', 'testament', 'tapestry', 'landscape', 'realm', 'synergy',
-	'journey', 'ecosystem', 'multifaceted', 'transformative', 'cutting-edge',
-	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
-	'and that matters', 'carry the argument', 'carries the argument',
+	'the culprit', 'battle-tested', 'battle tested',
 	// stock figures that mask the literal action; say adopt/use/choose/cut
-	'earns its place', 'earn its place', 'earns their place',
-	'moves the needle', 'move the needle', 'heavy lifting',
-	'low-hanging fruit', 'secret sauce', 'table stakes',
+	'heavy lifting', 'low-hanging fruit', 'secret sauce', 'table stakes',
 	'at the end of the day',
+	// self-important spotlighting
+	"here's the thing", 'worth noting', 'worth flagging', 'worth calling out',
+	'importantly', 'at its core', 'the key insight', 'in essence',
+	'the crux', 'the tell is', 'the real question',
+	'why this matters', 'why it matters', 'the punchline', 'the kicker',
+	// performative candor
+	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
+	'the honest answer', 'the honest version', 'my honest read',
+	'my honest assessment', 'my honest take', 'the short answer',
+	'let me put it plainly', 'real talk', 'straight answer',
+	'grounded in what', 'and that matters', 'carry the argument',
+	'carries the argument',
+	// unsolicited validation, projected onto the reader
+	'great question', 'good question', 'excellent question', 'great catch',
+	'good catch', 'nice catch', 'exactly right', 'fair point',
+	"that's fair", 'valid concern', 'legitimate concern',
+	'perfectly reasonable', 'totally reasonable', 'good instinct',
+	'great instinct',
+	// hedging connective tissue
+	'non-trivial', 'nontrivial', 'that said', 'having said that',
+	'to be fair',
+	// the em-dash reframe, lexical edge
+	'not just',
+	// metaphor soup
+	'happy path', 'blast radius', 'sanity check', 'escape hatch',
+	'belt-and-suspenders', 'belt and suspenders', 'smoking gun',
+	'chicken-and-egg', 'chicken and egg', 'under the hood',
+	// sign-off tics
+	'say the word', 'just let me know',
+	// puffery with no everyday literal sense; anything with one lives in
+	// the frames below or the SIMPLER table instead
+	'crucially', 'multifaceted', 'transformative', 'cutting-edge',
+	'blazing fast', 'state-of-the-art', 'next-level', 'game-changing',
+	'deep dive', "in today's fast-paced world", 'say goodbye to',
+	'look no further', 'the possibilities are endless', 'with confidence',
 	// harvested from model-written launch posts and product copy
 	'thrilled to announce', 'excited to announce', 'excited to share',
-	'proud to announce', 'under the hood', 'this is just the beginning',
-	"can't wait to see", 'game-changer', 'game changer', 'game-changing',
-	'revolutionize', 'revolutionizes', 'revolutionary', 'supercharge',
-	'supercharges', 'empower', 'empowers', 'empowering', 'unleash',
-	'unleashes', 'unleashing', 'effortless', 'effortlessly', 'blazing fast',
-	'blazingly', 'deep dive', "in today's fast-paced world",
-	'state-of-the-art', 'next-level', 'say goodbye to', 'look no further',
-	'frictionless', 'the possibilities are endless', 'with confidence',
+	'proud to announce', 'this is just the beginning', "can't wait to see",
+	'game-changer', 'game changer',
 ];
 
-const AI_TELL_PATTERNS = AI_TELLS.map((q) => ({ phrase: q,
-	re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b`, 'gi') }));
+// Bare single words flagged in every inflection. Admission here requires
+// no everyday literal sense: "delve" and "synergy" are always the tell,
+// where "harness" is often a test harness and "landscape" is often land.
+// Words with literal senses flag only inside the tell frames below.
+const AI_TELL_VERBS = ['delve'];
+
+const AI_TELL_NOUNS = ['synergy', 'footgun', 'linchpin', 'workhorse',
+	'gotcha'];
+
+// Tells whose surface varies: a pattern per family, matched per sentence.
+const AI_TELL_REGEXES = [
+	{ re: /\bearn(?:s|ed|ing)?\s+(?:its|their)\s+(?:place|keep|trust)\b/gi },
+	{ re: /\bmov(?:e|es|ed|ing)\s+the\s+needle\b/gi },
+	{ re: /\bquietly\s+(?:drop|swallow|ignore|fail|discard|skip|overwrite)(?:s|ped|ed|ing)?\b/gi },
+	{ re: /\bthe\s+offending\s+\w+/gi },
+	{ re: /\b(?:actually|really)\s+matters?\b/gi },
+	{ re: /\b(?:it|this|that)(?:['’]s|\s+is)\s+worth\s+\w+ing\b/gi },
+	{ re: /\blet\s+me\s+be\s+(?:direct|blunt|honest|clear|frank)\b/gi },
+	{ re: /\bhand[- ]?wav(?:e|es|ed|ing|y|iness)\b/gi },
+	{ re: /\btl;?dr\b/gi },
+	{ re: /\bverdict\s*:/gi },
+	{ re: /\byour\s+(?:instinct|intuition)s?\s+(?:is|are|was|were)\s+(?:right|correct|good|sound)\b/gi },
+	// hedge use only: "If anything, X"; "if anything changes" is a condition
+	{ re: /\bif\s+anything\b(?=,|\.)/gi },
+	// the sign-off question; "they want me to resign" in prose stays
+	{ re: /\bwant\s+me\s+to\b[^.!?\n]{0,60}\?/gi },
+	// "spot on" the verdict; "a spot on the map" is a place
+	{ re: /\bspot[- ]on\b(?!\s+(?:the|a|an|his|her|their|its|my|your|our)\b)/gi },
+	// Tell frames: single words with real literal senses flag only in
+	// their machine-writing shape. "A testament to" flags; a last will
+	// and testament does not. Each frame is corpus-checked.
+	{ re: /\btestament\s+to\b/gi },
+	{ re: /\btapestr(?:y|ies)\s+of\b|\brich\s+tapestr(?:y|ies)\b/gi },
+	{ re: /\brealms?\s+of\b/gi },
+	{ re: /\blandscape\s+of\b|\b(?:competitive|digital|tech|technology|business|data|security|regulatory|media|marketing|threat|vendor|startup|modern|evolving|changing|current)\s+landscape\b/gi },
+	{ re: /\b(?:customer|user|developer|buyer|patient|learning|onboarding|digital|transformation|brand)\s+journey\b|\bjourney\s+towards?\b/gi },
+	{ re: /\b(?:data|developer|dev|partner|product|startup|tech|digital|app|content|brand|platform|innovation|software|api)\s+ecosystems?\b/gi },
+	{ re: /\bharness(?:es|ed|ing)?\s+the\s+(?:power|potential|full|energy|capabilities)\b/gi },
+	{ re: /\bunderscor(?:e|es|ed|ing)\s+(?:the|its|their|that|how|why)\b/gi },
+	{ re: /\bunlock(?:s|ed|ing)?\s+(?:the\s+|new\s+)?(?:value|potential|possibilit|opportunit|insight|growth|efficienc|productivity|creativity|innovation|headroom|scale|power)/gi },
+	{ re: /\bunleash(?:es|ed|ing)?\s+(?:the\s+|your\s+)?(?:full\s+)?(?:potential|power|creativity|innovation|productivity|possibilit)/gi },
+	{ re: /\bempower(?:s|ed|ing)?\s+(?:you\b|your\b|users|teams|writers|developers|builders|businesses|people|everyone)/gi },
+	{ re: /\bsupercharg(?:e|es|ed|ing)\s+(?:your|the)\b/gi },
+	{ re: /\brevolutioniz(?:e|es|ed|ing)\s+(?:your|the\s+way)\b/gi },
+	{ re: /\bfoster(?:s|ed|ing)?\s+(?:a\s+culture|a\s+sense|collaboration|innovation|resilience|growth|trust|engagement|community|creativity|alignment)/gi },
+	{ re: /\bguardrails\s+(?:around|for|on)\b|\b(?:add|adding|put|putting|set|setting)\s+(?:up\s+)?guardrails\b/gi },
+	{ re: /\borthogonal\s+(?:concern|question|issue|problem|point)s?\b|\b(?:concerns?|questions?|issues?|problems?)\s+(?:are|is|was|were)\s+orthogonal\b/gi },
+	{ re: /\bspaghetti\s+code\b/gi },
+	{ re: /\bjust\s+plumbing\b|\bplumbing\s+of\b/gi },
+	{ re: /\bbottom\s+line\s*[:,]|\bthe\s+bottom\s+line\s+is\b/gi },
+];
+
+const AI_TELL_PATTERNS = [
+	...AI_TELL_PHRASES.map((q) => ({
+		re: new RegExp(`\\b${q.replace(/ /g, '\\s+').replace(/'/g, "['’]")}\\b`, 'gi') })),
+	...AI_TELL_VERBS.map((w) => ({ re: new RegExp(`\\b${verbForms(w)}\\b`, 'gi') })),
+	...AI_TELL_NOUNS.map((w) => ({ re: new RegExp(`\\b${nounForms(w)}\\b`, 'gi') })),
+	...AI_TELL_REGEXES,
+];
 
 // Structural tells: negative parallelisms, reflexive validation, and punchy
 // fragments. Matched against the whole text (some span sentence boundaries),
 // so word gaps are \s+ to survive wrapped lines.
 const AI_TELL_STRUCTURES = [
 	{ phrase: "it's not X, it's Y",
-		re: /\b(?:it|this|that)['’]s\s+not\s+(?:just\s+|only\s+)?[^,;.]{1,40}[,;]\s+(?:it|this|that)['’]s\b/gi },
+		re: /\b(?:it|this|that)['’]s\s+not\s+(?:just\s+|only\s+)?[^,;.—]{1,40}[,;—]\s*(?:it|this|that)['’]s\b/gi },
 	{ phrase: "isn't just X, it's Y",
 		re: /\bisn['’]t\s+(?:just|only)\s+[^,;.—]{1,40}[,;—]\s*(?:it|this|that)['’]s\b/gi },
+	{ phrase: "isn't X, it's Y",
+		re: /\bisn['’]t\s+[^,;.—]{1,40}[,;—]\s*(?:it|this|that)['’]s\b/gi },
+	{ phrase: "isn't about X, it's about Y",
+		re: /\bisn['’]t\s+about\s+[^,;.—]{1,40}[,;—]\s*(?:it|this|that)['’]s\s+about\b/gi },
+	{ phrase: 'period. as emphasis',
+		re: /(?<=[.!?]\s{1,2})Period\.(?=\s|$)/g },
 	{ phrase: 'not only X but also Y',
 		re: /\bnot\s+only\b[^.;]{1,60}\bbut\s+also\b/gi },
 	{ phrase: "you're absolutely right",
@@ -202,12 +325,15 @@ const WEAK_VERB_PATTERNS = Object.entries(WEAK_VERBS).map(([phrase, verb]) => ({
 	re: new RegExp(`\\b${phrase.replace(/ /g, '\\s+')}\\b`, 'gi') }));
 
 const IRREGULAR_PARTICIPLES = new Set([
-	'begun', 'bought', 'brought', 'broken', 'built', 'caught', 'chosen',
-	'done', 'drawn', 'driven', 'eaten', 'felt', 'found', 'forgotten',
-	'frozen', 'given', 'gone', 'held', 'hidden', 'kept', 'known', 'led',
-	'left', 'lost', 'made', 'meant', 'paid', 'put', 'read', 'run', 'seen',
-	'sent', 'set', 'shown', 'sold', 'spent', 'split', 'taken', 'told',
-	'thought', 'torn', 'understood', 'worn', 'written',
+	'begun', 'beaten', 'bitten', 'bought', 'brought', 'broken', 'built',
+	'caught', 'chosen', 'dealt', 'done', 'drawn', 'driven', 'eaten', 'fed',
+	'felt', 'found', 'forgotten', 'frozen', 'given', 'gone', 'gotten',
+	'held', 'hidden', 'hung', 'kept', 'known', 'laid', 'led', 'left',
+	'lost', 'made', 'meant', 'paid', 'put', 'read', 'ridden', 'run',
+	'said', 'seen', 'sent', 'set', 'shot', 'shown', 'shut', 'sold',
+	'spent', 'split', 'spoken', 'stolen', 'struck', 'sung', 'swung',
+	'taken', 'thrown', 'told', 'thought', 'torn', 'understood', 'won',
+	'worn', 'written',
 ]);
 
 // Words the passive pattern must never read as participles: -ed lookalikes
@@ -215,6 +341,11 @@ const IRREGULAR_PARTICIPLES = new Set([
 const NOT_PARTICIPLES = new Set([
 	'indeed', 'hundred', 'sacred', 'naked', 'wicked', 'hatred', 'kindred',
 	'unknown', 'unseen', 'unwritten', 'unspoken', 'unbroken', 'mistaken',
+	// predicative adjectives: "the fix was complicated" is a state
+	'complicated', 'interested', 'excited', 'detailed', 'motivated',
+	'sophisticated', 'talented', 'concerned', 'worried', 'tired',
+	'limited', 'related', 'dedicated', 'outdated', 'opinionated',
+	'convoluted', 'nuanced',
 ]);
 
 // Exported for the conservation property tests.
@@ -223,6 +354,7 @@ export function stripMarkdown(text) {
 		.replace(/^---\n[\s\S]*?\n---(?=\n|$)/, (m) => m.replace(/[^\n]/g, ' '))
 		.replace(/```[\s\S]*?```/g, (m) => m.replace(/[^\n]/g, ' '))
 		.replace(/`[^`\n]+`/g, (m) => ' '.repeat(m.length))
+		.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
 		.replace(/\[([^\]]*)\]\((?:[^()\n]|\([^()\n]*\))*\)/g, (m, label) =>
 			label.padEnd(m.length, ' '))
 		.replace(/^[ \t]*[|].*$/gm, (m) => ' '.repeat(m.length))
@@ -410,18 +542,31 @@ function pushMatchesWithLine(text, re, lineAt, flags, flag) {
 const SENTENCE_LEVEL = new Set(['hard-sentence', 'very-hard-sentence']);
 
 function assignSpans(text, flags, from, span) {
+	const seen = new Map(); // repeated matches refine to their own occurrence
 	for (let i = from; i < flags.length; i++) {
 		if (flags[i].span) continue;
-		flags[i].span = SENTENCE_LEVEL.has(flags[i].category)
-			? span : refineSpan(text, span, flags[i].match) ?? span;
+		if (SENTENCE_LEVEL.has(flags[i].category)) {
+			flags[i].span = span;
+			continue;
+		}
+		const key = `${flags[i].category}:${flags[i].match}`;
+		const n = seen.get(key) ?? 0;
+		seen.set(key, n + 1);
+		flags[i].span = refineSpan(text, span, flags[i].match, n) ?? span;
 	}
 }
 
-function refineSpan(text, span, match) {
+function refineSpan(text, span, match, occurrence = 0) {
 	const re = new RegExp(match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-		.replace(/\s+/g, '\\s+').replace(/['’]/g, "['’]"), 'i');
-	const m = re.exec(text.slice(span[0], span[1]));
-	return m ? [span[0] + m.index, span[0] + m.index + m[0].length] : null;
+		.replace(/\s+/g, '\\s+').replace(/['’]/g, "['’]"), 'gi');
+	const slice = text.slice(span[0], span[1]);
+	let m;
+	for (let i = 0; (m = re.exec(slice)) !== null; i++) {
+		if (i === occurrence) {
+			return [span[0] + m.index, span[0] + m.index + m[0].length];
+		}
+	}
+	return null;
 }
 
 function checkLexicon(sentence, flags, file, line, impersonal) {
@@ -434,6 +579,9 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 		for (const { phrase, re } of PRONOUN_PATTERNS) {
 			for (const m of sentence.matchAll(re)) {
 				if (m[0] === 'US') continue; // the country, not the pronoun
+				const next = sentence[m.index + m[0].length];
+				// "I/O" and "i.e." are abbreviations, not first person
+				if (m[0].toLowerCase() === 'i' && (next === '/' || next === '.')) continue;
 				flags.push({ file, line, category: 'personal-pronoun',
 					match: m[0],
 					hint: 'name the system, the actor, or the user; keep the requirement impersonal' });
@@ -449,14 +597,68 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 		pushMatches(sentence, re, flags, { file, line,
 			category: 'simpler-alternative', match: phrase, hint: `use "${simpler}"` });
 	}
-	for (const { phrase, re } of AI_TELL_PATTERNS) {
-		pushMatches(sentence, re, flags, { file, line, category: 'ai-tell',
-			match: phrase, hint: 'an AI tell; state the claim plainly' });
+	for (const { re } of AI_TELL_PATTERNS) {
+		// report the surface form, so "delved" reads as itself, not "delve"
+		for (const m of sentence.matchAll(re)) {
+			flags.push({ file, line, category: 'ai-tell',
+				match: m[0].toLowerCase().replace(/\s+/g, ' '),
+				hint: 'an AI tell; state the claim plainly' });
+		}
 	}
 	for (const { phrase, verb, re } of WEAK_VERB_PATTERNS) {
 		pushMatches(sentence, re, flags, { file, line, category: 'weak-verb',
 			match: phrase, hint: `use the verb: "${verb}"` });
 	}
+}
+
+// `<!-- terse-ignore -->` on its own line suppresses the findings reported
+// on the next non-blank line; `<!-- terse-ignore: cat1 cat2 -->` narrows the
+// suppression to the named categories. The comment is invisible in rendered
+// markdown, so a documented keep survives in the file, not just in chat.
+function collectSuppressions(rawText) {
+	const map = new Map();
+	const lines = rawText.split('\n');
+	for (let i = 0; i < lines.length; i++) {
+		const m = /^[ \t]*<!--\s*terse-ignore(?::([a-z,\s-]+))?\s*-->[ \t]*$/
+			.exec(lines[i]);
+		if (!m) continue;
+		let target = i + 2; // the next line, 1-based
+		while (target <= lines.length && lines[target - 1].trim() === '') target++;
+		map.set(target, m[1] ? new Set(m[1].split(/[\s,]+/).filter(Boolean)) : 'all');
+	}
+	return map;
+}
+
+function isSuppressed(map, flag) {
+	const cats = map.get(flag.line);
+	return cats !== undefined && (cats === 'all' || cats.has(flag.category));
+}
+
+// Lexical findings inside quoted material belong to the quoted author, so
+// the checker exempts them, as the grammar scope already does for errors.
+// Structure and readability stay flagged: a hard sentence is hard to read
+// whoever wrote it.
+const QUOTED_EXEMPT = new Set(['ai-tell', 'simpler-alternative', 'weak-verb',
+	'qualifier', 'preference', 'personal-pronoun', 'em-dash']);
+
+function quotedRanges(text) {
+	const ranges = [];
+	for (const block of text.matchAll(/[^\n][^]*?(?=\n[ \t]*\n|$)/g)) {
+		const base = block.index;
+		const straight = [];
+		for (const m of block[0].matchAll(/"/g)) straight.push(base + m.index);
+		for (let i = 0; i + 1 < straight.length; i += 2) {
+			ranges.push([straight[i], straight[i + 1]]);
+		}
+		for (const m of block[0].matchAll(/“[^”]*”/g)) {
+			ranges.push([base + m.index, base + m.index + m[0].length - 1]);
+		}
+	}
+	return ranges;
+}
+
+function inQuotedRange(ranges, span) {
+	return ranges.some(([a, b]) => span[0] > a && span[1] <= b);
 }
 
 export function checkText(rawText,
@@ -467,6 +669,12 @@ export function checkText(rawText,
 	for (const m of text.matchAll(/—/g)) {
 		flags.push({ file, line: lineAt(m.index), category: 'em-dash',
 			match: '—', span: [m.index, m.index + 1],
+			hint: 'use a period, colon, or comma; parentheses only under six words' });
+	}
+	// A spaced en dash is an em dash in disguise; ranges like 3–5 stay.
+	for (const m of text.matchAll(/(?<=[ \t])–(?=[ \t])/g)) {
+		flags.push({ file, line: lineAt(m.index), category: 'em-dash',
+			match: '–', span: [m.index, m.index + 1],
 			hint: 'use a period, colon, or comma; parentheses only under six words' });
 	}
 	for (const a of findAsides(text)) {
@@ -509,7 +717,15 @@ export function checkText(rawText,
 		allWords.push(...words);
 		sentenceLengths.push(words.length);
 	}
-	return { flags, stats: docStats(allWords, sentenceLengths, flags) };
+	const suppressions = collectSuppressions(rawText);
+	const quoted = quotedRanges(text);
+	const lines = text.split('\n');
+	const inBlockquote = (line) => /^[ \t]*>/.test(lines[line - 1] ?? '');
+	const kept = flags.filter((f) =>
+		!isSuppressed(suppressions, f) &&
+		!(QUOTED_EXEMPT.has(f.category) && f.span &&
+			(inQuotedRange(quoted, f.span) || inBlockquote(f.line))));
+	return { flags: kept, stats: docStats(allWords, sentenceLengths, kept) };
 }
 
 // The whole document fails the gate when accumulated dense vocabulary pushes
