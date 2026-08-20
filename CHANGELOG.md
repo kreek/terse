@@ -6,6 +6,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] (2026-08-20)
+
 ### Added
 
 - The claudism families from the community lists, eight of them, from
