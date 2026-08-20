@@ -25,7 +25,7 @@ Workflow:
    - "more-detail" adds only material grounded in the document or
      provided by the user; never invent facts
    - the `style` skill's rules still apply
-4. Re-run the checker with the same arguments as the baseline; a tone
+4. Re-run the checker with the same arguments as the baseline. A tone
    pass may not add new flags, and "simpler" must clear the
    hard-sentence flags at the target grade.
 5. Report the shift with two or three before -> after examples and the

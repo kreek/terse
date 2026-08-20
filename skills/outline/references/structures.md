@@ -8,15 +8,15 @@ resists is the wrong shape.
   supporting arguments, each with its evidence.
 - **Argumentative essay**: thesis, reasons with evidence, the strongest
   counterargument and its rebuttal, conclusion.
-- **Technical explainer**: what it is, why it matters, how it works,
-  how to use it, edge cases.
+- **Technical explainer**: what it is, the problem it solves, how it
+  works, how to use it, edge cases.
 - **PRD**: problem, goals and non-goals, users, requirements, success
   metrics.
 - **Design doc**: context and problem, proposed solution, alternatives
   considered, trade-offs, rollout.
 - **ADR**: context and the forces in tension, the decision, its
   status, and the consequences accepted along with it.
-- **Change request**: what changes, why now, the blast radius, the
+- **Change request**: what changes, why now, what it can break, the
   rollout and rollback path, and who approves.
 - **Issue or bug report**: what happens, what should happen, how to
   reproduce it, and what it blocks. Impersonal throughout: the

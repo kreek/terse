@@ -16,5 +16,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Self-check README prose
-        run: node scripts/style-check.mjs README.md ROADMAP.md evals/README.md
+      - name: Self-check the repo's prose
+        run: node scripts/style-check.mjs README.md ROADMAP.md CHANGELOG.md evals/README.md skills/*/SKILL.md skills/*/references/*.md

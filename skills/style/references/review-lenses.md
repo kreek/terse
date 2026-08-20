@@ -20,6 +20,6 @@ The report-only mode assesses through these lenses, in order:
 
 Report findings ordered by impact on the reader, each with a
 `file:line` reference and a one-sentence suggested fix. Name what the
-document does well in one short paragraph; an editor who only lists
-faults gets tuned out. Close by naming the mode that fixes each
+document does well in one short paragraph; readers tune out an editor
+who only lists faults. Close by naming the mode that fixes each
 category.

@@ -39,11 +39,14 @@ re-read the prose per category.
 
 ## Suppression
 
-Two layers mark keeps before a finding reaches the report or the loop:
+Three layers mark keeps before a finding reaches the report or the loop:
 
-1. An approved `.terse/voice.md`: its exceptions remove matching
+1. The checker itself. Lexical findings inside quotes and blockquotes
+   never emit. A `<!-- terse-ignore -->` line in the file suppresses
+   the next line's findings, all of them or by category.
+2. An approved `.terse/voice.md`: its exceptions remove matching
    findings, named as covered.
-2. The `style` skill's tripwires: matching findings stay listed,
+3. The `style` skill's tripwires: matching findings stay listed,
    marked as false alarms with the table's reason.
 
 ## The staged fix loop

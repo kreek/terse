@@ -25,16 +25,17 @@ The user directs the mode and scope in chat; collection is the same in
 every mode.
 
 - **fix** (default): run the staged loop over every finding.
-- **report only** ("check this", "review it, don't edit"): report the
+- **report only** (`check this`, `review it, don't edit`): report the
   findings and stop. Lead with the `structure` and `voice-drift`
   findings no mechanical fix covers, assess through the `style`
   skill's `references/review-lenses.md`, and offer the highlight
   preview. The document stays unmodified.
 - **grammar only** ("proofread", "just fix the grammar"): the mechanics
-  stage alone, under `references/grammar-scope.md`. No style opinions.
-- **tone** ("make it casual", "simpler, grade 8"): rewrite toward a
-  preset per `references/tone-presets.md`, then run the gate; a tone
-  pass must not add new findings.
+  stage alone, under the `style` skill's `references/grammar-scope.md`.
+  No style opinions.
+- **tone** (`make it casual`, `simpler, grade 8`): rewrite toward a
+  preset per the `style` skill's `references/tone-presets.md`, then run
+  the gate; a tone pass must not add new findings.
 - **trim** ("cut 15%", "this runs long"): the user sets the target as a
   percent or a word count. Cutting is structural, so it runs like any
   `structure` finding. Propose the cuts against the reverse outline,
@@ -42,8 +43,8 @@ every mode.
   the cut where the document is not working, on sections that restate,
   asides, and paragraphs the outline never asked for. Shaving the same
   share out of every sentence hits the number and flattens the prose.
-- **scoped fix** ("fix only the AI tells", "everything except the
-  quotes"): filters select findings; they never change the loop.
+- **scoped fix** (`fix only the AI tells`, `everything except the
+  quotes`): filters select findings; they never change the loop.
   Findings outside the scope become decided keeps for this pass,
   reported but untouched.
 
@@ -53,7 +54,8 @@ every mode.
    exceptions suppress matching findings, and its measured ranges bound
    every rewrite. Ignore a `draft` template and say so.
 2. Load the `style` skill's Core Ideas and Tripwires, and its
-   `references/claude-defaults.md`; together they govern every rewrite.
+   `${CLAUDE_PLUGIN_ROOT}/skills/style/references/claude-defaults.md`;
+   together they govern every rewrite.
    The defaults reference also lists trained habits the checker cannot
    catch. Hunt them in the collection read that follows: synonym
    cycling, compulsive triplets, participial tails, closing summaries.
@@ -125,7 +127,8 @@ every mode.
        flag for an aside
      - voice-drift: return to the template's register
    - **mechanics** last, on the wording that now exists: grammar,
-     spelling, and punctuation, under `references/grammar-scope.md`.
+     spelling, and punctuation, under the `style` skill's
+     `references/grammar-scope.md`.
    Skip a finding only when it matches a documented false alarm or a
    voice-template exception; keep a list of skips with the reason.
    `structure` findings go to the report, not the loop.

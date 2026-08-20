@@ -35,7 +35,8 @@ toward the governing thought.
    (the flow is the `style` skill's `references/voice-analysis.md`).
    If the user declines, continue in the `style` skill's default
    voice. Either way, load the `style` skill's rules and read
-   `references/claude-defaults.md` before drafting. It names the chat
+   `${CLAUDE_PLUGIN_ROOT}/skills/style/references/claude-defaults.md`
+   before drafting. It names the chat
    habits a first draft produces, and what to do instead:
    - directness where warmth creeps in
    - the depth the genre owes where a chat-sized summary would land
@@ -66,7 +67,7 @@ toward the governing thought.
 4. Expand section by section, each drafted knowing its place in the
    whole and written to the word budget the outline assigned it. Run
    the checker as you go and fix findings in the section that raised
-   them. Grammar is a draft-time finding within
+   them. Grammar is a draft-time finding within the `style` skill's
    `references/grammar-scope.md`: correct the typo in the sentence you
    just wrote, where no later rewrite can stale it. Keep the pass
    bounded to that sentence and move on. Finished sections stay
@@ -85,8 +86,8 @@ toward the governing thought.
    or the section does not belong. Break the outline on purpose and
    record in the outline file what changed and why; never drift from
    it in silence. The budget is the same kind of signal. A section
-   that lands under half its target usually had a thinner claim than
-   it looked. One that runs to double usually holds two claims.
+   that lands under half its target had a thinner claim than it
+   looked. One that runs to double tends to hold two claims.
    Both are outline problems, so take them back to the outline rather
    than padding or cramming to hit the number. On a document running to
    thousands of words, expect the outline to update mid-draft. The
@@ -136,7 +137,7 @@ toward the governing thought.
 - [ ] The outline file records every deviation from the approved
       outline, none silent.
 - [ ] The whole-document read happened: cadence against the voice
-      range, transitions in sequence, paragraph advance, outline claims
+      range, transitions in order, paragraph advance, outline claims
       intact.
 - [ ] Every subsection makes one point, and that point supports its
       section's claim and the document's flow.

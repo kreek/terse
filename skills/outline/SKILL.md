@@ -12,7 +12,7 @@ description: "Compose a document's structure first: bullets with one claim per s
 An outline's job is the logical flow of information: which points come
 in what order, and how each section builds on the last. Moving bullets
 takes seconds where moving polished prose takes an afternoon. So
-iterate with the user toward an outline they approve, one that walks
+iterate with the user toward an outline they approve. It should walk
 the reader from question to answer, ready to expand into prose later.
 
 ## Workflow
@@ -53,8 +53,8 @@ the reader from question to answer, ready to expand into prose later.
    here and a section later.
 5. Draft the lead in the outline file: the first sentence or two,
    written out rather than described. It is the one prose the law
-   allows, and the cheapest test of the entry point: a lead that will
-   not come is usually a structure problem in prose disguise. The lead
+   allows, and the cheapest test of the entry point. A lead that will
+   not come is most often a structure problem in prose disguise. The lead
    sets up the governing thought. The last section is the ask or the
    decision, not a trailing summary. Decide both ends before you write
    the middle.
@@ -74,16 +74,17 @@ the reader from question to answer, ready to expand into prose later.
      complication, and the question the answer resolves
    - the last section is the ask or the decision, not a trailing summary
    - the budget tracks the claims: no section takes room it has
-     nothing to say in, and no section carrying the answer is funded
-     like a caveat
-   - nothing critical is missing: the evidence named under each claim
-     is available and not merely named, and disputable claims carry a
+     nothing to say in, and no answer-carrying section gets a
+     caveat's budget
+   - nothing critical is missing: the evidence under each claim is on
+     hand rather than only named, and disputable claims carry a
      warrant
+
    Rework anything these checks catch before showing the user.
 7. Iterate by editing the outline file until the user approves. Approval
    is explicit; never proceed on your own judgment. On approval, write
-   `status: approved (user, YYYY-MM-DD)` at the top of the outline file
-   and hand off to `/terse:write`, which reads that line to tell an
+   `status: approved (user, YYYY-MM-DD)` at the top of the outline
+   file. Hand off to `/terse:write`, which reads that line to tell an
    approved outline from a draft. The structure then survives as its
    own record.
 8. Stay open after approval. A section that resists drafting is
@@ -115,7 +116,7 @@ the reader from question to answer, ready to expand into prose later.
 - [ ] The sections pass the question-answer chain, MECE, and sibling
       abstraction checks.
 - [ ] Open judgment calls live in the outline file, not only in chat.
-- [ ] The user explicitly approved the outline, and the file records
-      the approval.
+- [ ] The user's approval of the outline was explicit, and the file
+      records it.
 - [ ] The file records changes made after approval, and the user
       re-approved structural ones.

@@ -7,7 +7,7 @@ This file tracks the distance to that target. Each milestone names its
 proof. A milestone without passing proof is not done.
 
 The surface is three commands, one per phase: outline, write, edit.
-The always-on `writing` skill carries the voice into everyday prose.
+The always-on `style` skill carries the voice into everyday prose.
 
 ## Principles
 
@@ -81,6 +81,14 @@ recall. Edited human prose set the false-positive bar and the targets.
       qualifiers. Targets moved from guesses to n/134, n/123, n/400.
 - [x] Keep every property test green: conservation, metamorphic
       relations, and the CLI contract. 77 tests pass.
+- [x] 2026-08-19: the lexicon grew the claudism families from the
+      community lists, in every inflection, and `very` joined the
+      qualifiers. Sixty more corpus entries pin recall. The Hemingway
+      corpus still shows zero lexical false positives.
+- [x] 2026-08-20: caution on single words. A bare word is a tell only
+      with no everyday literal sense. Words with one need their tell
+      frame, and words with plain synonyms moved to the wordy list.
+      A literal-sense test block pins the silence.
 
 Proof, met: `test/corpus.test.js` pins total recall on a labeled
 corpus of 27 planted tells and weak verbs. It also pins zero lexical
@@ -130,13 +138,15 @@ Proof: the voice eval case passes. A template diff shows drift tracking.
 The leading grammar assistants win on presence. Terse should check
 without a command.
 
-- [ ] A PostToolUse hook: the checker runs on every markdown write in a
-      session. Opt-in via settings.
-- [ ] A documented CI recipe for other repos, with the false-alarm
-      workflow spelled out.
+- [x] A PostToolUse hook: the checker runs on every markdown write in
+      a session. Opt-in via settings (`TERSE_HOOK=1`). Shipped
+      2026-08-19.
+- [x] The false-alarm workflow: quoted material and blockquotes stay
+      silent, and `<!-- terse-ignore -->` records a keep in the file.
+- [ ] A documented CI recipe for other repos.
 
-Proof: the hook fires in a live session. One external repo gates its
-prose on the checker in CI.
+Proof: the hook fires in a live session (pending). One external repo
+gates its prose on the checker in CI.
 
 ## Milestone 6: Editor depth
 
@@ -201,7 +211,7 @@ Done, 2026-08-18. Seven commands confused the surface. The product is
 three phases: outline, write, edit.
 
 - [x] The findings contract
-      (`skills/writing/references/findings.md`): one finding shape,
+      (`skills/style/references/findings.md`): one finding shape,
       categories mapped to stages, collect-once, and a staged fix
       loop. Grammar lands last on every sentence; a rewrite discards
       that sentence's stale grammar findings.

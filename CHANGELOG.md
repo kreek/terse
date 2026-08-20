@@ -6,6 +6,51 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The claudism families from the community lists, eight of them, from
+  anthropomorphized code-speak to sign-off tics. The corpus tests pin
+  recall on every family, and the Hemingway corpus still shows zero
+  lexical false positives.
+- Inflection coverage. One base form now covers a word's family, so
+  `delved` flags with `delve`.
+- Caution on single words. A bare word is a tell only when it has no
+  everyday literal sense. A word with one flags only in its tell
+  frame. `testament to` flags where a last will and testament does
+  not, and a test harness never trips `harness the power`. Words with
+  plain synonyms (`robust`, `crucial`, `seamless`, `streamline`)
+  moved to the wordy list, where the flag carries the swap. A
+  dedicated test block pins the literal senses.
+- `very` is a qualifier. `the very least` stays, as emphasis on a
+  noun rather than a hedge on a claim.
+- A spaced en dash flags as an em dash in disguise; ranges like `3–5`
+  stay.
+- `<!-- terse-ignore -->` records a keep in the file itself. A bare
+  comment suppresses the next line's findings; named categories
+  narrow it.
+- Lexical findings inside quotes and blockquotes stay silent. The
+  quoted author owns them, as the grammar scope already ruled.
+- An always-on hook (`hooks/hooks.json`). With `TERSE_HOOK=1` set,
+  every markdown write runs the checker and feeds the flags back
+  into the session.
+- More irregular participles and predicative adjectives, so
+  `was spoken` flags and `is complicated` does not.
+
+### Fixed
+
+- The fallback eval runner fails fast without `ANTHROPIC_API_KEY`.
+  Its `--bare` sessions never read OAuth, so on a subscription login
+  every run died at exit 1 and the report scored nothing.
+- The fallback runner carries case tags, so the scorer applies the
+  grammar-parity rule. A style case where both arms come out clean
+  now passes instead of failing on zero against zero.
+- Repeated matches in one sentence get their own spans, so the
+  highlight view marks the second `maybe`, not the first one twice.
+- `I/O` and `i.e.` no longer read as personal pronouns under
+  `--impersonal`, and `the same kind of signal` is no longer a hedge.
+- Cross-skill references name their full paths, so `/terse:write` and
+  `/terse:edit` find the style references without hunting.
+
 ## [0.7.0] (2026-08-19)
 
 ### Added
@@ -25,9 +70,9 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   two-line issue comment never matched. It now names the artifacts and
   the platforms, since the nouns are what a matcher reads.
 - Short pieces are in scope, not exempt. Anything under 200 words
-  stops at step 4 with the voice, the constraints, and the draft, and
+  stops at step 4 with the voice, the constraints, and the draft. It
   skips the whole-document read that would mean nothing on a comment.
-- `drafts/` is ignored, as the scratch area for skill output.
+- Git ignores `drafts/`, the scratch area for skill output.
 
 ## [0.6.0] (2026-08-19)
 
@@ -36,15 +81,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The `long-opening` check. "Use short sentences. Use short first
   paragraphs" opened the Kansas City Star style sheet; Terse encoded
   the first rule and not the second. A first paragraph of 90 words or
-  more now flags, set one word above the longest opening in
-  `samples/hemingway`, which is the regression corpus for it.
-- The `preference` check. A requirement filed as a wish ("I would like
-  this", "it would be nice if") is something a reader can decline, so
-  the checker points at the requirement instead.
+  more now flags. The threshold sits one word above the longest
+  opening in `samples/hemingway`, the regression corpus for it.
+- The `preference` check. A requirement filed as a wish, as in
+  `I would like this` or `it would be nice if`, is something a reader
+  can decline. The checker points at the requirement instead.
 - `--impersonal`, and the `personal-pronoun` check behind it. Issues,
   specs, and acceptance criteria drop first and second person. Prose
-  written for a reader keeps its "you", so the rule stays opt-in, and
-  the write and edit skills pass the flag for those genres.
+  written for a reader keeps its "you", so the rule stays opt-in. The
+  write and edit skills pass the flag for those genres.
 - Two Core Ideas in the `style` skill. "The particular, not the
   abstraction" asks for the service, the number, and the date. "Say
   what is, not what isn't" is the Kansas City Star's fourth rule, and
@@ -59,21 +104,21 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   flag now. Expect `long-opening` and `preference` findings on existing
   files.
 - Draft-time checking in `/terse:write` means the findings model, not
-  the checker alone. Grammar inside `grammar-scope.md` is fixed in the
-  sentence that raised it, and the skill reads `claude-defaults.md`
+  the checker alone. The skill fixes grammar inside `grammar-scope.md`
+  in the sentence that raised it, and reads `claude-defaults.md`
   before drafting. A constraints step front-loads the numbers.
 - `/terse:edit` loads the voice template and the style rules before
   the collection read that needs them, rather than two steps after.
   Report-only names what the document does well and closes with the
-  mode that fixes each category. The `length` category, which the
-  findings contract never defined, is gone.
-- `/terse:outline` collects the target length its budgets are measured
-  against, names the `status: approved (user, DATE)` marker the other
-  skills read, and permits recorded deviation rather than forbidding
-  all drift.
+  mode that fixes each category. This release removed the `length`
+  category, which the findings contract never defined.
+- `/terse:outline` now collects the target length that anchors its
+  budgets. It names the `status: approved (user, DATE)` marker the
+  other skills read, and permits recorded deviation rather than
+  forbidding all drift.
 - User-facing surfaces say "claim", reversing the 0.5.0 split that
-  kept "point" outside the skill bodies. One term wherever the
-  section-level unit is meant; "point" stays for the paragraph.
+  kept "point" outside the skill bodies. One term wherever the text
+  means the section-level unit; "point" stays for the paragraph.
 - A tripwire records why Terse does not borrow Hemingway's iceberg.
   Omission makes a fiction reader supply the feeling and a document
   reader supply a guess.
@@ -89,7 +134,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The three phase skills open with an Iron Law, each distilled from
   rules the skill already enforces.
 - The README explains all four skills and how they hand off through
-  the outline file, opens with the three-phase process, and adds a
+  the outline file. It opens with the three-phase process and adds a
   local-testing install recipe. Terse is a writing system, not a
   writing editor, and the manifests agree.
 - User-facing surfaces say "point" where the skill bodies define and
@@ -101,8 +146,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Word budgets. The outline assigns every section a target word count
   summing to the document's length. Write drafts to the budget and
-  treats big misses as outline signals: a section far under target
-  had a thinner claim, one at double holds two claims. Edit checks
+  treats big misses as outline signals. A section far under target
+  had a thinner claim; one at double holds two claims. Edit checks
   length against the budget and flags overruns.
 - Evidence and warrants. Under each claim the outline lists the
   evidence it needs; disputable claims add one line for why that
@@ -125,10 +170,10 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The shape decides where the answer goes: memos, reports, specs, and
-  design docs open with it, while a narrative shape may hold it for a
-  nut graf. Delay is a placement the shape licenses, never a reveal
-  saved for the end.
+- The shape decides where the answer goes. Memos, reports, specs, and
+  design docs open with it; a narrative shape may hold it for a nut
+  graf. Delay is a placement the shape licenses, never a reveal saved
+  for the end.
 - The reverse-outline audit in edit runs four more checks:
   restatement, length against target, the outline's promises, and
   the outline's record. Deviations logged during drafting count as
@@ -139,15 +184,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Stock figures as AI tells. The checker lexicon catches the common
-  ones (earns its place, moves the needle, heavy lifting, low-hanging
-  fruit, secret sauce, table stakes, at the end of the day). The
-  writing skill carries the translation test for the rest: if the
-  literal verb loses nothing, the figure is a finding. Metaphor stays
-  for explaining mechanisms, not for stating decisions.
+  ones: `earns its place`, `moves the needle`, `heavy lifting`,
+  `low-hanging fruit`, `secret sauce`, `table stakes`,
+  `at the end of the day`. The writing skill carries the translation
+  test for the rest: if the literal verb loses nothing, the figure is
+  a finding. Metaphor stays for explaining mechanisms, not for
+  stating decisions.
 - Flow at every level. The write skill's whole-document read and the
-  edit skill's reverse-outline audit both check that each subsection
-  makes one point, that point supports its section's claim, and the
-  sections in order walk the reader from question to answer.
+  edit skill's reverse-outline audit run the same check. Each
+  subsection makes one point, that point supports its section's
+  claim, and the sections in order walk the reader from question to
+  answer.
 
 ### Changed
 
@@ -155,10 +202,10 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   figurative verbs replaced with plain ones, passives given actors,
   hard sentences split into sub-bullets.
 - The outline intro states the goal: the logical flow of information,
-  iterated with the user to an approved outline that walks the reader
-  from question to answer.
+  iterated with the user to an approved outline. The outline walks
+  the reader from question to answer.
 - The governing thought is a short summary of the answer, not a
-  one-sentence absolute; failing to keep it short is a signal to
+  one-sentence absolute. Failing to keep it short is a signal to
   check the subject's width, not a verdict.
 
 ## [0.2.0] (2026-08-18)

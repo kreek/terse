@@ -16,10 +16,17 @@ Two layers:
   and readability arithmetic. It runs offline with zero dependencies and
   never calls a model. It grades
   each sentence with ARI and flags the hard ones. It flags passive voice,
-  adverbs, qualifiers, wordy phrases, long asides, em dashes, openings
-  that run past 90 words, and requirements filed as wishes. Document
-  stats cover word count, reading time, and grade. Each adverb, passive,
-  and qualifier count gets a length-scaled target.
+  adverbs, qualifiers, wordy phrases, long asides, and requirements
+  filed as wishes. Em dashes flag too, spaced en dashes included.
+  Openings of 90 words or more flag. The AI-tell lexicon covers the
+  claudism families in every inflection, and it is careful with single
+  words. A bare word is a tell only when it has no everyday literal
+  sense. A word with one flags only in its tell frame: `testament to`
+  flags, a last will and testament does not, and a test harness never
+  trips `harness the power`. Words with plain synonyms (`robust`,
+  `crucial`) sit in the wordy list, where the flag is a suggested
+  swap. Document stats cover word count, reading time, and grade.
+  Each adverb, passive, and qualifier count gets a length-scaled target.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
   playbook governs each fix and knows when a flag is a false alarm. Passive
   voice with an irrelevant actor stays. A hedge that is the point stays. Your em
@@ -92,6 +99,33 @@ color. Each highlight shows its hint on hover, and the chips at the top
 filter by category. Open it in any browser, or let Claude publish it as
 a page. The preview is for looking. You direct the fixes in chat: "fix
 all", "fix only the AI tells", "fix everything except the quotes".
+
+## Keep a flag on purpose
+
+Some flags are keeps. A quoted tell belongs to the quoted author, so
+lexical flags inside quotation marks and blockquotes never fire. For
+the rest, an HTML comment records the keep in the file:
+
+```
+<!-- terse-ignore -->
+This line keeps every finding.
+
+<!-- terse-ignore: em-dash, qualifier -->
+This line keeps only the named categories.
+```
+
+The comment is invisible in rendered markdown, and the keep survives
+in the file rather than in a chat you closed.
+
+## Always on
+
+The plugin ships a hook that runs the checker on every markdown file
+Claude writes or edits. The flags go back into the session as tool
+feedback. Opt in through your settings:
+
+```json
+{ "env": { "TERSE_HOOK": "1" } }
+```
 
 ## Use the checker standalone
 
