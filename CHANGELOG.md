@@ -6,6 +6,29 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] (2026-08-19)
+
+### Added
+
+- Four outline shapes: ADR, change request, white paper, and bid
+  response. The bid response carries a rule the others do not. The
+  buyer's structure and vocabulary win, so the `style` skill's word
+  choices become documented keeps rather than fixes.
+- A fallback for document types the list does not name. Take the
+  closest shape and adapt it, because an unlisted type is often a
+  listed one with a different audience.
+
+### Changed
+
+- `/terse:write` fires on far more than documents. Its description
+  claimed "a document from an approved outline", so a Jira ticket or a
+  two-line issue comment never matched. It now names the artifacts and
+  the platforms, since the nouns are what a matcher reads.
+- Short pieces are in scope, not exempt. Anything under 200 words
+  stops at step 4 with the voice, the constraints, and the draft, and
+  skips the whole-document read that would mean nothing on a comment.
+- `drafts/` is ignored, as the scratch area for skill output.
+
 ## [0.6.0] (2026-08-19)
 
 ### Added
