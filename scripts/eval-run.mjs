@@ -48,6 +48,8 @@ function loadCase(dir, fallbackName) {
 	}
 	return {
 		name: meta.name ?? fallbackName,
+		tags: (meta.tags ?? '').replace(/[[\]]/g, '').split(',')
+			.map((t) => t.trim()).filter(Boolean),
 		runs: Number(meta.runs) || 1,
 		maxTurns: Number(meta.max_turns) || 10,
 		prompt: body,
@@ -90,7 +92,9 @@ async function runOnce(c, arm) {
 		await execFileP('claude', args, { cwd: dir, timeout: RUN_TIMEOUT_MS,
 			maxBuffer: 16 * 1024 * 1024 });
 	} catch (err) {
-		error = err.killed ? 'timeout' : `exit ${err.code}`;
+		const detail = (err.stderr ?? '').trim().split('\n').at(-1) ?? '';
+		error = err.killed ? 'timeout'
+			: `exit ${err.code}${detail ? `: ${detail.slice(0, 200)}` : ''}`;
 	}
 	const files = {};
 	for (const f of readdirSync(dir)) {
@@ -120,6 +124,13 @@ if (cases.length === 0) {
 	console.error('eval-run: no cases matched');
 	process.exit(2);
 }
+// --bare sessions never read OAuth or the keychain, so a subscription login
+// cannot carry them. Fail here, not after forty dead runs.
+if (!process.env.ANTHROPIC_API_KEY) {
+	console.error('eval-run: --bare sessions authenticate only with ' +
+		'ANTHROPIC_API_KEY. Export a key, or run `claude plugin eval` instead.');
+	process.exit(2);
+}
 mkdirSync(dirname(outPath), { recursive: true });
 
 async function runCase(c, n) {
@@ -144,8 +155,18 @@ function reportRun(arm, r, i) {
 
 const report = { schemaVersion: 1, suite: 'terse (fallback runner)', cases: [] };
 for (const c of cases) {
-	report.cases.push({ name: c.name, arms: await runCase(c, runs ?? c.runs) });
+	report.cases.push({ name: c.name, tags: c.tags,
+		arms: await runCase(c, runs ?? c.runs) });
 }
 
 writeFileSync(outPath, JSON.stringify(report, null, 2));
 console.error(`eval-run: report written to ${outPath}`);
+
+const producedFiles = report.cases.some((c) =>
+	Object.values(c.arms).some((arm) =>
+		arm.some((r) => Object.keys(r.files).length > 0)));
+if (!producedFiles) {
+	console.error('eval-run: every run failed to produce files; ' +
+		'check the per-run errors above before trusting this report');
+	process.exit(2);
+}

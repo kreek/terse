@@ -105,11 +105,14 @@ for (const c of cases) {
 		failures++;
 	}
 	// A grammar-scope case must not ADD style flags; equality is correct
-	// behavior (the pass leaves style alone). Style cases must be below.
+	// behavior (the pass leaves style alone). Style cases must be below the
+	// without arm, except when both arms come out clean: zero cannot improve
+	// on zero, and a clean with-arm is the goal, not a failure.
 	const grammarScope = (c.tags ?? []).includes('grammar');
-	if (w && wo && (grammarScope
-		? w.flagsPerKword > wo.flagsPerKword
-		: w.flagsPerKword >= wo.flagsPerKword)) {
+	const worse = grammarScope
+		? w?.flagsPerKword > wo?.flagsPerKword
+		: w?.flagsPerKword > 0 && w?.flagsPerKword >= wo?.flagsPerKword;
+	if (w && wo && worse) {
 		console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
 			`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
 		failures++;

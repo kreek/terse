@@ -12,9 +12,10 @@ files here match the documented format and run unchanged once enabled.
 
 Until then, `npm run eval:fallback` runs the same cases through
 headless `claude -p` sessions. The with arm loads the plugin via
-`--plugin-dir`; the without arm runs `--bare`. Regex graders score both arms; llm and
-tool_used graders wait for the real tool. Run it from a normal terminal,
-not from inside a Claude Code session; nested sessions cannot log in.
+`--plugin-dir`; the without arm runs `--bare`. Regex graders score both
+arms; llm and tool_used graders wait for the real tool. The runner
+needs `ANTHROPIC_API_KEY` exported: `--bare` sessions never read OAuth,
+so a subscription login cannot carry them.
 
 ## Run it
 
