@@ -1,6 +1,6 @@
 ---
 name: write
-description: "Write a document from an approved outline, or compose directly: prose in the user's voice, checked at draft time."
+description: "Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
 ---
 
 # Write
@@ -24,7 +24,11 @@ toward the governing thought.
    from `/terse:outline`, or the user's direct request. An outline
    still marked draft goes back for sign-off. For a document longer
    than a few paragraphs with no outline, offer `/terse:outline`
-   first; structure is cheap to change before prose exists.
+   first; structure is cheap to change before prose exists. Short
+   pieces are in scope, not exempt. An issue, a ticket, a PR
+   description, or a comment under 200 words stops at step 4. It takes
+   the voice, the constraints, and the draft, with no whole-document
+   read.
 2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
    the expansion writes in the user's measured voice, not the model's
    default. If none exists, offer to learn one from a samples directory
