@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Terse: a writing system for Claude.",
-    "version": "0.10.0"
+    "version": "0.11.0"
   },
   "plugins": [
     {
       "name": "terse",
       "description": "Mechanical style checks plus AI edits that keep your voice. Everything the classic readability editors did, on your existing Claude subscription.",
-      "version": "0.10.0",
+      "version": "0.11.0",
       "author": {
         "name": "Alastair Dawson"
       },
