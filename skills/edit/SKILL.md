@@ -60,7 +60,10 @@ every mode.
    together they govern every rewrite.
    The defaults reference also lists trained habits the checker cannot
    catch. Hunt them in the collection read that follows: synonym
-   cycling, compulsive triplets, participial tails, closing summaries.
+   cycling, compulsive triplets, participial tails, closing summaries,
+   and a sources list at the end. The list is a `structure` finding.
+   The fix moves each link onto the claim it supports and removes
+   the list.
 3. Collect per the contract: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` for
    the mechanical flags, and read the document once for the `grammar`

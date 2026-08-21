@@ -66,7 +66,14 @@ shares.
    it was a signpost.
 9. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
-10. **The author's voice survives the edit.** When editing someone else's
+10. **Links sit on the claim.** A source goes inline, as a link on
+   the words it supports. "Kafka treats two names as
+   [colliding](url) when swapping dots for underscores makes them
+   equal." The reader is one click from the evidence at the claim.
+   A references or sources list at the end separates the two. Do not
+   add one, and fold an existing one back into the text. Link text is the claim's own words, never "here" or
+   "source".
+11. **The author's voice survives the edit.** When editing someone else's
    text, make the smallest change that fixes the issue. Never rewrite their
    sentences into your own cadence.
 

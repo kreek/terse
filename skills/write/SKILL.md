@@ -67,8 +67,9 @@ a bare one means naming a missing fact, which you can check.
    `it earns its place`. Connect with a period, colon, or comma.
    State a claim once and move on, and list three things when there
    are three. Keep an aside under six words or promote it to its own
-   sentence. The `style` skill's Core Ideas and
-   `references/claude-defaults.md` hold the rest.
+   sentence. Put a source inline, as a link on the words it
+   supports, and never in a list at the end. The `style` skill's Core
+   Ideas and `references/claude-defaults.md` hold the rest.
 4. Write the skeleton. Each section is its outline claim, stated in
    one or two sentences, plus the evidence the outline listed under a
    claim it marked disputable. With no outline, write the claims first

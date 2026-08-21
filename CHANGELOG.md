@@ -6,6 +6,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Links go inline on the claim they support. The style skill's Core
+  Ideas say so, and the write skill drafts that way. The edit gate
+  flags a sources list at the end as a `structure` finding, and the
+  fix moves each link onto its claim.
+
 ## [0.9.0] (2026-08-21)
 
 ### Changed

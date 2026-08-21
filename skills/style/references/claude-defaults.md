@@ -46,6 +46,8 @@ them; they are model tendencies and need active suppression when editing:
   `low-hanging fruit`.
 - A closing summary that restates what the reader just read.
 - Mid-sentence bold for emphasis.
+- Citations collected in a sources or references list at the end,
+  with bare claims above. Link the claim itself, inline.
 
 The checker's `ai-tell` category now catches the lexical tells:
 
