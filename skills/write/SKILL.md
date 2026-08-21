@@ -25,8 +25,9 @@ a bare one means naming a missing fact, which you can check.
 1. Resolve the source: an outline file carrying `status: approved`
    from `/terse:outline`, or the user's direct request. An outline
    still marked draft goes back for sign-off. For a document longer
-   than a few paragraphs with no outline, offer `/terse:outline`
-   first; structure is cheap to change before prose exists. Short
+   than a few paragraphs with no outline, offer `/terse:draft`. It
+   runs the outline, this skill, and the gate in sequence, and
+   structure is cheap to change before prose exists. Short
    pieces are in scope, not exempt. An issue, a ticket, a PR
    description, or a comment under 200 words skips the skeleton
    checkpoint and the whole-document read. It takes the voice, the

@@ -54,6 +54,7 @@ Four skills: three phase commands and the rulebook they share.
 
 | Skill | What it does |
 |---|---|
+| `/terse:draft <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
 | `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
 | `/terse:write <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. Your voice, checked at draft time. |
 | `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |

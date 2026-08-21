@@ -6,6 +6,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `/terse:draft`: one request to a finished document. It runs the
+  outline, the skeleton with its additions, the expansion, and the
+  edit gate in fix mode. It stops twice for sign-off, at the outline
+  and at the skeleton. Pieces under 200 words skip the stops.
+
 ### Changed
 
 - Links go inline on the claim they support. The style skill's Core
