@@ -39,41 +39,52 @@ shares.
    way a five-dollar word is a fancy word. The reader must translate
    it back to the real action. The test is translation: if the literal
    verb loses nothing, use it: `you should adopt it`, not
-   `it earns its place`. Metaphor is for explaining something the
-   reader has not seen yet, not for stating a decision, verdict, or
-   action.
+   `it earns its place`. The stock figures are the famous cases, not
+   the boundary. Test every verb whose subject cannot do the action:
+   a log does not `buy` you anything, an analogy does not `hold`,
+   and nobody `mints` a name. An ordinary verb used as a figure
+   slips past any list; the translation test still catches it.
+   Metaphor is for explaining something the reader has not seen yet,
+   not for stating a decision, verdict, or action.
 5. **Active voice, strong verbs, direct claims.** Prefer a named actor
    doing the action. Prefer a strong verb over a verb propped up by an
    adverb, and a plain statement over one padded with qualifiers.
    Passive voice is right when the actor is irrelevant or unknown
-   (`the token is signed`); a qualifier is right when the hedge is the
-   claim itself.
-6. **Say what is, not what isn't.** State what is true and what to
+   (`the token is signed`), and when the sentence states a thing's
+   capability or limit (`topics cannot be renamed`). A qualifier is
+   right when the hedge is the claim itself.
+6. **An action stays a verb.** Compression turns verbs into bare
+   nouns: `a rename`, `the deploy`, `rename is impossible`. When an
+   action is the subject or object, give it a gerund or a full
+   clause: `renaming is impossible`, or `you cannot rename a topic`.
+   The bare noun saves three letters and costs the reader a parse.
+   A noun the domain owns stays: `a commit`, `a build`, `a release`.
+7. **Say what is, not what isn't.** State what is true and what to
    do, rather than what is false and what to avoid. "The cache holds
    entries for an hour" beats "the cache does not keep entries
    forever." A negative is right when the reader expects the opposite
    and the correction is the point. This is the Kansas City Star's
    fourth rule. It holds hardest for instructions: a reader follows
    "do y" where "don't do x" leaves them guessing.
-7. **The known-new contract.** Open a sentence with what the reader
+8. **The known-new contract.** Open a sentence with what the reader
    already has; the new or important information goes at the end,
    where the emphasis falls. A run of sentences that each open with
    new information loses the reader, however clean each one is.
-8. **Never comment on the writing.** No significance announcements
+9. **Never comment on the writing.** No significance announcements
    (`worth noting`, `importantly`), no rhetorical questions answered
    by the next sentence, no `it's not just X, it's Y`. The test is
    deletion: cut the phrase, and if the passage loses no information,
    it was a signpost.
-9. **Length is a cost the reader pays.** Cut by selecting what to include,
+10. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
-10. **Links sit on the claim.** A source goes inline, as a link on
+11. **Links sit on the claim.** A source goes inline, as a link on
    the words it supports. "Kafka treats two names as
    [colliding](url) when swapping dots for underscores makes them
    equal." The reader is one click from the evidence at the claim.
    A references or sources list at the end separates the two. Do not
    add one, and fold an existing one back into the text. Link text is the claim's own words, never "here" or
    "source".
-11. **The author's voice survives the edit.** When editing someone else's
+12. **The author's voice survives the edit.** When editing someone else's
    text, make the smallest change that fixes the issue. Never rewrite their
    sentences into your own cadence.
 
@@ -94,7 +105,7 @@ three groups:
 
 | Trigger | Do this instead | False alarm |
 |---|---|---|
-| "Passive voice reads as more formal" | Name the actor and use active voice. | The actor is irrelevant or unknown. |
+| "Passive voice reads as more formal" | Name the actor and use active voice. | The actor is irrelevant or unknown, or the sentence states a thing's capability or limit (`topics cannot be renamed`). |
 | "The sentence is long, but it all belongs together" | Split it, or turn an in-sentence list into a bulleted list. | The items are few and parallel, and the sentence stays readable on one pass. |
 | "A qualifier softens the claim politely" | Delete the qualifier or state the evidence. | The hedge is the claim: the sentence exists to mark the uncertainty. |
 | "An adverb strengthens the verb" | Pick a stronger verb or give the number. | The adverb changes meaning, not intensity ("only", "never", "no longer"). |
@@ -103,6 +114,8 @@ three groups:
 | "The aside is too useful to cut" | Cut it, promote it to its own sentence, or shorten it below six words. | The aside is a citation, cross-reference, or required wording that cannot stand alone. |
 | "The em dash reads best as parentheses" | Prefer a period, colon, or comma; a parenthetical of six or more words trades the em-dash flag for an aside flag. | An approved voice template keeps em dashes. |
 | "The turn of phrase reads better than the plain claim" | State the decision or action with its literal verb. | The figure explains a mechanism the reader has not seen, or an approved voice template uses it. |
+| "The verb is ordinary, not a listed figure" | Run the translation test: if the subject cannot literally do the action, write the literal verb. | The verb is literal here, or the figure explains a mechanism the reader has not met. |
+| "The bare noun is shorter (`a rename`, `the deploy`)" | Give the action a gerund or a full clause. | The noun is the domain's own term: `a commit`, `a build`, `a release`. |
 | "The flagged word is what this domain calls the thing" | Swap the inflated word for the plain claim. | The word is literal here: a real journey, a real landscape, the plumbing under a sink. Keep it and name the keep. |
 | "Leave it implicit; the reader will infer it" | State the fact, the number, or the requirement outright. Omission creates pressure in fiction, where the reader supplies the feeling; in a document it leaves a hole the reader fills with a guess. | The material is out of scope, and the document says so. |
 | "The opening needs to set the scene first" | Open on the fact the reader came for; move the setup below it. | The genre opens on a scene, and the outline placed the answer accordingly. |

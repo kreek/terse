@@ -25,7 +25,7 @@ one report, one preview, and one fix loop serve every category.
 | em-dash | checker | wording |
 | grammar | model, `references/grammar-scope.md` | mechanics |
 | voice-drift | model, against the approved template | wording |
-| structure | model: theme, order, unintroduced terms, repeated claims | report-only |
+| structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
 
 ## Collection
@@ -44,9 +44,10 @@ rest as candidates for cut or merge. A later paragraph that adds
 evidence, a qualification, or a new consequence advances the claim
 rather than repeating it, and emits nothing. The `unasked` findings
 come from the `draft` skill's working note: a sentence the note does
-not tie to one of the four reader questions. Those are an unowned
-term, a disputable claim's evidence, a required step, and an
-uninferred consequence. On imported text with no note, ask the question of each
+not tie to one of the five reader questions. Those are an unowned
+term, a disputable claim's evidence, a required step, an
+uninferred consequence, and a sentence too compressed to parse.
+On imported text with no note, ask the question of each
 sentence in the same read. Do not re-read the prose per category.
 
 ## Suppression
@@ -68,8 +69,9 @@ each sentence once, applying its findings in stage order:
 
 1. **structural**: split the sentence, convert the in-sentence list to
    bullets, cut or promote the aside
-2. **wording**: name the actor, swap the flagged word or phrase, delete
-   or evidence the qualifier, replace the em dash
+2. **wording**: name the actor (capability statements keep their
+   passive), swap the flagged word or phrase, delete or evidence the
+   qualifier, replace the em dash
 3. **mechanics**: grammar, spelling, and punctuation, on the wording
    that now exists
 

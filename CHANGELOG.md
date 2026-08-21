@@ -6,6 +6,30 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The checker frames six ordinary verbs in their metaphorical
+  shapes: `holds`, `buys`, `mints`, `carries`, `forces`, and
+  `lives in`. The style skill extends the translation test past the
+  stock figures to every verb whose subject cannot do the action.
+- The draft skill's expansion gains a fifth reader question: a
+  sentence the reader must read twice expands until one pass carries
+  it. The edit gate's omission audit counts skeleton compression as
+  a gap. A compressed sentence scores clean on every metric and
+  costs the reader the most parse effort.
+- The edit gate audits warrant: a sentence whose link to its section
+  claim depends on reasoning the draft cut is a `structure` finding.
+  The draft skill cuts a claim and its warrant together.
+
+### Changed
+
+- An action standing as subject or object takes a gerund or a full
+  clause: `renaming`, never `a rename`. A noun the domain owns
+  (`a commit`) stays.
+- Fix mode names the passive-voice keeps outright: statements of a
+  thing's capability or limit (`topics cannot be renamed`) keep
+  their passive instead of joining the worklist.
+
 ## [0.10.0] (2026-08-21)
 
 ### Added

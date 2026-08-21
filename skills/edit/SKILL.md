@@ -63,7 +63,9 @@ every mode.
    cycling, compulsive triplets, participial tails, closing summaries,
    and a sources list at the end. The list is a `structure` finding.
    The fix moves each link onto the claim it supports and removes
-   the list.
+   the list. Hunt metaphorical verbs in the same read. The checker
+   frames the common ones. The style skill's translation test owns
+   every other verb whose subject cannot do the action.
 3. Collect per the contract: run
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` for
    the mechanical flags, and read the document once for the `grammar`
@@ -108,10 +110,19 @@ every mode.
    - the outline's record: deviations logged during drafting count as
      decided keeps, not findings. Only undocumented drift counts
    - omission, on a draft from `/terse:draft`: the draft is short by
-     design, so check what it left out. Three gaps count. A disputable
+     design, so check what it left out. Four gaps count. A disputable
      claim with no evidence. A term the reader does not own. A step
-     the draft does not give the reader enough to take. Each is a
+     the draft does not give the reader enough to take. A sentence
+     still compressed to its skeleton shape, which the reader must
+     read twice. The checker rewards that last gap rather than
+     flagging it, because a short sentence scores a low grade, so
+     read for parse cost yourself. Each is a
      `structure` finding naming the reader question the draft owes
+   - warrant: read each sentence against its section's claim. A
+     sentence whose connection to the claim depends on reasoning the
+     draft cut is a non sequitur on the page, however true it is.
+     The finding names the missing link; the fix restores the
+     warrant or cuts the sentence
    Each problem is a `structure` finding. In fix mode, report these and
    take the user's direction before the sentence loop starts. Polishing
    a sentence in a section the user then cuts wastes the work.
@@ -138,7 +149,12 @@ every mode.
      - long opening: cut it back to the fact the reader came for
      - aside: cut it, or promote it to its own sentence
    - **wording** second:
-     - passive voice: name the actor
+     - passive voice: name the actor. The tripwire's false alarms
+       hold in fix mode too. A passive is a documented keep, not a
+       worklist item, when its actor is irrelevant or when it
+       states a thing's capability or limit
+       (`topics cannot be renamed`). When the active rewrite must
+       invent an actor, keep the passive and record the keep
      - adverb: choose a stronger verb, or give the number
      - qualifier: delete it or state the evidence
      - simpler alternative and weak verb: substitute the suggested word
@@ -200,7 +216,10 @@ every mode.
       keep, and went to the report for the user's direction.
 - [ ] A later instance that advanced its claim raised no finding.
 - [ ] The audit covered restatement, length against target and
-      budget, and omission on a short draft.
+      budget, and omission on a short draft, skeleton compression
+      included.
+- [ ] The warrant audit ran: every sentence still ties to its
+      section's claim on the page.
 - [ ] When an outline file exists, the audit covered its recorded
       claims and promises.
 - [ ] The flow check covered every level: subsection points support

@@ -65,7 +65,11 @@ a bare one means naming a missing fact, which you can check.
    `strong`, not `robust`; `important`, not `crucial`; `build`, not
    `foster`; `simplify`, not `streamline`. Prefer `is` to `serves as`.
    Say the action with its literal verb: `adopt it`, not
-   `it earns its place`. Connect with a period, colon, or comma.
+   `it earns its place`. Test any verb whose subject cannot do the
+   action the same way: a log does not `buy` you anything. An action
+   standing as subject or object takes a gerund or a full clause:
+   `renaming`, never `a rename`, unless the noun is the domain's own
+   term (`a commit`). Connect with a period, colon, or comma.
    State a claim once and move on, and list three things when there
    are three. Keep an aside under six words or promote it to its own
    sentence. Put a source inline, as a link on the words it
@@ -91,20 +95,26 @@ a bare one means naming a missing fact, which you can check.
    in only when it answers a question the reader asks at that point in
    the document. Name the question before writing the answer, in a
    working note beside the draft, and keep the note until the report.
-   The reader may ask four questions:
+   The reader may ask five questions:
    - a term the reader does not own yet: define it once, where it
      first appears
    - a claim the outline marked disputable: give the evidence and the
      warrant
    - a step the reader must take: state the action
    - a consequence the reader would not infer: state it
+   - a sentence the reader must read twice: expand it until one pass
+     carries it. The metrics reward compression: a short sentence
+     scores a low grade and raises no flags. Only this question
+     forces the words back in. Anchor an abstract ordering in the
+     concrete: "broad to narrow" becomes "a domain first, an event
+     last". Give a semicolon aphorism its full clause
    A sentence with no question behind it stays out, however well it
    reads. Add an example only as evidence for a disputable claim. Add
    a transition only when the order alone does not carry the reader;
    the known-new contract carries most of them. The room goes to the
    second question. A disputable claim takes the evidence
    and the warrant, and the cost of the position the document rejects.
-   The other three questions take a sentence each at most. A
+   The other questions take a sentence, or a few added words, each. A
    paragraph whose claim nobody would contest stays at its skeleton
    length. Do not spread the expansion across sections the way a trim
    spreads cuts; an even expansion reads as padding.
@@ -120,7 +130,9 @@ a bare one means naming a missing fact, which you can check.
    The ceiling is a backstop, not a target; the question list is the
    real bound, and most documents land well under. An overrun blocks.
    Cut the sentences with the weakest questions until the draft is
-   under, and say so in the report. Run the
+   under, and say so in the report. A claim and its warrant travel
+   together. Cutting the reasoning that ties a sentence to its
+   section leaves a non sequitur, so cut both or keep both. Run the
    checker as you go and fix findings in the section that raised
    them. Grammar is a draft-time finding within the `style` skill's
    `references/grammar-scope.md`: correct the typo in the sentence
@@ -186,8 +198,11 @@ a bare one means naming a missing fact, which you can check.
       its word count.
 - [ ] A document over 200 words showed the user the skeleton with the
       proposed additions listed, for one approval.
-- [ ] Every sentence beyond the skeleton answers one of the four
+- [ ] Every sentence beyond the skeleton answers one of the five
       allowed questions, and the working note records which.
+- [ ] No sentence kept its skeleton compression: abstract orderings
+      carry a concrete anchor, and no claim leans on reasoning the
+      draft cut.
 - [ ] The expansion ratio is under the ceiling for the document type,
       or the report says what was cut to get there.
 - [ ] The expansion went to the disputable claims; uncontested

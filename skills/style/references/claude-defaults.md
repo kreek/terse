@@ -72,9 +72,14 @@ editor still owns what no pattern can see:
 - synonym cycling and compulsive triplets
 - participial analysis tails
 - closing summaries and mid-sentence bold
-- stock figures beyond the listed ones
+- figures of speech beyond the listed ones, including ordinary verbs
+  used as figures
 
-No lexicon can enumerate figures of speech. Apply the translation test
-from the `style` skill's Core Ideas: if the literal verb loses
-nothing, the figure is a finding. When `/terse:edit` runs, hunt these
-in the same pass and treat them as flags of equal standing.
+No lexicon can enumerate figures of speech. The checker frames the
+common metaphorical verbs (`holds`, `buys`, `mints`, `carries`,
+`forces`, `lives in`) in their machine shapes; the editor hunts the rest.
+Apply the translation test from the `style` skill's Core Ideas to
+every verb whose subject cannot do the action. If the literal verb
+loses nothing, the figure is a finding. When `/terse:edit` runs,
+hunt these in the same pass and treat them as flags of equal
+standing.

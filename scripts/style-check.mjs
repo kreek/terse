@@ -174,8 +174,7 @@ const AI_TELL_PHRASES = [
 	'the honest answer', 'the honest version', 'my honest read',
 	'my honest assessment', 'my honest take', 'the short answer',
 	'let me put it plainly', 'real talk', 'straight answer',
-	'grounded in what', 'and that matters', 'carry the argument',
-	'carries the argument',
+	'grounded in what', 'and that matters',
 	// unsolicited validation, projected onto the reader
 	'great question', 'good question', 'excellent question', 'great catch',
 	'good catch', 'nice catch', 'exactly right', 'fair point',
@@ -218,6 +217,18 @@ const AI_TELL_NOUNS = ['synergy', 'footgun', 'linchpin', 'workhorse',
 const AI_TELL_REGEXES = [
 	{ re: /\bearn(?:s|ed|ing)?\s+(?:its|their)\s+(?:place|keep|trust)\b/gi },
 	{ re: /\bmov(?:e|es|ed|ing)\s+the\s+needle\b/gi },
+	// ordinary verbs gone metaphorical: framed on subjects or objects that
+	// cannot take the literal action, so a thread that holds, a man who
+	// buys bread, and a mint that stamps coins all stay silent
+	{ re: /\b(?:analogy|argument|claim|pattern|parallel|comparison|assumption|intuition|logic|reasoning|principle|framing)s?\s+(?:still\s+|no\s+longer\s+)?holds?\b/gi },
+	{ re: /\bholds?\s+true\b/gi },
+	{ re: /\b(?:the\s+same|this|that)\s+holds\s+for\b/gi },
+	{ re: /\bbuys\s+(?:you|us|nothing|little)\b/gi },
+	{ re: /\bwhat\s+(?:it|this|that|the\s+\w+)\s+buys\b/gi },
+	{ re: /\bmint(?:s|ed|ing)?\s+(?:a\s+|an\s+)?(?:new\s+|fresh\s+)?(?:term|name|word|label|acronym|category|concept|identifier|type)s?\b/gi },
+	{ re: /\bcarr(?:y|ies|ied|ying)\s+the\s+(?:argument|weight|burden|day)\b/gi },
+	{ re: /\bforc(?:e|es|ed|ing)\s+the\s+(?:question|issue|point|choice|decision|hand)\b/gi },
+	{ re: /\b(?:logic|config|configuration|state|truth|complexity|risk|definition|answer|meaning|knowledge)\s+(?:all\s+)?lives?\s+in\b/gi },
 	{ re: /\bquietly\s+(?:drop|swallow|ignore|fail|discard|skip|overwrite)(?:s|ped|ed|ing)?\b/gi },
 	{ re: /\bthe\s+offending\s+\w+/gi },
 	{ re: /\b(?:actually|really)\s+matters?\b/gi },
