@@ -116,14 +116,14 @@ template is the author's signed-off voice. Its exceptions override
 this skill's rules where they conflict. Its measured ranges (sentence
 length, grade, hedging rate) bound any prose written or edited for
 that author.
-`/terse:write` offers to build the template from writing samples
+`/terse:draft` offers to build the template from writing samples
 (`references/voice-analysis.md`).
 
 ## Handoffs
 
 - `/terse:outline` composes structure first: one claim per section,
   gated on the user's sign-off.
-- `/terse:write` expands an approved outline (or composes from
+- `/terse:draft` expands an approved outline (or composes from
   scratch) in the user's voice, checking at draft time. It offers to
   learn a voice from samples (`references/voice-analysis.md`) when
   none exists.

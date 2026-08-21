@@ -168,7 +168,7 @@ error. A machine finds it; the fix lands before the document ships.
       source link. Fetch the source and prove the quote appears
       verbatim. Normalize only whitespace and quote marks. Same exit
       contract as the style checker: clean, findings, or error.
-- [ ] Quote writing lives in `/terse:write`: fetch the source, copy the
+- [ ] Quote writing lives in `/terse:draft`: fetch the source, copy the
       exact text, and link it. Never quote from memory. The gate treats
       an unverified quote as a finding, not a new command.
 - [ ] Anchor-deep links. Web sources get text-fragment URLs

@@ -8,10 +8,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- `/terse:draft`: one request to a finished document. It runs the
-  outline, the skeleton with its additions, the expansion, and the
-  edit gate in fix mode. It stops twice for sign-off, at the outline
-  and at the skeleton. Pieces under 200 words skip the stops.
+- `/terse:write` is now one request to a finished document. It runs
+  the outline, the skeleton with its additions, the expansion, and
+  the edit gate in fix mode. It stops twice for sign-off, at the
+  outline and at the skeleton. Pieces under 200 words skip the stops.
+  The skill that expands an approved outline moves from
+  `/terse:write` to `/terse:draft`. `/terse:outline` and `/terse:edit`
+  keep their names. Entries below this release use the old names.
 
 ### Changed
 

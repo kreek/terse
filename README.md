@@ -54,9 +54,9 @@ Four skills: three phase commands and the rulebook they share.
 
 | Skill | What it does |
 |---|---|
-| `/terse:draft <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
+| `/terse:write <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
 | `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
-| `/terse:write <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. Your voice, checked at draft time. |
+| `/terse:draft <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. Your voice, checked at draft time. |
 | `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
 | `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
 
@@ -80,7 +80,7 @@ grammar", "make it casual", "cut 15%", "fix only the AI tells",
 
 ## Your voice
 
-`/terse:write` offers to learn your voice when no template exists.
+`/terse:draft` offers to learn your voice when no template exists.
 Point it at a directory of your writing. The checker measures your
 habits as numbers. The model names your traits, each with a quoted
 example. The result is a draft `.terse/voice.md`. You review and approve

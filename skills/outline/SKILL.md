@@ -50,7 +50,7 @@ the reader from question to answer, ready to expand into prose later.
    under the target is the normal case, and the outline says so. A
    sum over the target means the document holds more claims than the
    reader asked for, so cut sections rather than shrink them. Every
-   budget is a ceiling: `/terse:write` drafts each section short and
+   budget is a ceiling: `/terse:draft` drafts each section short and
    expands only under proof.
 4. Name the evidence and the reasoning. Under each claim, list the
    evidence it will need. For any claim a reader could dispute, add one
@@ -92,12 +92,12 @@ the reader from question to answer, ready to expand into prose later.
 7. Iterate by editing the outline file until the user approves. Approval
    is explicit; never proceed on your own judgment. On approval, write
    `status: approved (user, YYYY-MM-DD)` at the top of the outline
-   file. Hand off to `/terse:write`, which reads that line to tell an
+   file. Hand off to `/terse:draft`, which reads that line to tell an
    approved outline from a draft. The structure then survives as its
    own record.
 8. Stay open after approval. A section that resists drafting is
    evidence about the outline, not a writing problem to push through.
-   When `/terse:write` reports resistance, come back here and fix the
+   When `/terse:draft` reports resistance, come back here and fix the
    claim, the order, or the budget in the file. The draft may depart
    from the outline, never in silence: record the departure here
    before the next section. Cutting, adding, or reordering a section

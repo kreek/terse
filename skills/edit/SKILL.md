@@ -12,7 +12,7 @@ description: "The publish gate: collect every finding across readability, style,
 Run the findings contract (the `style` skill's
 `references/findings.md`) end to end: collect everything at once, then
 report or fix as the user directs. This is Terse's publish gate, run
-like a linter: prose written under `/terse:write` should need little
+like a linter: prose written under `/terse:draft` should need little
 repair, and imported or older text gets full repair. The checker finds,
 this skill judges and rewrites, and grammar comes last on every
 sentence it touches. Every rewrite traces to a finding, because the
@@ -37,7 +37,7 @@ every mode.
   preset per the `style` skill's `references/tone-presets.md`, then run
   the gate; a tone pass must not add new findings.
 - **trim** ("cut 15%", "this runs long"): the user sets the target as a
-  percent or a word count. A draft from `/terse:write` carries a
+  percent or a word count. A draft from `/terse:draft` carries a
   working note of reader questions. Cut the sentences with no
   question first. Cutting is structural, so it runs like any
   `structure` finding. Propose the cuts against the reverse outline,
@@ -107,7 +107,7 @@ every mode.
      evidence
    - the outline's record: deviations logged during drafting count as
      decided keeps, not findings. Only undocumented drift counts
-   - omission, on a draft from `/terse:write`: the draft is short by
+   - omission, on a draft from `/terse:draft`: the draft is short by
      design, so check what it left out. Three gaps count. A disputable
      claim with no evidence. A term the reader does not own. A step
      the draft does not give the reader enough to take. Each is a

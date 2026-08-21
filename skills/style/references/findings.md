@@ -43,7 +43,7 @@ every paragraph in the group, names one as the keep, and marks the
 rest as candidates for cut or merge. A later paragraph that adds
 evidence, a qualification, or a new consequence advances the claim
 rather than repeating it, and emits nothing. The `unasked` findings
-come from the `write` skill's working note: a sentence the note does
+come from the `draft` skill's working note: a sentence the note does
 not tie to one of the four reader questions. Those are an unowned
 term, a disputable claim's evidence, a required step, and an
 uninferred consequence. On imported text with no note, ask the question of each
@@ -99,7 +99,7 @@ view in chat.
 | "review it, don't edit" | report everything, led by the findings no mechanical fix covers |
 | "make it casual" | rewrite toward a tone preset, then run the gate |
 
-`/terse:write` uses the same model at draft time: it fixes findings
+`/terse:draft` uses the same model at draft time: it fixes findings
 section by section as prose lands, so the gate afterwards finds
 residue, not problems. Its stats line carries the expansion ratio,
 final words over skeleton words, beside length against target.
