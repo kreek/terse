@@ -38,13 +38,20 @@ the reader from question to answer, ready to expand into prose later.
    Each section gets a heading and a one-line claim: what this section
    asserts, not what it "covers". A section that cannot state its claim
    in one line is two sections or none.
-3. Budget the weight. Give every section a target word count, and make
-   them sum to the document's length. The claim says what a section
-   asserts; the budget says how much that assertion is worth. Without
-   one the writer spends the same length on every section, and even
-   weight across uneven claims reads as padding. Size follows the load
-   the claim carries: sections that answer the document's question
-   take the room, and setup, transitions, and caveats stay short.
+3. Budget the weight. Give every section the word count its claim
+   needs, then sum the budgets and report the sum against the user's
+   target. Do not distribute the target across sections; the writer
+   treats a number handed down as a quota and fills it. The claim
+   says what a section asserts; the budget says how much that
+   assertion is worth. Size follows the load the claim carries. A
+   disputable claim takes its evidence and warrant. An uncontested
+   one takes a sentence or two. Setup, transitions, and caveats stay
+   short. A sum well
+   under the target is the normal case, and the outline says so. A
+   sum over the target means the document holds more claims than the
+   reader asked for, so cut sections rather than shrink them. Every
+   budget is a ceiling: `/terse:write` drafts each section short and
+   expands only under proof.
 4. Name the evidence and the reasoning. Under each claim, list the
    evidence it will need. For any claim a reader could dispute, add one
    line for the warrant: why that evidence supports that claim.
@@ -76,6 +83,7 @@ the reader from question to answer, ready to expand into prose later.
    - the budget tracks the claims: no section takes room it has
      nothing to say in, and no answer-carrying section gets a
      caveat's budget
+   - the budgets sum to less than the target
    - nothing critical is missing: the evidence under each claim is on
      hand rather than only named, and disputable claims carry a
      warrant
@@ -107,8 +115,9 @@ the reader from question to answer, ready to expand into prose later.
 - [ ] The shape came from `references/structures.md`, and the answer
       appears where that shape places it.
 - [ ] Every outline section carries a one-line claim.
-- [ ] Every section carries a word budget, and the budgets sum to the
-      target length.
+- [ ] Every section carries the budget its claim needs, and the
+      outline reports the sum against the target rather than filling
+      it.
 - [ ] Every claim names its evidence, and disputable claims add a
       warrant.
 - [ ] You drafted the lead in the file, and the last section is the

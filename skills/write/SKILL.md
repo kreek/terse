@@ -9,14 +9,16 @@ description: "Write anything a reader will see, however short: issues and ticket
 
 `WRITE IN THE USER'S VOICE, TO THE APPROVED OUTLINE. NEVER DRIFT IN SILENCE.`
 
-Turn an approved outline into finished prose, or compose a document
-when the user asks for one without an outline. Write in the user's
-voice. Hold the style constraints as you draft, and clear findings
-section by section. The edit gate afterwards should find residue, not
-problems. The outline's logical flow carries into the
-prose: sentences should carry the reader into the next sentence, and
-paragraphs into the next paragraph. Sub-sections build on each other
-toward the governing thought.
+Draft short, then expand under proof. The first draft is the
+outline's claims as bare prose. Every sentence added after that
+answers a question the reader would ask at that spot. Too short is
+the cheap failure: the user and the edit gate can ask for more, and
+nobody asks for less. Write in the user's voice, hold the style
+constraints as you draft, and clear findings section by section.
+
+Why expand rather than cut: cutting a padded draft means judging your
+own sentence unnecessary, the judgment a model makes worst. Expanding
+a bare one means naming a missing fact, which you can check.
 
 ## Workflow
 
@@ -26,9 +28,9 @@ toward the governing thought.
    than a few paragraphs with no outline, offer `/terse:outline`
    first; structure is cheap to change before prose exists. Short
    pieces are in scope, not exempt. An issue, a ticket, a PR
-   description, or a comment under 200 words stops at step 4. It takes
-   the voice, the constraints, and the draft, with no whole-document
-   read.
+   description, or a comment under 200 words skips the skeleton
+   checkpoint and the whole-document read. It takes the voice, the
+   constraints, the skeleton, and the expansion.
 2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
    the expansion writes in the user's measured voice, not the model's
    default. If none exists, offer to learn one from a samples directory
@@ -55,6 +57,9 @@ toward the governing thought.
    - issues, specs, and acceptance criteria stay impersonal: state the
      requirement rather than the wish for it, and run the checker with
      `--impersonal`
+   - the expansion ceiling for the document type, from the table in
+     step 5. The outline's budgets are ceilings too: a section may
+     come in under its number, never over
    Then the wording. Reach for the plain word: `use`, not `utilize`;
    `strong`, not `robust`; `important`, not `crucial`; `build`, not
    `foster`; `simplify`, not `streamline`. Prefer `is` to `serves as`.
@@ -64,59 +69,108 @@ toward the governing thought.
    are three. Keep an aside under six words or promote it to its own
    sentence. The `style` skill's Core Ideas and
    `references/claude-defaults.md` hold the rest.
-4. Expand section by section, each drafted knowing its place in the
-   whole and written to the word budget the outline assigned it. Run
-   the checker as you go and fix findings in the section that raised
+4. Write the skeleton. Each section is its outline claim, stated in
+   one or two sentences, plus the evidence the outline listed under a
+   claim it marked disputable. With no outline, write the claims first
+   as one line each, then state them. Leave out setup, transitions,
+   examples, and restatement. The skeleton may read like a telegram.
+   It is the shortest document that makes every claim, and the
+   measure for the final draft. Run the checker on it and record the
+   word count. For a document over 200 words, show the skeleton to
+   the user before expanding, with the additions you propose listed
+   under it. Each addition is one line: the section, the reader
+   question from step 5, and the sentence in brief. The user strikes
+   or adds items, and one approval covers the skeleton and the list. The
+   skeleton is the cheapest version to judge, and a claim that reads
+   wrong here costs a line rather than a section. Expect it to be
+   close to the finished document; the additions are a handful of
+   sentences, not a second draft.
+5. Expand under burden of proof, section by section. A sentence goes
+   in only when it answers a question the reader asks at that point in
+   the document. Name the question before writing the answer, in a
+   working note beside the draft, and keep the note until the report.
+   The reader may ask four questions:
+   - a term the reader does not own yet: define it once, where it
+     first appears
+   - a claim the outline marked disputable: give the evidence and the
+     warrant
+   - a step the reader must take: state the action
+   - a consequence the reader would not infer: state it
+   A sentence with no question behind it stays out, however well it
+   reads. Add an example only as evidence for a disputable claim. Add
+   a transition only when the order alone does not carry the reader;
+   the known-new contract carries most of them. The room goes to the
+   second question. A disputable claim takes the evidence
+   and the warrant, and the cost of the position the document rejects.
+   The other three questions take a sentence each at most. A
+   paragraph whose claim nobody would contest stays at its skeleton
+   length. Do not spread the expansion across sections the way a trim
+   spreads cuts; an even expansion reads as padding.
+   The expansion ratio is final words over skeleton words. Hold it
+   under the ceiling for the document type:
+
+   | Type | Ceiling |
+   |---|---|
+   | issue, ticket, PR description, comment | 1.25x |
+   | README, ADR, email, memo, summary | 1.5x |
+   | design doc, explainer, article | 2x |
+
+   The ceiling is a backstop, not a target; the question list is the
+   real bound, and most documents land well under. An overrun blocks.
+   Cut the sentences with the weakest questions until the draft is
+   under, and say so in the report. Run the
+   checker as you go and fix findings in the section that raised
    them. Grammar is a draft-time finding within the `style` skill's
-   `references/grammar-scope.md`: correct the typo in the sentence you
-   just wrote, where no later rewrite can stale it. Keep the pass
-   bounded to that sentence and move on. Finished sections stay
-   finished until the whole-document read, and voice-drift and quality
-   judgment belong to the edit gate. Shape the prose as you write it:
+   `references/grammar-scope.md`: correct the typo in the sentence
+   you just wrote. Shape each added sentence as you write it:
    - one point per paragraph, stated in the topic sentence
-   - the known-new contract: open with what the reader already has;
-     end on the new information, where the emphasis falls
+   - the known-new contract: open on what the reader has, end on the
+     new information
    - characters in subjects, actions in verbs
-   - each paragraph advances: it gives the reader something the
-     paragraph before it did not. Flow and progress are separate. A
-     paragraph can honor the known-new contract, read well, and
-     still only restate its predecessor in fresh words. That one
-     merges into the paragraph it repeats, or you cut it
-5. A section that resists the outline is a signal: the outline was wrong,
+6. A section that resists the outline is a signal: the outline was wrong,
    or the section does not belong. Break the outline on purpose and
    record in the outline file what changed and why; never drift from
-   it in silence. The budget is the same kind of signal. A section
-   that lands under half its target had a thinner claim than it
-   looked. One that runs to double tends to hold two claims.
+   it in silence. A section with no question beyond its skeleton had
+   a thinner claim than the outline thought. One whose questions run
+   past its ceiling tends to hold two claims. A document that lands at
+   two thirds of its target is the expected outcome, not a shortfall.
+   Report it as the length the claims needed.
    Both are outline problems, so take them back to the outline rather
-   than padding or cramming to hit the number. On a document running to
-   thousands of words, expect the outline to update mid-draft. The
-   recorded decisions keep later sections consistent with earlier ones.
-6. When every section exists, do the whole-document read. It is what
+   than padding or cramming. On a document running to thousands of
+   words, expect the outline to update mid-draft. The recorded
+   decisions keep later sections consistent with earlier ones.
+7. When every section exists, do the whole-document read. It is what
    turns a set of good sections into a document:
    - cadence: compare the sentence-length spread (`--json` gives
      `stats.sentenceLengths`) against the voice template's measured
-     range; a flat spread means you assembled the prose instead of
-     writing it
+     range. A short draft sits at the low end of the range. Leave it
+     there; longer sentences are not the fix
    - connective flow: each section's opening should catch the previous
      section's throw; each paragraph's first sentence should need the
-     one before it
-   - advance: read consecutive paragraphs in pairs and say what the
-     second one changed for the reader. Two places need a closer look.
-     The paragraph after a strong claim tends to reassert the claim
-     instead of supporting it. The closing section tends toward summary
-     because every earlier section sits in view while you write it
+     one before it. Restore a broken link by reordering, never by
+     adding a connective sentence; that is where padding returns
+   - advance: write one line per paragraph stating the claim it makes,
+     and hold each paragraph against every earlier claim, not only its
+     predecessor. A paragraph that repeats a claim from three sections
+     back merges or goes, the same as one that repeats the paragraph
+     before it. A match is only a repeat when the later paragraph
+     brings nothing new; added evidence, a qualification, or a new
+     consequence is an advance
    - the outline promise: every approved section appears in order and
-     makes its assigned claim; the outline file records every
+     makes its assigned claim. The outline file records every
      deviation
    - flow at every level: each subsection makes one point, and that
      point supports its section's claim. The sections in order still
      walk the reader from question to answer
-7. Run the checker over the whole document last and report the stats
-   line, including the length against the outline's budget. Report
-   what you fixed by judgment as well, so the gate knows what it
-   inherits: grammar corrections, and any finding no flag covers.
-   Offer the highlight preview and `/terse:edit` for the final gate.
+8. Run the checker over the whole document last. Report the stats
+   line, the length against the outline's budget, and the expansion
+   ratio against its ceiling. Report what you fixed by judgment as
+   well, so the gate knows what it inherits. That covers grammar
+   corrections, any finding no flag covers, and any sentence kept
+   without a recorded question. Offer the highlight preview and
+   `/terse:edit` for the final gate. If the reader needs more than
+   the draft gives, the user says where, and that section expands
+   under the same proof.
 
 ## Verification
 
@@ -124,22 +178,33 @@ toward the governing thought.
       composition.
 - [ ] The expansion honors the approved voice template when one exists;
       when none exists, the user heard the offer to learn one.
-- [ ] The draft held the constraints: grade, the three rates, and the
-      plain-word choices.
+- [ ] The draft held the constraints: grade, the three rates, the
+      plain-word choices, and the expansion ceiling.
+- [ ] A skeleton existed before any expansion, and the report carries
+      its word count.
+- [ ] A document over 200 words showed the user the skeleton with the
+      proposed additions listed, for one approval.
+- [ ] Every sentence beyond the skeleton answers one of the four
+      allowed questions, and the working note records which.
+- [ ] The expansion ratio is under the ceiling for the document type,
+      or the report says what was cut to get there.
+- [ ] The expansion went to the disputable claims; uncontested
+      sections stayed at skeleton length.
 - [ ] You fixed findings at draft time, grammar included, in the
       section that raised them.
 - [ ] Each paragraph makes one point, and sentences follow the
       known-new contract.
-- [ ] Each paragraph advances on the one before it; none restates a
-      predecessor in fresh words.
-- [ ] Sections came in near their budgets, and every departure went
-      back to the outline instead of into padding.
+- [ ] Each paragraph advances on every paragraph before it; none
+      restates an earlier claim in fresh words, at any distance.
+- [ ] Sections came in at or under their budgets, and every departure
+      went back to the outline instead of into padding.
 - [ ] The outline file records every deviation from the approved
       outline, none silent.
 - [ ] The whole-document read happened: cadence against the voice
       range, transitions in order, paragraph advance, outline claims
       intact.
+- [ ] No connective sentence went in to restore flow.
 - [ ] Every subsection makes one point, and that point supports its
       section's claim and the document's flow.
-- [ ] The final checker run, the stats line, and the fixes you made by
-      judgment appear in the report.
+- [ ] The final checker run, the stats line with the expansion ratio,
+      and the fixes you made by judgment appear in the report.

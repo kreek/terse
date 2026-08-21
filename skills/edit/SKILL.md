@@ -37,7 +37,9 @@ every mode.
   preset per the `style` skill's `references/tone-presets.md`, then run
   the gate; a tone pass must not add new findings.
 - **trim** ("cut 15%", "this runs long"): the user sets the target as a
-  percent or a word count. Cutting is structural, so it runs like any
+  percent or a word count. A draft from `/terse:write` carries a
+  working note of reader questions. Cut the sentences with no
+  question first. Cutting is structural, so it runs like any
   `structure` finding. Propose the cuts against the reverse outline,
   take the user's direction, then run the gate over what remains. Spend
   the cut where the document is not working, on sections that restate,
@@ -67,18 +69,31 @@ every mode.
    supplies the default; the flag overrides it. `--impersonal` adds
    the pronoun findings, for issues, specs, and acceptance criteria.
    In the same read,
-   build the reverse outline: one line per paragraph stating its point.
-   Work from the findings, not from a free-form read.
+   build the reverse outline: one line per paragraph stating the claim
+   it makes, not the topic it covers. "The cache" is a topic; "the
+   cache cuts p99 latency in half" is a claim. Then group the lines by
+   claim across the whole document. A paragraph on page one and one
+   on page four share a group when they assert the same thing.
+   Distance never excuses a match. This claim inventory is the method
+   for the repetition audit. Work from the findings, not from a
+   free-form read.
 4. Audit the reverse outline before any fix. Read the list for jumps,
    misordering, and paragraphs carrying two points. Check the flow at
    every level. Each subsection makes one point, that point supports
    its section's claim, and the sections in order walk the reader from
    question to answer. Four more checks run against the list:
-   - restatement: adjacent lines making the same point in different
-     words are a restatement, not emphasis. One of them merges or goes.
-     Two places need a closer look. The paragraph after a strong claim
-     tends to reassert the claim instead of supporting it, and the
-     closing section tends toward summary
+   - restatement: a claim group holding two or more paragraphs is a
+     restatement, not emphasis, wherever the paragraphs sit. Each
+     group emits one `structure` finding. It lists every paragraph in
+     the group, names one as the keep, and marks the rest as
+     candidates for cut or merge. The keep is the instance the
+     argument needs where it stands: the first, or the best evidenced.
+     A later instance that adds evidence, a qualification, or a new
+     consequence is an advance and emits no finding. Only a paragraph
+     that brings nothing new joins the group. Two places need a closer
+     look. The paragraph after a strong claim tends to reassert the
+     claim instead of supporting it, and the closing section tends
+     toward summary
    - length: compare the document against its target, and each section
      against its budget when an approved outline sets one. An overrun
      is a finding even when the user did not ask for a trim
@@ -89,6 +104,11 @@ every mode.
      evidence
    - the outline's record: deviations logged during drafting count as
      decided keeps, not findings. Only undocumented drift counts
+   - omission, on a draft from `/terse:write`: the draft is short by
+     design, so check what it left out. Three gaps count. A disputable
+     claim with no evidence. A term the reader does not own. A step
+     the draft does not give the reader enough to take. Each is a
+     `structure` finding naming the reader question the draft owes
    Each problem is a `structure` finding. In fix mode, report these and
    take the user's direction before the sentence loop starts. Polishing
    a sentence in a section the user then cuts wastes the work.
@@ -170,9 +190,16 @@ every mode.
       fixes each category.
 - [ ] The reverse outline ran before the sentence loop; in fix mode,
       `structure` findings got the user's direction first.
-- [ ] The audit covered restatement, length against target and budget,
-      and, when an outline file exists, its recorded claims and
-      promises.
+- [ ] The reverse outline records each paragraph's claim, and the
+      restatement check grouped those claims across the whole
+      document, not only across adjacent lines.
+- [ ] Every repeated-claim finding lists the full group, names one
+      keep, and went to the report for the user's direction.
+- [ ] A later instance that advanced its claim raised no finding.
+- [ ] The audit covered restatement, length against target and
+      budget, and omission on a short draft.
+- [ ] When an outline file exists, the audit covered its recorded
+      claims and promises.
 - [ ] The flow check covered every level: subsection points support
       their sections, and the sections walk the reader from question
       to answer.

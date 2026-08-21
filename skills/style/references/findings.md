@@ -25,7 +25,8 @@ one report, one preview, and one fix loop serve every category.
 | em-dash | checker | wording |
 | grammar | model, `references/grammar-scope.md` | mechanics |
 | voice-drift | model, against the approved template | wording |
-| structure | model: theme, order, unintroduced terms | report-only |
+| structure | model: theme, order, unintroduced terms, repeated claims | report-only |
+| unasked | model: a sentence with no reader question behind it | report-only |
 
 ## Collection
 
@@ -33,9 +34,20 @@ Collect once, before the report and before any fix. One checker run
 gathers the mechanical flags. One model read emits the `grammar`,
 `voice-drift`, and `structure` findings in the shape above. The
 `structure` findings come from a reverse outline: one line per
-paragraph, built in the same read. Audit the list for jumps,
-repetition, misordering, and paragraphs carrying two points. Do not
-re-read the prose per category.
+paragraph stating the claim it makes, built in the same read. Audit
+the list for jumps, misordering, and paragraphs carrying two points.
+The repetition audit runs on the claim inventory. Group the lines by
+claim across the whole document, at any distance. A group of two or
+more paragraphs emits one `structure` finding. The finding lists
+every paragraph in the group, names one as the keep, and marks the
+rest as candidates for cut or merge. A later paragraph that adds
+evidence, a qualification, or a new consequence advances the claim
+rather than repeating it, and emits nothing. The `unasked` findings
+come from the `write` skill's working note: a sentence the note does
+not tie to one of the four reader questions. Those are an unowned
+term, a disputable claim's evidence, a required step, and an
+uninferred consequence. On imported text with no note, ask the question of each
+sentence in the same read. Do not re-read the prose per category.
 
 ## Suppression
 
@@ -89,7 +101,8 @@ view in chat.
 
 `/terse:write` uses the same model at draft time: it fixes findings
 section by section as prose lands, so the gate afterwards finds
-residue, not problems.
+residue, not problems. Its stats line carries the expansion ratio,
+final words over skeleton words, beside length against target.
 
 Chat filters select findings; they never change the loop. "Fix only the
 AI tells" runs the loop over one category. "Fix everything except the

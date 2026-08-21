@@ -33,8 +33,8 @@ This spends real tokens. It is a local or nightly job, not per-push CI.
 |---|---|---|
 | `claudism-removal` | Editing strips every tell family | regex not_contains per family (phrases, vocabulary, structures) on the edited file |
 | `grammar-repair` | Grammar-assistant parity with scope discipline | 16 planted errors gone (recall), original style intact (precision), comma splice fixed |
-| `generation-readme` | Fresh prose comes out clean | no tells in the produced README |
-| `generation-explainer` | Same, different genre | no tells in the produced explainer |
+| `generation-readme` | Fresh prose comes out clean and short | no tells in the produced README; under 350 words |
+| `generation-explainer` | Same, different genre | no tells in the produced explainer; under 600 words |
 
 Each case adds two more graders. An `llm` grader judges what patterns
 cannot: facts preserved, content accurate. A `tool_used: Skill` indicator

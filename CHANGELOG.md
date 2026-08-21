@@ -6,6 +6,31 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The `write` skill drafts short and expands under proof. The first
+  draft is the outline's claims as bare prose, shown to the user on
+  documents over 200 words. Every sentence added after that answers
+  one of four reader questions, recorded in a working note. The
+  expansion ratio, final words over skeleton words, has a ceiling per
+  document type, and an overrun blocks. Outline budgets are ceilings,
+  trim mode cuts unasked sentences first, and the findings contract
+  gains an `unasked` finding.
+- The skeleton checkpoint lists the proposed additions for one
+  approval. Expansion concentrates on disputable claims. The ceilings
+  are 1.25x, 1.5x, and 2x. Outline budgets come from the claims and
+  report their sum against the target. The edit gate audits a short
+  draft for omission.
+
+- Restatement detection at any distance. The reverse outline now
+  records the claim each paragraph makes, and the repetition audit
+  groups paragraphs by claim across the whole document. A claim in
+  two or more paragraphs emits one `structure` finding that lists the
+  group and names the keep. A later instance that adds evidence, a
+  qualification, or a consequence emits nothing. The `write` skill's
+  advance check holds each paragraph against every earlier claim, not
+  only its predecessor.
+
 ## [0.8.0] (2026-08-20)
 
 ### Added
