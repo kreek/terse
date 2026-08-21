@@ -6,6 +6,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.0] (2026-08-21)
+
 ### Added
 
 - `/terse:write` is now one request to a finished document. It runs
