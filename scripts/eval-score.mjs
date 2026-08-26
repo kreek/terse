@@ -1,13 +1,17 @@
 #!/usr/bin/env node
-// Post-scores a `claude plugin eval` run with terse's own checker: flags per
+// Post-scores a Terse eval run with the checker: total flags, flags per
 // thousand words, AI tells, and grade, per arm, with the delta. The eval's
 // graders judge pass/fail per case; this reports the magnitude of the
 // improvement across arms, which is the "demonstrable improvement" number.
 // Usage: node eval-score.mjs <aggregate-result.json>
 import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkText } from './style-check.mjs';
+import { gradeRegexGraders, loadGraders } from './eval-graders.mjs';
 
 const ARM_NAMES = ['with', 'without'];
+const EVALS = join(dirname(dirname(fileURLToPath(import.meta.url))), 'evals');
 
 // The aggregate schema may embed produced-file contents or only paths, and
 // early-access builds vary. Walk each arm's runs and accept either shape.
@@ -49,6 +53,7 @@ function scoreArm(runs) {
 	if (docs === 0) return null;
 	return {
 		docs,
+		totalFlags: flags,
 		flagsPerKword: words ? (flags / words) * 1000 : 0,
 		aiTells: tells,
 		meanGrade: gradeSum / docs,
@@ -67,6 +72,20 @@ function scoreRunDocs(docs, totals) {
 }
 
 function fmt(n) { return n.toFixed(1); }
+
+function currentGraders(c, run) {
+	let definitions;
+	try {
+		definitions = loadGraders(join(EVALS, c.name, 'graders'));
+	} catch {
+		return run.graders ?? [];
+	}
+	const files = Object.fromEntries(extractDocs(run)
+		.map(({ name, content }) => [name, content]));
+	const recordedNonRegex = (run.graders ?? [])
+		.filter((grader) => grader.type !== 'regex');
+	return [...recordedNonRegex, ...gradeRegexGraders(definitions, files)];
+}
 
 const path = process.argv[2];
 if (!path) {
@@ -95,27 +114,51 @@ function scoreAndPrintArms(c) {
 
 let failures = 0;
 let scoredAny = false;
+let improvedStyleCases = 0;
 console.log('case                    arm      docs  flags/kw  AI tells  grade');
 for (const c of cases) {
 	const scores = scoreAndPrintArms(c);
 	if (scores.with || scores.without) scoredAny = true;
 	const w = scores.with, wo = scores.without;
+	if (!w || !wo) {
+		console.log(`  FAIL ${c.name}: both A/B arms must produce at least one document`);
+		failures++;
+	}
 	if (w && w.aiTells > 0) {
 		console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);
 		failures++;
 	}
-	// A grammar-scope case must not ADD style flags; equality is correct
-	// behavior (the pass leaves style alone). Style cases must be below the
-	// without arm, except when both arms come out clean: zero cannot improve
-	// on zero, and a clean with-arm is the goal, not a failure.
+	// A grammar-scope case must not add style flags. A clean style arm cannot
+	// improve below zero, so a zero/zero tie passes; every non-clean arm must win.
 	const grammarScope = (c.tags ?? []).includes('grammar');
 	const worse = grammarScope
-		? w?.flagsPerKword > wo?.flagsPerKword
-		: w?.flagsPerKword > 0 && w?.flagsPerKword >= wo?.flagsPerKword;
+		? w?.totalFlags > wo?.totalFlags
+		: w?.totalFlags > 0 && w?.totalFlags >= wo?.totalFlags;
 	if (w && wo && worse) {
-		console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
-			`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
+		console.log(`  FAIL ${c.name}: with-plugin total flags (${w.totalFlags}) ` +
+			`${grammarScope ? 'above' : 'not below'} without (${wo.totalFlags})`);
 		failures++;
+	}
+	if (!grammarScope && w && wo && w.totalFlags < wo.totalFlags) {
+		improvedStyleCases++;
+	}
+	for (const arm of ARM_NAMES) {
+		for (const run of c.arms?.[arm] ?? []) {
+			if (run.error) {
+				console.log(`  FAIL ${c.name}: ${arm}-plugin run error: ${run.error}`);
+				failures++;
+			}
+			for (const grader of currentGraders(c, run)) {
+				if (arm === 'with' && grader.scored && !grader.pass) {
+					console.log(`  FAIL ${c.name}: with-plugin grader ${grader.name} failed`);
+					failures++;
+				}
+				if (arm === 'without' && grader.type === 'tool_used' && grader.pass) {
+					console.log(`  FAIL ${c.name}: Terse activated in the without-plugin arm`);
+					failures++;
+				}
+			}
+		}
 	}
 	if (w && wo) {
 		console.log(`  delta ${c.name}: ${fmt(wo.flagsPerKword - w.flagsPerKword)} ` +
@@ -123,11 +166,18 @@ for (const c of cases) {
 	}
 }
 
+if (cases.length > 1 && improvedStyleCases === 0) {
+	console.log('  FAIL suite: no style case improved on its paired baseline');
+	failures++;
+}
+
 if (!scoredAny) {
 	console.error('eval-score: no produced .md files found in the report; ' +
 		'run the eval with --keep-temp or check the aggregate schema');
 	process.exit(2);
 }
-console.log(failures === 0 ? 'eval-score: improvement demonstrated'
-	: `eval-score: ${failures} acceptance failure(s)`);
+const success = improvedStyleCases > 0
+	? 'eval-score: improvement demonstrated'
+	: 'eval-score: acceptance passed (clean tie)';
+console.log(failures === 0 ? success : `eval-score: ${failures} acceptance failure(s)`);
 process.exit(failures === 0 ? 0 : 1);

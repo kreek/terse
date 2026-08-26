@@ -1,6 +1,6 @@
 ---
 name: write
-description: "One request to a finished document: outline, skeleton, expansion, and the edit gate in sequence, with two stops for the user's sign-off. Use this whenever the user asks Terse to write a document, memo, summary, report, post, spec, ADR, or README and has not named a single phase; `/terse:outline`, `/terse:draft`, and `/terse:edit` stay for driving one phase by hand."
+description: "Use when the user explicitly invokes or names the Terse write workflow. It takes one request to a finished document through outline, skeleton, expansion, and the edit gate, with two stops for sign-off, and opens with the brainstorm skill when the angle is unsettled. The brainstorm, outline, draft, and edit skills stay available for driving one phase by hand."
 ---
 
 # Write
@@ -19,30 +19,34 @@ between them, and holds the two stops.
 ## Workflow
 
 1. Take the request. Name the subject, the reader, the one question,
-   and the target length. Ask for what the user did not say. An
+   and the target length. Ask for what the user did not say. When the
+   user cannot say, because the angle itself is open, run the Terse
+   brainstorm skill first. Its approved brief supplies this step's
+   answers, and the two stops below stay the outline and the
+   skeleton. An
    issue, a PR description, a comment, or a short email under 200
-   words skips to step 4. `/terse:draft` handles it in one pass with
+   words skips to step 4. The Terse draft skill handles it in one pass with
    no stop, and the gate in step 5 still runs.
-2. Outline, under `/terse:outline`. Write `<name>-outline.md` beside
+2. Outline, under the Terse outline skill. Write `<name>-outline.md` beside
    where the document will live. It holds the governing thought, the
    shape, one claim and a budget per section, and the budgets summed
    against the target. Show it and stop. The user edits or approves;
    iterate until they approve, then mark the file
    `status: approved (user, YYYY-MM-DD)`.
-3. Skeleton, under `/terse:draft` step 4. Write `<name>-skeleton.md`:
+3. Skeleton, under step 4 of the Terse draft skill. Write `<name>-skeleton.md`:
    each section's claim as bare prose, the evidence under disputable
    claims, nothing else. List the proposed additions beneath it, one
    line each with the section, the reader question, and the sentence
    in brief. Show both and stop. The user strikes or adds items, then
    approves.
-4. Expand, under `/terse:draft` steps 5 through 8. Write `<name>.md`
+4. Expand, under steps 5 through 8 of the Terse draft skill. Write `<name>.md`
    from the approved skeleton and list, every added sentence answering
    its recorded question, the ratio under the ceiling. Record any
    deviation in the outline file. Keep the working note of questions
    for the gate.
-5. Gate, under `/terse:edit` in fix mode. Collect every finding, run
+5. Gate, under the Terse edit skill in fix mode. Collect every finding, run
    the reverse outline and the claim inventory, and fix through the
-   staged loop with grammar last. In `/terse:edit`, `structure`
+   staged loop with grammar last. In the edit skill, `structure`
    findings wait for the user. Here the approved outline and skeleton
    are the decided structure, so report them with the file instead of
    stopping a third time. Re-read every touched section whole.
@@ -55,6 +59,8 @@ between them, and holds the two stops.
 
 - [ ] The user approved the outline before the skeleton existed, and
       the skeleton with its additions before the expansion.
+- [ ] A request with no settled angle went through the Terse
+      brainstorm skill, and its brief sat beside the outline.
 - [ ] Each phase ran under its own skill's rules and checklist.
 - [ ] The outline, skeleton, and document sit together, and the
       outline records every deviation.

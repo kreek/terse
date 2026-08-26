@@ -1,13 +1,13 @@
 ---
 name: generation-readme
-tags: [generation]
+tags: [generation, ai-tells]
 runs: 3
 max_turns: 10
 allowed_tools: ["Read", "Write", "Edit"]
 ---
 Write a README.md for the following command-line tool. Cover what it does,
 installation, usage with examples, configuration, and license. Write it for
-a developer audience. Save it as `README.md`.
+a developer audience, keep it under 200 words, and save it as `README.md`.
 
 The tool is `logsift`, a single-binary log filter:
 

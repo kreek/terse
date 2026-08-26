@@ -1,12 +1,10 @@
 # Terse
 
-Terse is a writing system that runs inside Claude. A document moves
-through three phases. You approve an outline, Claude expands it into
-prose, and an edit pass clears what remains before you publish. At
-each phase a mechanical checker finds the problems the classic
-readability editors found: hard sentences, passive voice, adverbs,
-qualifiers, AI tells. Claude fixes them, and the fixes keep your
-voice. It all runs on the subscription you already pay for.
+Terse is a writing system for Codex and Claude. A document moves through three
+phases. You approve an outline, the model expands it into prose, and an edit
+pass clears what remains before you publish. A mechanical checker runs at each
+phase. It flags hard sentences, passive voice, adverbs, qualifiers, and common
+model-writing patterns. The model fixes them while keeping your voice.
 
 ## How it works
 
@@ -18,8 +16,8 @@ Two layers:
   each sentence with ARI and flags the hard ones. It flags passive voice,
   adverbs, qualifiers, wordy phrases, long asides, and requirements
   filed as wishes. Em dashes flag too, spaced en dashes included.
-  Openings of 90 words or more flag. The AI-tell lexicon covers the
-  claudism families in every inflection, and it is careful with single
+  Openings of 90 words or more flag. The AI-tell lexicon covers common
+  model-writing families in every inflection, and it is careful with single
   words. A bare word is a tell only when it has no everyday literal
   sense. A word with one flags only in its tell frame: `testament to`
   flags, a last will and testament does not, and a test harness never
@@ -27,6 +25,8 @@ Two layers:
   `crucial`) sit in the wordy list, where the flag is a suggested
   swap. Document stats cover word count, reading time, and grade.
   Each adverb, passive, and qualifier count gets a length-scaled target.
+  The [GPT and Codex research note](docs/research/gpt-writing-tells.md)
+  records sources, admission decisions, and false-positive limits.
 - **Judgment** (skills): the model fixes what the checker finds. A voice
   playbook governs each fix and knows when a flag is a false alarm. Passive
   voice with an irrelevant actor stays. A hedge that is the point stays. Your em
@@ -34,14 +34,22 @@ Two layers:
 
 ## Install
 
-Terse runs anywhere Claude Code plugins run:
+### Codex Desktop and CLI
 
-- the terminal
-- the Claude desktop app
-- claude.ai/code
-- the IDE extensions
+Add the repository marketplace and install Terse from either Codex surface:
 
-Add this repo as a marketplace, then install the plugin:
+```sh
+codex plugin marketplace add kreek/terse
+codex plugin add terse@terse
+```
+
+Restart Codex Desktop after adding the marketplace, then install Terse from
+the `terse` source in the Plugins Directory. Start a new task after an install
+or update so Codex loads the current skills.
+
+### Claude Code
+
+Keep the existing Claude marketplace and command surface:
 
 ```
 /plugin marketplace add kreek/terse
@@ -50,17 +58,20 @@ Add this repo as a marketplace, then install the plugin:
 
 ## Skills
 
-Four skills: three phase commands and the rulebook they share.
+Six skills: the complete workflow, its phases, and the rulebook they
+share. Codex uses `$terse:*`; Claude keeps `/terse:*`.
 
-| Skill | What it does |
-|---|---|
-| `/terse:write <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
-| `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
-| `/terse:draft <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. Your voice, checked at draft time. |
-| `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
-| `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
+| Codex | Claude | What it does |
+|---|---|---|
+| `$terse:write <subject>` | `/terse:write <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
+| `$terse:brainstorm <topic>` | `/terse:brainstorm <topic>` | The angle before any outline: candidate readers, questions, and governing thoughts, converged to one approved brief. |
+| `$terse:outline <subject>` | `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
+| `$terse:draft <outline or subject>` | `/terse:draft <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. |
+| `$terse:edit <file>` | `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
+| `$terse:style` | `/terse:style` | The rulebook: voice, clarity, readability, and word choice. |
 
-The three phases hand off through the outline file. You approve it
+The phases hand off through the outline file, and a brainstorm brief
+feeds it when the angle starts unsettled. You approve it
 before any prose exists, with each section's claim, budget, and
 evidence on record. Write drafts to that file. A section that resists
 goes back to the outline, and structural changes need your approval
@@ -68,24 +79,23 @@ again. Edit then checks the finished prose against the same record.
 Logged deviations stand, undocumented drift is a finding, and every
 section must make its assigned claim.
 
-The style skill holds the rules the other three follow: plain words,
+The style skill holds the rules the others follow: plain words,
 active voice, the reader's vocabulary. It knows the false alarms that
 keep a flag from becoming a bad edit. And because it loads on its own
-whenever Claude writes or edits prose, everyday document work follows
+whenever the model writes or edits prose, everyday document work follows
 the same rules without a command.
 
-`/terse:edit` takes direction in chat: "report only", "just fix the
-grammar", "make it casual", "cut 15%", "fix only the AI tells",
-"everything except the quotes".
+The edit skill takes direction in chat. It can report only, fix grammar,
+change tone, cut 15%, or filter findings by category.
 
 ## Your voice
 
-`/terse:draft` offers to learn your voice when no template exists.
+The draft skill offers to learn your voice when no template exists.
 Point it at a directory of your writing. The checker measures your
 habits as numbers. The model names your traits, each with a quoted
 example. The result is a draft `.terse/voice.md`. You review and approve
 it trait by trait; Terse honors no template you have not signed off.
-Once approved, your template wins. `/terse:edit` skips the flags your
+Once approved, your template wins. The edit skill skips the flags your
 voice overrides and names them as covered. Rewrites stay inside your
 measured ranges.
 
@@ -97,7 +107,7 @@ node scripts/render-highlights.mjs draft.md
 
 One self-contained, read-only HTML page. Each flag category gets a
 color. Each highlight shows its hint on hover, and the chips at the top
-filter by category. Open it in any browser, or let Claude publish it as
+filter by category. Open it in any browser, or let the host publish it as
 a page. The preview is for looking. You direct the fixes in chat: "fix
 all", "fix only the AI tells", "fix everything except the quotes".
 
@@ -120,13 +130,20 @@ in the file rather than in a chat you closed.
 
 ## Always on
 
-The plugin ships a hook that runs the checker on every markdown file
-Claude writes or edits. The flags go back into the session as tool
-feedback. Opt in through your settings:
+The plugin ships a hook that runs the checker on every Markdown file the host
+writes or edits. The flags go back into the session as tool feedback. Opt in
+through the host's environment settings:
 
 ```json
 { "env": { "TERSE_HOOK": "1" } }
 ```
+
+Claude sends `tool_input.file_path`. Codex sends an `apply_patch` command, so
+the hook extracts every added, updated, or moved Markdown path and resolves it
+against the session working directory. Codex documents `Edit` and `Write` as
+matcher aliases for `apply_patch`. Both hosts receive exit-code-2 feedback;
+irrelevant and malformed events stay silent. Codex also requires one-time
+review and trust for non-managed plugin hooks.
 
 ## Use the checker standalone
 
@@ -143,22 +160,39 @@ sentence passes on its own. `--impersonal` adds the pronoun findings
 for issues, specs, and acceptance criteria, where the requirement
 belongs to the system rather than to whoever filed it.
 
-## Develop
+## Verify the quotes
 
 ```
-npm install
+node scripts/quote-check.mjs draft.md
+node scripts/quote-check.mjs draft.md --offline
+node scripts/quote-check.mjs draft.md --json
+```
+
+The quote checker finds each quotation and its nearby source link,
+fetches the source, and proves the quote appears word for word. It
+normalizes only whitespace and quote marks, and `[...]` marks an
+editorial elision. A quote with no source link, a quote its source
+does not contain, and a source that would not fetch are all findings.
+The exit contract matches the style checker's. A verified quote
+on a plain web link gets the ready-made `#:~:text=` fragment URL, so
+the link opens with the quote highlighted. `--offline` never touches
+the network; web-sourced quotes stay findings until proven.
+
+## Develop
+
+```sh
+npm ci
 npm test
 ```
 
-To try local changes before pushing, add your checkout as a
-marketplace and install from it:
+The committed marketplace targets the GitHub repository because the plugin is
+at the repository root. To test uncommitted changes, create a temporary
+marketplace whose catalog points to a copy at `./plugins/terse`, then add that
+marketplace and install `terse@terse`.
 
-```
-/plugin marketplace add ./path/to/terse
-/plugin install terse@terse
-```
-
-Run `/reload-plugins` if the install summary asks for it.
+Start a new Codex task after reinstalling. In Claude, use the equivalent
+`/plugin marketplace add` and `/plugin install` commands, then run
+`/reload-plugins` if the install summary asks for it.
 
 ## License
 

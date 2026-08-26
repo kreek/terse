@@ -1,55 +1,51 @@
 #!/usr/bin/env node
-// Fallback ablation runner for the evals/ suite, for accounts where
-// `claude plugin eval` is still early-access gated. Runs each case twice in
-// headless sessions (with: --bare --plugin-dir <repo>; without: --bare),
-// applies the regex graders, and writes an aggregate report in the shape
-// scripts/eval-score.mjs consumes. llm and tool_used graders are recorded
-// as unscored; the delta table rests on produced files and regex verdicts.
-// Usage: node eval-run.mjs [--runs N] [--case name] [--out path.json]
+// Runs the eval suite through Claude or Codex, ablates only Terse, applies
+// deterministic graders, and writes the report consumed by eval-score.mjs.
+// Usage: node eval-run.mjs [--provider claude|codex] [--runs N]
+//   [--case name | --tag tag] [--out path.json]
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { readFileSync, readdirSync, writeFileSync, mkdtempSync, mkdirSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import {
+	readFileSync, readdirSync, writeFileSync, mkdtempSync, mkdirSync,
+	existsSync, symlinkSync, rmSync,
+} from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildEvalConfig } from './eval-config.mjs';
+import { gradeRegexGraders, loadGraders, parseFrontmatter }
+	from './eval-graders.mjs';
 
 const execFileP = promisify(execFile);
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const EVALS = join(REPO, 'evals');
 const RUN_TIMEOUT_MS = 10 * 60 * 1000;
+const CODEX_BIN = process.env.CODEX_BIN ?? 'codex';
+const USAGE = 'usage: node eval-run.mjs [--provider claude|codex] [--runs N] ' +
+	'[--case name | --tag tag] [--out path.json]';
 
-function parseFrontmatter(text) {
-	const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-	if (!m) return { meta: {}, body: text };
-	const meta = {};
-	for (const line of m[1].split('\n')) {
-		const kv = line.match(/^(\w+):\s*(.*)$/);
-		if (kv) meta[kv[1]] = kv[2].trim();
-	}
-	return { meta, body: m[2].trim() };
-}
-
-function loadCases(filter) {
-	const cases = [];
-	for (const entry of readdirSync(EVALS, { withFileTypes: true })) {
-		if (!entry.isDirectory() || entry.name === 'results') continue;
-		if (filter && entry.name !== filter) continue;
-		cases.push(loadCase(join(EVALS, entry.name), entry.name));
-	}
-	return cases;
+function execFileWithInput(command, args, options, input) {
+	return new Promise((resolve, reject) => {
+		const child = execFile(command, args, options, (error, stdout, stderr) => {
+			if (error) {
+				error.stdout = stdout;
+				error.stderr = stderr;
+				reject(error);
+				return;
+			}
+			resolve({ stdout, stderr });
+		});
+		child.stdin.end(input);
+	});
 }
 
 function loadCase(dir, fallbackName) {
 	const { meta, body } = parseFrontmatter(readFileSync(join(dir, 'prompt.md'), 'utf8'));
-	const graders = [];
-	for (const g of readdirSync(join(dir, 'graders'))) {
-		const parsed = parseFrontmatter(readFileSync(join(dir, 'graders', g), 'utf8'));
-		graders.push({ name: g.replace(/\.md$/, ''), ...parsed.meta });
-	}
+	const graders = loadGraders(join(dir, 'graders'));
 	return {
 		name: meta.name ?? fallbackName,
 		tags: (meta.tags ?? '').replace(/[[\]]/g, '').split(',')
-			.map((t) => t.trim()).filter(Boolean),
+			.map((tag) => tag.trim()).filter(Boolean),
 		runs: Number(meta.runs) || 1,
 		maxTurns: Number(meta.max_turns) || 10,
 		prompt: body,
@@ -57,106 +53,230 @@ function loadCase(dir, fallbackName) {
 	};
 }
 
-// Grader patterns are written for the eval tool with a YAML double-quoted
-// scalar and an inline (?i). Convert to a JS RegExp.
-function toRegex(pattern) {
-	let p = pattern.replace(/^"|"$/g, '').replace(/\\\\/g, '\\');
-	let flags = '';
-	if (p.startsWith('(?i)')) { p = p.slice(4); flags = 'i'; }
-	return new RegExp(p, flags);
+function loadCases(caseFilter, tagFilter) {
+	const cases = [];
+	for (const entry of readdirSync(EVALS, { withFileTypes: true })) {
+		if (!entry.isDirectory() || entry.name === 'results') continue;
+		if (caseFilter && entry.name !== caseFilter) continue;
+		const loaded = loadCase(join(EVALS, entry.name), entry.name);
+		if (!tagFilter || loaded.tags.includes(tagFilter)) cases.push(loaded);
+	}
+	return cases;
 }
 
-function gradeFiles(graders, files) {
-	return graders.map((g) => {
-		if (g.type !== 'regex') return { name: g.name, type: g.type, scored: false };
-		const path = (g.target ?? '').match(/path:\s*([\w.-]+)/)?.[1];
-		const content = path ? files[path] : Object.values(files).join('\n');
-		if (content === undefined) {
-			return { name: g.name, type: g.type, scored: true, pass: false,
-				note: `missing file ${path}` };
+function codexSkillActivated(transcript) {
+	return /codex\.skill\.injected[^\n]*terse:/.test(transcript) ||
+		/plugins[\\/]cache[\\/]terse[\\/]terse[\\/][^\\/\s]+[\\/]skills[\\/](?:write|outline|draft|edit|style|brainstorm)[\\/]SKILL\.md/.test(transcript);
+}
+
+function gradeRun(graders, files, transcript, provider) {
+	const regexGrades = new Map(gradeRegexGraders(graders, files)
+		.map((grader) => [grader.name, grader]));
+	return graders.map((grader) => {
+		if (grader.type === 'tool_used') {
+			if (provider !== 'codex') {
+				return { name: grader.name, type: grader.type, scored: false };
+			}
+			const pass = codexSkillActivated(transcript);
+			return { name: grader.name, type: grader.type, scored: true, pass,
+				note: 'Codex skill injection or installed Terse SKILL.md access' };
 		}
-		const hit = toRegex(g.pattern).test(content);
-		const pass = (g.match ?? 'contains').trim() === 'not_contains' ? !hit : hit;
-		return { name: g.name, type: g.type, scored: true, pass };
+		if (grader.type === 'regex') return regexGrades.get(grader.name);
+		return { name: grader.name, type: grader.type, scored: false };
 	});
 }
 
-async function runOnce(c, arm) {
-	const dir = mkdtempSync(join(tmpdir(), `terse-eval-${c.name}-${arm}-`));
-	const args = ['-p', c.prompt, '--bare',
-		'--allowedTools', 'Read', 'Write', 'Edit',
+function readMarkdownFiles(dir) {
+	const files = {};
+	for (const file of readdirSync(dir)) {
+		if (file.endsWith('.md')) files[file] = readFileSync(join(dir, file), 'utf8');
+	}
+	return files;
+}
+
+function claudeInvocation(c, arm) {
+	const args = ['-p', c.prompt, '--bare', '--allowedTools', 'Read', 'Write', 'Edit',
 		'--max-turns', String(c.maxTurns)];
 	if (arm === 'with') args.push('--plugin-dir', REPO);
-	let error = null;
+	return { command: 'claude', args, input: undefined };
+}
+
+function isolatedCodexHome(enabled) {
+	const source = process.env.CODEX_HOME ?? join(homedir(), '.codex');
+	const config = readFileSync(join(source, 'config.toml'), 'utf8');
+	const isolatedConfig = buildEvalConfig(config, enabled);
+	const target = mkdtempSync(join(tmpdir(), 'terse-codex-home-'));
 	try {
-		await execFileP('claude', args, { cwd: dir, timeout: RUN_TIMEOUT_MS,
-			maxBuffer: 16 * 1024 * 1024 });
+		for (const entry of ['auth.json', 'models_cache.json', 'plugins']) {
+			const sourcePath = join(source, entry);
+			if (existsSync(sourcePath)) symlinkSync(sourcePath, join(target, entry));
+		}
+		writeFileSync(join(target, 'config.toml'), isolatedConfig);
+		return target;
+	} catch (error) {
+		rmSync(target, { recursive: true, force: true });
+		throw error;
+	}
+}
+
+function codexInvocation(c, arm, dir) {
+	const enabled = arm === 'with';
+	const home = isolatedCodexHome(enabled);
+	return {
+		command: CODEX_BIN,
+		args: ['exec', '--ephemeral', '--ignore-rules', '--json',
+			'-s', 'workspace-write', '--skip-git-repo-check', '-C', dir,
+			'-c', `plugins."terse@terse".enabled=${String(enabled)}`, '-'],
+		input: c.prompt,
+		env: { CODEX_HOME: home },
+		cleanup: () => rmSync(home, { recursive: true, force: true }),
+	};
+}
+
+async function runOnce(c, arm, provider) {
+	const dir = mkdtempSync(join(tmpdir(), `terse-eval-${c.name}-${arm}-`));
+	let invocation;
+	try {
+		invocation = provider === 'codex'
+			? codexInvocation(c, arm, dir) : claudeInvocation(c, arm);
 	} catch (err) {
-		const detail = (err.stderr ?? '').trim().split('\n').at(-1) ?? '';
+		const error = `setup: ${err.message}`;
+		return { dir, files: {}, error, graders: gradeRun(c.graders, {}, '', provider),
+			transcript: '' };
+	}
+	let error = null;
+	let transcript = '';
+	try {
+		const result = await execFileWithInput(invocation.command, invocation.args, {
+			cwd: dir, timeout: RUN_TIMEOUT_MS,
+			maxBuffer: 16 * 1024 * 1024,
+			env: { ...process.env, ...invocation.env },
+		}, invocation.input);
+		transcript = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+	} catch (err) {
+		transcript = `${err.stdout ?? ''}\n${err.stderr ?? ''}`;
+		const detail = transcript.trim().split('\n').at(-1) ?? '';
 		error = err.killed ? 'timeout'
 			: `exit ${err.code}${detail ? `: ${detail.slice(0, 200)}` : ''}`;
+	} finally {
+		invocation.cleanup?.();
 	}
-	const files = {};
-	for (const f of readdirSync(dir)) {
-		if (f.endsWith('.md')) files[f] = readFileSync(join(dir, f), 'utf8');
+	const files = readMarkdownFiles(dir);
+	return { dir, files, error, graders: gradeRun(c.graders, files, transcript, provider),
+		transcript };
+}
+
+function parseArgs(args) {
+	const allowed = new Set(['--provider', '--runs', '--case', '--tag', '--out']);
+	const values = {};
+	for (let i = 0; i < args.length; i += 2) {
+		if (!allowed.has(args[i]) || args[i + 1] === undefined) return null;
+		values[args[i]] = args[i + 1];
 	}
-	return { dir, files, error, graders: gradeFiles(c.graders, files) };
+	if (values['--case'] && values['--tag']) return null;
+	return values;
 }
 
-const KNOWN_FLAGS = new Set(['--runs', '--case', '--out']);
-const args = process.argv.slice(2);
-const unknown = args.filter((a, i) => a.startsWith('--') && !KNOWN_FLAGS.has(a)
-	|| !a.startsWith('--') && !KNOWN_FLAGS.has(args[i - 1]));
-if (unknown.length > 0) {
-	console.error('usage: node eval-run.mjs [--runs N] [--case name] [--out path.json]');
-	process.exit(2);
+function configuredCodexModel() {
+	try {
+		const root = process.env.CODEX_HOME ?? join(homedir(), '.codex');
+		const config = readFileSync(join(root, 'config.toml'), 'utf8');
+		return config.match(/^model\s*=\s*["']([^"']+)["']/m)?.[1] ?? null;
+	} catch {
+		return null;
+	}
 }
-const opt = (name, dflt) => {
-	const i = args.indexOf(name);
-	return i >= 0 ? args[i + 1] : dflt;
-};
-const runs = Number(opt('--runs', 0)) || null;
-const caseFilter = opt('--case', null);
-const outPath = opt('--out', join(EVALS, 'results', 'latest.json'));
 
-const cases = loadCases(caseFilter);
-if (cases.length === 0) {
-	console.error('eval-run: no cases matched');
-	process.exit(2);
+async function commandOutput(command, args) {
+	const result = await execFileP(command, args, { maxBuffer: 4 * 1024 * 1024 });
+	return `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim();
 }
-// --bare sessions never read OAuth or the keychain, so a subscription login
-// cannot carry them. Fail here, not after forty dead runs.
-if (!process.env.ANTHROPIC_API_KEY) {
-	console.error('eval-run: --bare sessions authenticate only with ' +
-		'ANTHROPIC_API_KEY. Export a key, or run `claude plugin eval` instead.');
-	process.exit(2);
-}
-mkdirSync(dirname(outPath), { recursive: true });
 
-async function runCase(c, n) {
-	console.error(`case ${c.name}: ${n} run(s) per arm`);
+async function preflight(provider) {
+	if (provider === 'claude') {
+		if (!process.env.ANTHROPIC_API_KEY) {
+			throw new Error('Claude --bare sessions require ANTHROPIC_API_KEY. ' +
+				'Export a key, or run `claude plugin eval` instead.');
+		}
+		return { cliVersion: await commandOutput('claude', ['--version']), model: null };
+	}
+	const login = await commandOutput(CODEX_BIN, ['login', 'status']);
+	if (!/logged in/i.test(login)) {
+		throw new Error('Codex is not authenticated. Run `codex login`, then retry.');
+	}
+	const plugins = await commandOutput(CODEX_BIN, ['plugin', 'list']);
+	if (!/\bterse@terse\b/.test(plugins)) {
+		throw new Error('Terse is not installed from the terse marketplace. Run ' +
+			'`codex plugin marketplace add <repo>` and `codex plugin add terse@terse`.');
+	}
+	return {
+		cliVersion: await commandOutput(CODEX_BIN, ['--version']),
+		model: configuredCodexModel(),
+	};
+}
+
+function reportRun(arm, run, index) {
+	const verdicts = run.graders.filter((grader) => grader.scored)
+		.map((grader) => `${grader.name}:${grader.pass ? 'pass' : 'FAIL'}`).join(' ');
+	console.error(`  ${arm} run ${index + 1}: ${Object.keys(run.files).length} file(s)` +
+		`${run.error ? ` [${run.error}]` : ''} ${verdicts}`);
+}
+
+async function runCase(c, count, provider) {
+	console.error(`case ${c.name}: ${count} run(s) per arm`);
 	const arms = { with: [], without: [] };
-	for (let i = 0; i < n; i++) {
-		const [w, wo] = await Promise.all([runOnce(c, 'with'), runOnce(c, 'without')]);
-		arms.with.push(w);
-		arms.without.push(wo);
-		reportRun('with', w, i);
-		reportRun('without', wo, i);
+	for (let i = 0; i < count; i++) {
+		const [withPlugin, withoutPlugin] = await Promise.all([
+			runOnce(c, 'with', provider), runOnce(c, 'without', provider),
+		]);
+		arms.with.push(withPlugin);
+		arms.without.push(withoutPlugin);
+		reportRun('with', withPlugin, i);
+		reportRun('without', withoutPlugin, i);
 	}
 	return arms;
 }
 
-function reportRun(arm, r, i) {
-	const verdicts = r.graders.filter((g) => g.scored)
-		.map((g) => `${g.name}:${g.pass ? 'pass' : 'FAIL'}`).join(' ');
-	console.error(`  ${arm} run ${i + 1}: ${Object.keys(r.files).length} file(s)` +
-		`${r.error ? ` [${r.error}]` : ''} ${verdicts}`);
+const values = parseArgs(process.argv.slice(2));
+if (!values) {
+	console.error(USAGE);
+	process.exit(2);
 }
 
-const report = { schemaVersion: 1, suite: 'terse (fallback runner)', cases: [] };
+const provider = values['--provider'] ?? 'claude';
+if (!['claude', 'codex'].includes(provider)) {
+	console.error(USAGE);
+	process.exit(2);
+}
+const requestedRuns = Number(values['--runs']) || null;
+const outPath = values['--out'] ?? join(EVALS, 'results', 'latest.json');
+const cases = loadCases(values['--case'] ?? null, values['--tag'] ?? null);
+if (cases.length === 0) {
+	console.error('eval-run: no cases matched');
+	process.exit(2);
+}
+
+let environment;
+try {
+	environment = await preflight(provider);
+} catch (error) {
+	console.error(`eval-run: ${error.message}`);
+	process.exit(2);
+}
+mkdirSync(dirname(outPath), { recursive: true });
+
+const report = {
+	schemaVersion: 1,
+	suite: `terse (${provider} runner)`,
+	provider,
+	date: new Date().toISOString().slice(0, 10),
+	model: environment.model,
+	cliVersion: environment.cliVersion,
+	cases: [],
+};
 for (const c of cases) {
 	report.cases.push({ name: c.name, tags: c.tags,
-		arms: await runCase(c, runs ?? c.runs) });
+		arms: await runCase(c, requestedRuns ?? c.runs, provider) });
 }
 
 writeFileSync(outPath, JSON.stringify(report, null, 2));
@@ -164,9 +284,8 @@ console.error(`eval-run: report written to ${outPath}`);
 
 const producedFiles = report.cases.some((c) =>
 	Object.values(c.arms).some((arm) =>
-		arm.some((r) => Object.keys(r.files).length > 0)));
+		arm.some((run) => Object.keys(run.files).length > 0)));
 if (!producedFiles) {
-	console.error('eval-run: every run failed to produce files; ' +
-		'check the per-run errors above before trusting this report');
+	console.error('eval-run: every run failed to produce files; check the errors above');
 	process.exit(2);
 }

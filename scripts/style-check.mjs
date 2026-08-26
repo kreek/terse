@@ -153,10 +153,9 @@ function nounForms(base) {
 	return `${base}(?:${es ? 'es' : 's'})?`;
 }
 
-// Claudisms and AI tells: phrases and vocabulary that mark machine writing.
-// The families and the worst offenders come from the claudism lists the
-// Claude subreddits keep; every entry is checked against the Hemingway
-// corpus for false positives before admission.
+// Model-writing tells are editing signals, never authorship evidence. Each
+// source-backed or observed candidate needs a safe frame or replacement and
+// zero false positives in the committed human-prose corpus before admission.
 const AI_TELL_PHRASES = [
 	// anthropomorphized code-speak
 	'load-bearing', 'load bearing', 'doing real work', 'does real work',
@@ -580,6 +579,20 @@ function refineSpan(text, span, match, occurrence = 0) {
 	return null;
 }
 
+function isLiteralSimplerUse(sentence, phrase, match) {
+	if (phrase === 'showcase') {
+		const before = sentence.slice(0, match.index);
+		const after = sentence.slice(match.index + match[0].length);
+		return /\b(?:a|an|the|this|that|its|our|their|museum|glass|display)\s+$/i
+			.test(before) || /^\s+(?:of|for|with|holds?|contains?|is|was)\b/i.test(after);
+	}
+	if (phrase === 'pivotal') {
+		const after = sentence.slice(match.index + match[0].length);
+		return /^\s+(?:joint|axis|pin|bearing|motion|position)\b/i.test(after);
+	}
+	return false;
+}
+
 function checkLexicon(sentence, flags, file, line, impersonal) {
 	for (const { phrase, re } of PREFERENCE_PATTERNS) {
 		pushMatches(sentence, re, flags, { file, line, category: 'preference',
@@ -605,15 +618,18 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 			hint: 'delete it or state the evidence; keep only if the hedge is the claim' });
 	}
 	for (const { phrase, simpler, re } of SIMPLER_PATTERNS) {
-		pushMatches(sentence, re, flags, { file, line,
-			category: 'simpler-alternative', match: phrase, hint: `use "${simpler}"` });
+		for (const match of sentence.matchAll(re)) {
+			if (isLiteralSimplerUse(sentence, phrase, match)) continue;
+			flags.push({ file, line, category: 'simpler-alternative', match: phrase,
+				hint: `use "${simpler}"` });
+		}
 	}
 	for (const { re } of AI_TELL_PATTERNS) {
 		// report the surface form, so "delved" reads as itself, not "delve"
 		for (const m of sentence.matchAll(re)) {
 			flags.push({ file, line, category: 'ai-tell',
 				match: m[0].toLowerCase().replace(/\s+/g, ' '),
-				hint: 'an AI tell; state the claim plainly' });
+				hint: 'a common model-writing pattern; state the claim plainly' });
 		}
 	}
 	for (const { phrase, verb, re } of WEAK_VERB_PATTERNS) {
@@ -626,7 +642,8 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 // on the next non-blank line; `<!-- terse-ignore: cat1 cat2 -->` narrows the
 // suppression to the named categories. The comment is invisible in rendered
 // markdown, so a documented keep survives in the file, not just in chat.
-function collectSuppressions(rawText) {
+/** Return line-indexed suppression rules shared by the style and quote checks. */
+export function collectSuppressions(rawText) {
 	const map = new Map();
 	const lines = rawText.split('\n');
 	for (let i = 0; i < lines.length; i++) {
@@ -640,7 +657,8 @@ function collectSuppressions(rawText) {
 	return map;
 }
 
-function isSuppressed(map, flag) {
+/** Return whether a finding is covered by a line's suppression rule. */
+export function isSuppressed(map, flag) {
 	const cats = map.get(flag.line);
 	return cats !== undefined && (cats === 'all' || cats.has(flag.category));
 }
@@ -652,7 +670,8 @@ function isSuppressed(map, flag) {
 const QUOTED_EXEMPT = new Set(['ai-tell', 'simpler-alternative', 'weak-verb',
 	'qualifier', 'preference', 'personal-pronoun', 'em-dash']);
 
-function quotedRanges(text) {
+/** Return raw `[start, end]` ranges for quotations in stripped Markdown. */
+export function quotedRanges(text) {
 	const ranges = [];
 	for (const block of text.matchAll(/[^\n][^]*?(?=\n[ \t]*\n|$)/g)) {
 		const base = block.index;

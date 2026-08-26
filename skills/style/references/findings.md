@@ -24,6 +24,7 @@ one report, one preview, and one fix loop serve every category.
 | simpler-alternative, weak-verb, ai-tell | checker | wording |
 | em-dash | checker | wording |
 | grammar | model, `references/grammar-scope.md` | mechanics |
+| quote-unsourced, quote-unverified, quote-link-plain | quote checker (`scripts/quote-check.mjs`) | mechanics |
 | voice-drift | model, against the approved template | wording |
 | structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
@@ -31,7 +32,8 @@ one report, one preview, and one fix loop serve every category.
 ## Collection
 
 Collect once, before the report and before any fix. One checker run
-gathers the mechanical flags. One model read emits the `grammar`,
+gathers the mechanical flags, and one quote-checker run proves every
+quotation against its source. One model read emits the `grammar`,
 `voice-drift`, and `structure` findings in the shape above. The
 `structure` findings come from a reverse outline: one line per
 paragraph stating the claim it makes, built in the same read. Audit
@@ -73,7 +75,9 @@ each sentence once, applying its findings in stage order:
    passive), swap the flagged word or phrase, delete or evidence the
    qualifier, replace the em dash
 3. **mechanics**: grammar, spelling, and punctuation, on the wording
-   that now exists
+   that now exists. A quote finding never rewords the sentence. The
+   fix re-copies the quoted words, adds the missing source link, or
+   upgrades a plain link to a text fragment
 
 Grammar goes last on every sentence. A rewrite in stages 1 and 2
 discards that sentence's collected `grammar` findings; re-proof the new
@@ -90,7 +94,7 @@ finding is a marked keep.
 
 ## Modes as views
 
-`/terse:edit` is the one command over this model; the user picks the
+The Terse edit skill is the one command over this model; the user picks the
 view in chat.
 
 | Direction | View |
@@ -101,10 +105,9 @@ view in chat.
 | "review it, don't edit" | report everything, led by the findings no mechanical fix covers |
 | "make it casual" | rewrite toward a tone preset, then run the gate |
 
-`/terse:draft` uses the same model at draft time: it fixes findings
-section by section as prose lands, so the gate afterwards finds
-residue, not problems. Its stats line carries the expansion ratio,
-final words over skeleton words, beside length against target.
+The Terse draft skill uses the same model at draft time. It fixes findings as
+each section lands, so the gate finds residue, not problems. Its stats line
+carries the expansion ratio beside length against target.
 
 Chat filters select findings; they never change the loop. "Fix only the
 AI tells" runs the loop over one category. "Fix everything except the
