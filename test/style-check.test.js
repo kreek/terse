@@ -293,4 +293,82 @@ describe('checkText', () => {
 		expect(flags.filter((f) => f.category === 'adverb').map((f) => f.match))
 			.toEqual(['Sadly']);
 	});
+
+	it('reports a word-level flag on the line where the match sits', () => {
+		const doc = 'The first sentence is short. The second sentence\nwraps onto a new line and utilizes a word here,\nand it is worth noting that the line matters.';
+		const { flags } = checkText(doc);
+		const byMatch = Object.fromEntries(flags.map((f) => [f.match, f.line]));
+		expect(byMatch['utilizes']).toBe(2);
+		expect(byMatch['it is worth noting']).toBe(3);
+	});
+
+	it('suppresses every line of the paragraph under a terse-ignore comment', () => {
+		const doc = '<!-- terse-ignore -->\nWe utilize things. The next\nsentence utilizes more.\n\nWe utilize again.\n';
+		const { flags } = checkText(doc);
+		expect(flags.map((f) => f.line)).toEqual([5]);
+	});
+
+	it('counts one tell when a phrase and a frame overlap', () => {
+		const { flags, stats } = checkText('It is worth noting that the cache is shared.');
+		const tells = flags.filter((f) => f.category === 'ai-tell');
+		expect(tells).toHaveLength(1);
+		expect(tells[0].match).toBe('it is worth noting');
+		expect(stats.aiTells).toBe(1);
+	});
+
+	it('does not read state idioms as passive voice', () => {
+		const { flags } = checkText(
+			'To get started, run the installer. The config is based on YAML. The binary is located in /usr/local/bin. The value is set to zero. Entries are supposed to expire. The flag is meant for tests. The team is focused on latency.'
+		);
+		expect(flags.filter((f) => f.category === 'passive-voice')).toEqual([]);
+		expect(checkText('The cache was cleared by the job.').flags.map((f) => f.category)).toContain('passive-voice');
+	});
+
+	it('hints deletion for sentence adverbs and ordinals', () => {
+		const hints = (t) => Object.fromEntries(checkText(t).flags
+			.filter((f) => f.category === 'adverb').map((f) => [f.match, f.hint]));
+		const h = hints('Unfortunately, the deploy failed. Firstly, install it. The job ran quickly.');
+		expect(h['Unfortunately']).toMatch(/comment on the sentence/);
+		expect(h['Firstly']).toBe('use "first"');
+		expect(h['quickly']).toMatch(/stronger verb/);
+	});
+
+	it('suggests the plain word for UK spellings too', () => {
+		const { flags } = checkText('We utilise the fallback and endeavour to recover.');
+		const simpler = flags.filter((f) => f.category === 'simpler-alternative').map((f) => f.match);
+		expect(simpler).toEqual(expect.arrayContaining(['utilise', 'endeavour']));
+	});
+
+	it('refines a qualifier span to the occurrence the lexicon matched', () => {
+		const quoted = checkText('She said "the very least" and it is very slow.');
+		expect(quoted.flags.filter((f) => f.category === 'qualifier')).toHaveLength(1);
+		const { flags } = checkText('At the very least, the job is very slow.');
+		const q = flags.find((f) => f.category === 'qualifier');
+		expect(q.span).toEqual([30, 34]);
+		const r = checkText('Rather than B, it is rather slow.').flags.find((f) => f.category === 'qualifier');
+		expect(r.span).toEqual([21, 27]);
+	});
+
+	it('keeps a tell inside a bold-label run', () => {
+		const doc = '- **Kafka**: delve into the bus 🚀\n- **Rollout**: by region\n- **Metrics**: p99 under 100ms\n';
+		const tells = checkText(doc).flags.filter((f) => f.category === 'ai-tell').map((f) => f.match);
+		expect(tells).toEqual(expect.arrayContaining(['bold-label bullets', 'delve', 'emoji']));
+	});
+
+	it('flags an emoji in a heading', () => {
+		const { flags } = checkText('# 🚀 Launch plan\n\nText here.');
+		expect(flags.map((f) => f.match)).toEqual(['emoji']);
+		expect(flags[0].line).toBe(1);
+	});
+
+	it('does not read "gets started", "appears to the left", or "seem to me" as flags', () => {
+		const { flags } = checkText('The worker gets started by cron. The menu appears to the left of the field. They seem to me too slow.');
+		expect(flags.filter((f) => f.category === 'passive-voice')).toEqual([]);
+		expect(flags.filter((f) => f.category === 'qualifier')).toEqual([]);
+		expect(checkText('The bug appears to recur.').flags.map((f) => f.match)).toEqual(['appears to']);
+	});
+
+	it('treats a null ignore in options as empty', () => {
+		expect(checkText('We utilize it.', { ignore: null, targets: null }).flags).toHaveLength(1);
+	});
 });

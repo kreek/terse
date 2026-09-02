@@ -2,8 +2,11 @@
 // Terse's mechanical style checker: deterministic pattern matching, word
 // lists, and readability arithmetic. No AI, no network, no dependencies.
 // Usage: node style-check.mjs <file...> [--max-grade N] [--impersonal] [--json]
-import { readFileSync } from 'node:fs';
+// A project's .terse/config.json (found by walking up from each file) sets
+// the defaults: { maxGrade, impersonal, ignore, targets }. Flags override it.
+import { readFileSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { dirname, resolve, join } from 'node:path';
 
 const HARD_GRADE = 10; // document grade target; also the hard-sentence floor
 // Sentence flags are length-led, calibrated against 514 sentences of
@@ -46,12 +49,19 @@ const QUALIFIERS = [
 	'very', 'arguably', 'seemingly', 'generally speaking',
 	'it could be argued', 'it is important to note',
 	"it's important to note", 'needless to say',
+	'it is important to remember', "it's important to remember",
+	'it is worth remembering', 'seems', 'seem to', 'appears to',
+	'appear to', 'tends to', 'tend to', 'relatively', 'in some cases',
+	'to some extent', 'more or less', 'for the most part',
 ];
 
 // Word-boundary patterns so "unrequited" never matches "quite"; a curly
 // apostrophe counts as a straight one.
 // "rather than" is a comparison, not a hedge; only bare "rather" hedges.
-const QUALIFIER_TAILS = { rather: '(?!\\s+than)' };
+// "appears to the left" places a thing; "appears to recur" hedges a claim.
+const NOT_PLACE = '(?!\\s+(?:the|a|an|his|her|their|its|your|our|my|this|that|him|them|us|me|you)\\b)';
+const QUALIFIER_TAILS = { rather: '(?!\\s+than)', 'appears to': NOT_PLACE,
+	'appear to': NOT_PLACE, 'seem to': NOT_PLACE };
 // "the very least/idea/heart" is emphasis on a noun, not a hedge on a claim,
 // and "the same kind of signal" is a noun phrase, not a hedged verb.
 const NOUN_KIND = '(?<!\\b(?:the|this|that|a|same|every|any|one|some|what|which)\\s)';
@@ -92,6 +102,8 @@ const PRONOUN_PATTERNS = PRONOUNS.map((w) => ({ phrase: w,
 const SIMPLER = {
 	utilize: 'use', utilizes: 'uses', utilized: 'used', utilizing: 'using',
 	utilization: 'use',
+	utilise: 'use', utilises: 'uses', utilised: 'used', utilising: 'using',
+	utilisation: 'use', endeavour: 'try', endeavours: 'tries',
 	leverage: 'use', leverages: 'uses', leveraged: 'used', leveraging: 'using',
 	facilitate: 'help', facilitates: 'helps', facilitated: 'helped',
 	facilitating: 'helping',
@@ -123,6 +135,7 @@ const SIMPLER = {
 	'last but not least': 'finally', 'in the majority of cases': 'usually',
 	'a wide variety of': 'many', 'a large number of': 'many',
 	'take action': 'act', 'takes action': 'acts',
+	'in terms of': '(delete)', 'the reason is because': 'because',
 	// inflated words demoted from the tell list: common enough in human
 	// prose that the flag is a plain-word suggestion, not an accusation
 	robust: 'strong', robustly: 'strongly', seamless: 'smooth',
@@ -164,11 +177,29 @@ const AI_TELL_PHRASES = [
 	// stock figures that mask the literal action; say adopt/use/choose/cut
 	'heavy lifting', 'low-hanging fruit', 'secret sauce', 'table stakes',
 	'at the end of the day',
+	// signposting: the sentence tells the reader to attend instead of
+	// giving them the fact
+	'please note', 'it should be noted', 'keep in mind', 'bear in mind',
+	// document metadiscourse and tutorial voice
+	"let's dive", "let's explore", 'dive deeper', 'navigating the complexities',
+	'navigate the complexities', 'comprehensive guide', 'walk you through',
+	'walks you through', 'paradigm shift', 'ever-evolving',
+	// the closing summary announced
+	'in summary', 'in conclusion', 'to sum up', 'to summarize', 'all in all',
 	// self-important spotlighting
 	"here's the thing", 'worth noting', 'worth flagging', 'worth calling out',
 	'importantly', 'at its core', 'the key insight', 'in essence',
 	'the crux', 'the tell is', 'the real question',
 	'why this matters', 'why it matters', 'the punchline', 'the kicker',
+	// metadiscourse: the sentence points at the argument instead of
+	// making it
+	'as we will see', "as we'll see", 'as we saw', 'as noted above',
+	'as discussed above', 'as mentioned above',
+	// the verdict announced before its evidence: an objection ruled on
+	// by assertion
+	'and it does not need to', "and it doesn't need to", 'nor should it',
+	'and that is fine', "and that's fine", 'which is the point',
+	'and rightly so',
 	// performative candor
 	'worth stating plainly', 'full stop', 'sit with that', 'the honest take',
 	'the honest answer', 'the honest version', 'my honest read',
@@ -182,8 +213,7 @@ const AI_TELL_PHRASES = [
 	'perfectly reasonable', 'totally reasonable', 'good instinct',
 	'great instinct',
 	// hedging connective tissue
-	'non-trivial', 'nontrivial', 'that said', 'having said that',
-	'to be fair',
+	'non-trivial', 'nontrivial', 'having said that', 'to be fair',
 	// the em-dash reframe, lexical edge
 	'not just',
 	// metaphor soup
@@ -215,6 +245,14 @@ const AI_TELL_NOUNS = ['synergy', 'footgun', 'linchpin', 'workhorse',
 
 // Tells whose surface varies: a pattern per family, matched per sentence.
 const AI_TELL_REGEXES = [
+	// "Note that" opening a sentence is a signpost; "a note that said" is a
+	// note. The lexicon runs per sentence, so ^ is the sentence start.
+	{ re: /^note\s+that\b/gi },
+	// the hedge opens a sentence; "a note that said goodbye" is a note
+	{ re: /^that\s+said\b/gi },
+	{ re: /\bin\s+this\s+(?:document|article|post|guide|section|chapter|tutorial),?\s+(?:we|i|you)\b/gi },
+	{ re: /\bthis\s+(?:section|chapter|document|guide|article)\s+(?:describes|covers|explains|discusses|outlines|presents|introduces)\b/gi },
+	{ re: /\bthe\s+following\s+sections?\s+(?:cover|describe|explain|discuss|outline|present)s?\b/gi },
 	{ re: /\bearn(?:s|ed|ing)?\s+(?:its|their)\s+(?:place|keep|trust)\b/gi },
 	{ re: /\bmov(?:e|es|ed|ing)\s+the\s+needle\b/gi },
 	// ordinary verbs gone metaphorical: framed on subjects or objects that
@@ -227,7 +265,14 @@ const AI_TELL_REGEXES = [
 	{ re: /\bwhat\s+(?:it|this|that|the\s+\w+)\s+buys\b/gi },
 	{ re: /\bmint(?:s|ed|ing)?\s+(?:a\s+|an\s+)?(?:new\s+|fresh\s+)?(?:term|name|word|label|acronym|category|concept|identifier|type)s?\b/gi },
 	{ re: /\bcarr(?:y|ies|ied|ying)\s+the\s+(?:argument|weight|burden|day)\b/gi },
+	// carry as "hold" or "include": a domain, a section, or a report
+	// cannot carry anything, and a verb that carries a weight, a risk, or
+	// a meaning is a figure; a porter carrying a crate stays silent
+	{ re: /\b(?:domain|section|paragraph|sentence|claim|name|word|term|number|figure|metric|rule|field|flag|option|document|outline|draft|report|label|title|heading|version|release|commit|change|line|entry|bullet|table|column|row|file|log|message|error|response|header|payload|record|event|key|value|signal|budget|weight|score|list|note|clause|phrase|verb|noun|page|chapter|finding|result|stat|stats)s?\s+(?:each\s+|still\s+|all\s+|also\s+|now\s+|only\s+)?carr(?:y|ies|ied|ying)\b/gi },
+	{ re: /\bcarr(?:y|ies|ied|ying)\s+(?:a|an|the|its|their|no|fixed|equal|more|less|extra|real|some|one|two|three|little|much|any|this|that|these|those)?\s*(?:weights?|risks?|costs?|meanings?|claims?|implications?|consequences?|expectations?|obligations?|connotations?|sense|evidence|warrants?|detail|details|information|context|authority|credibility)\b/gi },
 	{ re: /\bforc(?:e|es|ed|ing)\s+the\s+(?:question|issue|point|choice|decision|hand)\b/gi },
+	// an abstraction that runs, ticks, or sticks: the verdict with no actor
+	{ re: /\bwhat\s+makes\s+(?:it|this|that|them|the\s+(?:plan|process|system|approach|model|argument|design|strategy|pipeline|workflow|change|idea|project|team))\s+(?:run|tick|stick|work|go|happen)\b/gi },
 	{ re: /\b(?:logic|config|configuration|state|truth|complexity|risk|definition|answer|meaning|knowledge)\s+(?:all\s+)?lives?\s+in\b/gi },
 	{ re: /\bquietly\s+(?:drop|swallow|ignore|fail|discard|skip|overwrite)(?:s|ped|ed|ing)?\b/gi },
 	{ re: /\bthe\s+offending\s+\w+/gi },
@@ -312,6 +357,58 @@ const AI_TELL_STRUCTURES = [
 		re: /(?<=^|\n[ \t]*\n)(?:One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|\d+)\s+[a-z][\w-]*(?:\s+[a-z][\w-]*)?\s+(?:(?:settles?|decides?|answers?|explains?)\s+(?:it|this|that|everything)|tells?\s+the\s+story|says?\s+it\s+all|sums?\s+it\s+up|matters?\s+(?:here|most))\./g },
 ];
 
+// Headings that announce a closing summary. stripMarkdown blanks headings,
+// so these come from a separate scan of the raw lines, fences excluded.
+const CLOSING_HEADINGS = /^(?:conclusions?|in (?:summary|conclusion)|(?:key )?takeaways|final thoughts|closing thoughts|wrapping up|wrap[- ]up|(?:the )?bottom line|why (?:this|it) matters|tl;?dr)$/i;
+const HEADING_LINE = /^ {0,3}#{1,6}[ \t]+(.*?)[ \t]*#*[ \t]*$/;
+const BOLD_LABEL_ITEM = /^[ \t]*[-*+][ \t]+\*\*[^*\n]+\*\*/;
+const BOLD_LABEL_RUN = 3;
+// Emoji with emoji presentation, or a pictograph forced into it by VS16;
+// © and ° are text symbols and stay.
+const EMOJI = /\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F/gu;
+
+function scanHeadings(rawText, lineAt, flags, file) {
+	let offset = 0;
+	let inFence = false;
+	for (const line of rawText.split('\n')) {
+		if (/^ {0,3}(?:```|~~~)/.test(line)) inFence = !inFence;
+		const m = !inFence && HEADING_LINE.exec(line);
+		if (m) {
+			for (const e of line.matchAll(EMOJI)) {
+				flags.push({ file, line: lineAt(offset), category: 'ai-tell',
+					match: 'emoji', span: [offset + e.index, offset + e.index + e[0].length],
+					hint: 'delete the emoji' });
+			}
+		}
+		if (m && CLOSING_HEADINGS.test(m[1].replace(/[.:!]+$/, '').trim())) {
+			flags.push({ file, line: lineAt(offset), category: 'ai-tell',
+				match: 'closing summary heading', span: [offset, offset + line.length],
+				hint: 'cut the section: a document ends on the ask or the decision, not a restatement' });
+		}
+		offset += line.length + 1;
+	}
+}
+
+function scanBoldLabelRuns(text, lineAt, flags, file) {
+	let offset = 0;
+	let run = 0;
+	let runStart = 0;
+	for (const line of text.split('\n')) {
+		if (BOLD_LABEL_ITEM.test(line)) {
+			if (run === 0) runStart = offset;
+			run++;
+			if (run === BOLD_LABEL_RUN) {
+				flags.push({ file, line: lineAt(runStart), category: 'ai-tell',
+					match: 'bold-label bullets', span: [runStart, offset + line.length],
+					hint: 'write each item as a sentence, or make the labels a heading and the bodies prose' });
+			}
+		} else {
+			run = 0;
+		}
+		offset += line.length + 1;
+	}
+}
+
 // Weak verb phrases: a be-verb or light verb propping up a noun where a
 // plain verb does the job.
 const WEAK_VERBS = {
@@ -320,10 +417,7 @@ const WEAK_VERBS = {
 	'have the ability to': 'can', 'has the capability to': 'can',
 	'is capable of': 'can', 'is able to': 'can', 'are able to': 'can',
 	'makes use of': 'uses', 'make use of': 'use',
-	'gives consideration to': 'considers', 'take into consideration': 'consider',
-	'makes a decision': 'decides', 'make a decision': 'decide',
-	'performs an analysis of': 'analyzes', 'perform an analysis of': 'analyze',
-	'provides a summary of': 'summarizes', 'provide a summary of': 'summarize',
+	'take into consideration': 'consider',
 	'is dependent on': 'depends on', 'is dependent upon': 'depends on',
 	'places emphasis on': 'emphasizes', 'put emphasis on': 'emphasize',
 	'is supportive of': 'supports', 'is in agreement with': 'agrees with',
@@ -334,6 +428,79 @@ const WEAK_VERBS = {
 const WEAK_VERB_PATTERNS = Object.entries(WEAK_VERBS).map(([phrase, verb]) => ({
 	phrase, verb,
 	re: new RegExp(`\\b${phrase.replace(/ /g, '\\s+')}\\b`, 'gi') }));
+
+// Nominalizations in every inflection: a light verb (make, conduct, perform,
+// provide, reach, give) plus the noun of the action the writer meant.
+const NOMINAL_VERB = {
+	investigation: 'investigate', analysis: 'analyze', review: 'review',
+	assessment: 'assess', evaluation: 'evaluate', examination: 'examine',
+	inspection: 'inspect', deletion: 'delete', migration: 'migrate',
+	installation: 'install', validation: 'validate', verification: 'verify',
+	comparison: 'compare', conclusion: 'conclude', decision: 'decide',
+	agreement: 'agree', explanation: 'explain', description: 'describe',
+	summary: 'summarize', overview: 'outline', consideration: 'consider',
+};
+const LIGHT = (base) => `(?:${base})`;
+const WEAK_VERB_REGEXES = [
+	{ re: new RegExp(`\\b${LIGHT('make|makes|made|making')}\\s+(?:a|the)\\s+(decision)\\b`, 'gi') },
+	{ re: new RegExp(`\\b${LIGHT('conduct|conducts|conducted|conducting|perform|performs|performed|performing|carry\\s+out|carries\\s+out|carried\\s+out|carrying\\s+out')}\\s+(?:a|an|the)\\s+(investigation|analysis|review|assessment|evaluation|examination|inspection|deletion|migration|installation|validation|verification|comparison)\\s+(?:of|into|on)\\b`, 'gi') },
+	{ re: new RegExp(`\\b${LIGHT('reach|reaches|reached|reaching|come\\s+to|comes\\s+to|came\\s+to')}\\s+(?:a|an|the)\\s+(conclusion|decision|agreement)\\b`, 'gi') },
+	{ re: new RegExp(`\\b${LIGHT('provide|provides|provided|providing')}\\s+(?:a|an)\\s+(explanation|description|summary|overview)\\s+of\\b`, 'gi') },
+	{ re: new RegExp(`\\b${LIGHT('give|gives|gave|giving')}\\s+(?:a|an|the|some|careful|due)?\\s*(consideration)\\s+to\\b`, 'gi') },
+	{ re: new RegExp(`\\b${LIGHT('provide|provides|provided|providing')}\\s+the\\s+(?:capability|ability)\\s+to\\b`, 'gi'), verb: 'can' },
+];
+
+// Mechanics a pattern can prove: doubled function words, "could of",
+// "its" before a word only "it's" precedes, "their" before a be-verb, and a
+// short list of misspellings with one correct form. Everything else in the
+// grammar scope stays with the model.
+const MISSPELLINGS = {
+	seperate: 'separate', seperately: 'separately', seperated: 'separated',
+	recieve: 'receive', recieved: 'received', recieving: 'receiving',
+	occured: 'occurred', occuring: 'occurring', occurence: 'occurrence',
+	occurences: 'occurrences', definately: 'definitely', alot: 'a lot',
+	untill: 'until', wich: 'which', accomodate: 'accommodate',
+	acheive: 'achieve', acheived: 'achieved', begining: 'beginning',
+	beleive: 'believe', comittee: 'committee', existance: 'existence',
+	goverment: 'government', independant: 'independent',
+	neccessary: 'necessary', necessary: 'necessary', occassion: 'occasion',
+	publically: 'publicly', recomend: 'recommend', recomended: 'recommended',
+	refered: 'referred', succesful: 'successful', sucessful: 'successful',
+	sucess: 'success', tommorow: 'tomorrow', truely: 'truly', wierd: 'weird',
+	enviroment: 'environment', arguement: 'argument', liason: 'liaison',
+	mispell: 'misspell', noticable: 'noticeable', perseverence: 'perseverance',
+	priviledge: 'privilege', similiar: 'similar', thier: 'their',
+	dependancy: 'dependency', dependancies: 'dependencies',
+	liscence: 'license', maintainance: 'maintenance', prefered: 'preferred',
+	transfered: 'transferred', writting: 'writing', comming: 'coming',
+	buisness: 'business', becuase: 'because', teh: 'the', greatful: 'grateful',
+	harrass: 'harass', lenght: 'length', embarass: 'embarrass',
+	occassionally: 'occasionally', paralell: 'parallel', paralel: 'parallel',
+	recieves: 'receives', retreive: 'retrieve', retreived: 'retrieved',
+	suprise: 'surprise', suprised: 'surprised', threshhold: 'threshold',
+	adress: 'address', calander: 'calendar', concensus: 'consensus',
+	consistant: 'consistent', persistant: 'persistent', existant: 'existent',
+	guage: 'gauge', heirarchy: 'hierarchy', immediatly: 'immediately',
+	lisence: 'license', millenium: 'millennium', miniscule: 'minuscule',
+	pronounciation: 'pronunciation', reccomend: 'recommend',
+	seige: 'siege', tendancy: 'tendency', useable: 'usable',
+};
+delete MISSPELLINGS.necessary;
+
+const GRAMMAR_PATTERNS = [
+	// Function words English never doubles. Particles and determiners stay
+	// out: "log in in a tab", "turns on on boot", "what it is is", "this
+	// this week", "press a a second time" are all grammatical.
+	{ re: /\b(the|an|of|and|for|with|was|are|or|as|if|be)\s+\1\b/gi,
+		hint: (m) => `use "${m[1].toLowerCase()}"` },
+	{ re: /\b(could|should|would|must|might|may)\s+of\b(?!\s+course\b)/gi,
+		hint: (m) => `use "${m[1].toLowerCase()} have"` },
+	{ re: /\bits(?=\s+(?:a|an|the|not|now|also|been|being|already|still|just|going|because|too)\b)/gi,
+		hint: () => 'use "it\'s"' },
+	{ re: /\btheir(?=\s+(?:is|are|was|were)\b)/gi, hint: () => 'use "there"' },
+	{ re: new RegExp(`\\b(${Object.keys(MISSPELLINGS).join('|')})\\b`, 'gi'),
+		hint: (m) => `use "${MISSPELLINGS[m[1].toLowerCase()]}"` },
+];
 
 const IRREGULAR_PARTICIPLES = new Set([
 	'begun', 'beaten', 'bitten', 'bought', 'brought', 'broken', 'built',
@@ -346,6 +513,25 @@ const IRREGULAR_PARTICIPLES = new Set([
 	'taken', 'thrown', 'told', 'thought', 'torn', 'understood', 'won',
 	'worn', 'written',
 ]);
+
+// Participles that state a condition when a particular word follows: "is
+// based on", "is located in", "get started". The actor is not missing, there
+// was never one, so the passive hint would send the writer hunting for it.
+const STATE_IDIOMS = {
+	based: /^(?:on|upon)\b/, located: /^(?:in|at|on|near|under|inside)\b/,
+	supposed: /^to\b/, set: /^to\b/, started: null, intended: /^(?:to|for)\b/,
+	meant: /^(?:to|for)\b/, composed: /^of\b/, known: /^(?:as|for)\b/,
+	bound: /^to\b/, entitled: /^to\b/, involved: /^in\b/, committed: /^to\b/,
+	focused: /^on\b/, equipped: /^with\b/, associated: /^with\b/,
+	aimed: /^at\b/, geared: /^towards?\b/, made: /^(?:up|of)\b/,
+};
+
+function isStateIdiom(aux, participle, rest) {
+	if (!(participle in STATE_IDIOMS)) return false;
+	const follow = STATE_IDIOMS[participle];
+	if (follow === null) return /^g(?:et|ets|ot)$/i.test(aux); // get/got started
+	return follow.test(rest.trimStart());
+}
 
 // Words the passive pattern must never read as participles: -ed lookalikes
 // and adjectival forms ("the actor is unknown" is a state, not a passive).
@@ -516,6 +702,7 @@ function checkSentence(sentence, maxGrade, flags, file, line) {
 	for (const m of sentence.matchAll(passiveRe)) {
 		const p = m[2].toLowerCase();
 		if (NOT_PARTICIPLES.has(p)) continue;
+		if (isStateIdiom(m[1], p, sentence.slice(m.index + m[0].length))) continue;
 		const base = p.replace(/^(?:re|un|mis|over|pre|dis)/, '');
 		if (/[a-z]{2}ed$/.test(p) || IRREGULAR_PARTICIPLES.has(p) ||
 				IRREGULAR_PARTICIPLES.has(base)) {
@@ -530,13 +717,30 @@ function checkSentence(sentence, maxGrade, flags, file, line) {
 		if (/^[A-Z]/.test(m[1]) &&
 				/[\p{L}\p{N}]/u.test(sentence.slice(0, m.index))) continue;
 		flags.push({ file, line, category: 'adverb', match: m[1],
-			hint: 'pick a stronger verb or give the number' });
+			hint: adverbHint(sentence, m) });
 	}
 }
 
+// A sentence-initial -ly word before a comma comments on the sentence, not
+// the verb ("Unfortunately, the deploy failed"), so the fix is deletion, not
+// a stronger verb. Ordinals ("Firstly") take their plain form.
+const ORDINALS = { firstly: 'first', secondly: 'second', thirdly: 'third',
+	fourthly: 'fourth', fifthly: 'fifth', lastly: 'last' };
+
+function adverbHint(sentence, m) {
+	const word = m[1].toLowerCase();
+	if (ORDINALS[word]) return `use "${ORDINALS[word]}"`;
+	const initial = m.index === 0 && /^\s*,/.test(sentence.slice(m[1].length));
+	if (initial) return 'delete it: a comment on the sentence, not on the verb';
+	return 'pick a stronger verb or give the number';
+}
+
 // One flag per occurrence of re in text.
+// The matching regex travels with the flag (as _re, removed once the span
+// is assigned) so the span refines to the occurrence the lexicon matched,
+// lookarounds included, not the first look-alike in the sentence.
 function pushMatches(text, re, flags, flag) {
-	for (const m of text.matchAll(re)) flags.push({ ...flag });
+	for (const m of text.matchAll(re)) flags.push({ ...flag, _re: re });
 }
 
 // Same, for whole-document scans where each match needs its own line.
@@ -563,13 +767,20 @@ function assignSpans(text, flags, from, span) {
 		const key = `${flags[i].category}:${flags[i].match}`;
 		const n = seen.get(key) ?? 0;
 		seen.set(key, n + 1);
-		flags[i].span = refineSpan(text, span, flags[i].match, n) ?? span;
+		const re = flags[i]._re
+			? new RegExp(flags[i]._re.source, 'gi')
+			: literalRegex(flags[i].match);
+		delete flags[i]._re;
+		flags[i].span = refineSpan(text, span, re, n) ?? span;
 	}
 }
 
-function refineSpan(text, span, match, occurrence = 0) {
-	const re = new RegExp(match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function literalRegex(match) {
+	return new RegExp(match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 		.replace(/\s+/g, '\\s+').replace(/['’]/g, "['’]"), 'gi');
+}
+
+function refineSpan(text, span, re, occurrence = 0) {
 	const slice = text.slice(span[0], span[1]);
 	let m;
 	for (let i = 0; (m = re.exec(slice)) !== null; i++) {
@@ -611,7 +822,7 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 	for (const { re } of AI_TELL_PATTERNS) {
 		// report the surface form, so "delved" reads as itself, not "delve"
 		for (const m of sentence.matchAll(re)) {
-			flags.push({ file, line, category: 'ai-tell',
+			flags.push({ file, line, category: 'ai-tell', _re: re,
 				match: m[0].toLowerCase().replace(/\s+/g, ' '),
 				hint: 'an AI tell; state the claim plainly' });
 		}
@@ -620,12 +831,26 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 		pushMatches(sentence, re, flags, { file, line, category: 'weak-verb',
 			match: phrase, hint: `use the verb: "${verb}"` });
 	}
+	for (const { re, verb } of WEAK_VERB_REGEXES) {
+		for (const m of sentence.matchAll(re)) {
+			flags.push({ file, line, category: 'weak-verb', _re: re,
+				match: m[0].toLowerCase().replace(/\s+/g, ' '),
+				hint: `use the verb: "${verb ?? NOMINAL_VERB[m[1].toLowerCase()]}"` });
+		}
+	}
+	for (const { re, hint } of GRAMMAR_PATTERNS) {
+		for (const m of sentence.matchAll(re)) {
+			flags.push({ file, line, category: 'grammar', _re: re,
+				match: m[0].replace(/\s+/g, ' '), hint: hint(m) });
+		}
+	}
 }
 
-// `<!-- terse-ignore -->` on its own line suppresses the findings reported
-// on the next non-blank line; `<!-- terse-ignore: cat1 cat2 -->` narrows the
-// suppression to the named categories. The comment is invisible in rendered
-// markdown, so a documented keep survives in the file, not just in chat.
+// `<!-- terse-ignore -->` on its own line suppresses the findings in the
+// paragraph that follows, through its last non-blank line;
+// `<!-- terse-ignore: cat1 cat2 -->` narrows the suppression to the named
+// categories. The comment is invisible in rendered markdown, so a documented
+// keep survives in the file, not just in chat.
 function collectSuppressions(rawText) {
 	const map = new Map();
 	const lines = rawText.split('\n');
@@ -633,9 +858,12 @@ function collectSuppressions(rawText) {
 		const m = /^[ \t]*<!--\s*terse-ignore(?::([a-z,\s-]+))?\s*-->[ \t]*$/
 			.exec(lines[i]);
 		if (!m) continue;
+		const cats = m[1] ? new Set(m[1].split(/[\s,]+/).filter(Boolean)) : 'all';
 		let target = i + 2; // the next line, 1-based
 		while (target <= lines.length && lines[target - 1].trim() === '') target++;
-		map.set(target, m[1] ? new Set(m[1].split(/[\s,]+/).filter(Boolean)) : 'all');
+		for (; target <= lines.length && lines[target - 1].trim() !== ''; target++) {
+			map.set(target, cats);
+		}
 	}
 	return map;
 }
@@ -650,7 +878,7 @@ function isSuppressed(map, flag) {
 // Structure and readability stay flagged: a hard sentence is hard to read
 // whoever wrote it.
 const QUOTED_EXEMPT = new Set(['ai-tell', 'simpler-alternative', 'weak-verb',
-	'qualifier', 'preference', 'personal-pronoun', 'em-dash']);
+	'qualifier', 'preference', 'personal-pronoun', 'em-dash', 'grammar']);
 
 function quotedRanges(text) {
 	const ranges = [];
@@ -672,8 +900,37 @@ function inQuotedRange(ranges, span) {
 	return ranges.some(([a, b]) => span[0] > a && span[1] <= b);
 }
 
+// The nearest .terse/config.json above the file, or {} when there is none.
+// Keys: maxGrade (number), impersonal (boolean), ignore (an array of
+// category names, or "category:match" for one finding within a category),
+// and targets ({ adverbsPerKword, passivePerKword, qualifiersPerKword }).
+export function loadConfig(filePath) {
+	let dir = dirname(resolve(filePath));
+	for (;;) {
+		const candidate = join(dir, '.terse', 'config.json');
+		if (existsSync(candidate)) {
+			try {
+				return JSON.parse(readFileSync(candidate, 'utf8'));
+			} catch (err) {
+				throw new Error(`${candidate}: ${err.message}`);
+			}
+		}
+		const parent = dirname(dir);
+		if (parent === dir) return {};
+		dir = parent;
+	}
+}
+
+function isIgnored(ignore, flag) {
+	return ignore.includes(flag.category) ||
+		ignore.includes(`${flag.category}:${flag.match}`);
+}
+
 export function checkText(rawText,
-		{ maxGrade = HARD_GRADE, file = '(text)', impersonal = false } = {}) {
+		{ maxGrade = HARD_GRADE, file = '(text)', impersonal = false,
+			ignore, targets } = {}) {
+	ignore = Array.isArray(ignore) ? ignore : [];
+	targets = targets && typeof targets === 'object' ? targets : {};
 	const text = stripMarkdown(rawText);
 	const lineAt = makeLineIndex(text);
 	const flags = [];
@@ -713,6 +970,10 @@ export function checkText(rawText,
 		pushMatchesWithLine(text, re, lineAt, flags, { file, category: 'ai-tell',
 			match: phrase, hint: 'an AI tell; state the claim plainly' });
 	}
+	pushMatchesWithLine(text, EMOJI, lineAt, flags, { file, category: 'ai-tell',
+		match: 'emoji', hint: 'delete the emoji' });
+	scanHeadings(rawText, lineAt, flags, file);
+	scanBoldLabelRuns(text, lineAt, flags, file);
 	const allWords = [];
 	const sentenceLengths = [];
 	for (const s of splitSentences(text)) {
@@ -722,9 +983,12 @@ export function checkText(rawText,
 		const words = wordsOf(clean);
 		if (words.length === 0) continue; // horizontal rules, stray symbols
 		const before = flags.length;
-		checkSentence(clean, maxGrade, flags, file, line);
-		checkLexicon(clean, flags, file, line, impersonal);
-		assignSpans(text, flags, before, [s.offset, s.offset + s.text.length]);
+			checkSentence(clean, maxGrade, flags, file, line);
+			checkLexicon(clean, flags, file, line, impersonal);
+			assignSpans(text, flags, before, [s.offset, s.offset + s.text.length]);
+			for (let i = before; i < flags.length; i++) {
+				if (!SENTENCE_LEVEL.has(flags[i].category)) flags[i].line = lineAt(flags[i].span[0]);
+			}
 		allWords.push(...words);
 		sentenceLengths.push(words.length);
 	}
@@ -732,11 +996,25 @@ export function checkText(rawText,
 	const quoted = quotedRanges(text);
 	const lines = text.split('\n');
 	const inBlockquote = (line) => /^[ \t]*>/.test(lines[line - 1] ?? '');
-	const kept = flags.filter((f) =>
-		!isSuppressed(suppressions, f) &&
+	const kept = dedupeTells(flags).filter((f) =>
+		!isSuppressed(suppressions, f) && !isIgnored(ignore, f) &&
 		!(QUOTED_EXEMPT.has(f.category) && f.span &&
 			(inQuotedRange(quoted, f.span) || inBlockquote(f.line))));
-	return { flags: kept, stats: docStats(allWords, sentenceLengths, kept) };
+	return { flags: kept, stats: docStats(allWords, sentenceLengths, kept, targets) };
+}
+
+// A phrase and a frame can match the same words ("it is worth noting" hits
+// both). One occurrence is one tell: drop a tell whose span sits inside
+// another, longer tell's span.
+const BLOCK_TELLS = new Set(['bold-label bullets', 'closing summary heading']);
+
+function dedupeTells(flags) {
+	const tells = flags.filter((f) => f.category === 'ai-tell' && f.span &&
+		!BLOCK_TELLS.has(f.match));
+	const inside = (f, t) => t.span[0] <= f.span[0] && t.span[1] >= f.span[1] &&
+		(t.span[1] - t.span[0]) > (f.span[1] - f.span[0]);
+	return flags.filter((f) => f.category !== 'ai-tell' || !f.span ||
+		!tells.some((t) => inside(f, t)));
 }
 
 // The whole document fails the gate when accumulated dense vocabulary pushes
@@ -747,10 +1025,20 @@ export function docGradeExceeded(stats, maxGrade) {
 }
 
 // Targets scale with length, in the spirit of the classic readability editors.
-function docStats(words, sentenceLengths, flags) {
+// Default rates per thousand words were measured on 7,355 words of
+// Hemingway's newspaper journalism (test/fixtures/human-prose plus
+// samples/hemingway): 7.5 adverbs, 8.2 passives, and 2.7 qualifiers (the
+// qualifier rate remeasured after "seems" and "tends to" joined the list).
+// A project's config can set its own rates: a README's passives run higher.
+const DEFAULT_RATES = { adverbsPerKword: 7.5, passivePerKword: 8.2,
+	qualifiersPerKword: 2.7 };
+
+function docStats(words, sentenceLengths, flags, targets = {}) {
 	const count = (cat) => flags.filter((f) => f.category === cat).length;
 	const n = words.length;
 	const sentenceCount = sentenceLengths.length;
+	const rates = { ...DEFAULT_RATES, ...targets };
+	const target = (rate) => Math.max(2, Math.round((n * rate) / 1000));
 	return {
 		words: n,
 		sentences: sentenceCount,
@@ -759,14 +1047,11 @@ function docStats(words, sentenceLengths, flags) {
 		grade: n === 0 || sentenceCount === 0 ? 0
 			: Math.max(0, Math.ceil(4.71 * (alnumCount(words) / n) +
 				0.5 * (n / sentenceCount) - 21.43)),
-		// Targets calibrated against 7,355 words of Hemingway's newspaper
-		// journalism (test/fixtures/human-prose plus samples/hemingway):
-		// measured 7.5 adverbs, 8.2 passives, and 2.4 qualifiers per
-		// 1,000 words of edited prose.
-		adverbs: { count: count('adverb'), target: Math.max(2, Math.round(n / 134)) },
-		passive: { count: count('passive-voice'), target: Math.max(2, Math.round(n / 123)) },
-		qualifiers: { count: count('qualifier'), target: Math.max(2, Math.round(n / 400)) },
+		adverbs: { count: count('adverb'), target: target(rates.adverbsPerKword) },
+		passive: { count: count('passive-voice'), target: target(rates.passivePerKword) },
+		qualifiers: { count: count('qualifier'), target: target(rates.qualifiersPerKword) },
 		aiTells: count('ai-tell'),
+		grammar: count('grammar'),
 		hardSentences: count('hard-sentence') + count('very-hard-sentence'),
 	};
 }
@@ -775,8 +1060,8 @@ function main() {
 	const args = process.argv.slice(2);
 	const files = [];
 	let json = false;
-	let maxGrade = HARD_GRADE;
-	let impersonal = false;
+	let maxGrade;
+	let impersonal;
 	let badArg = false;
 	for (let i = 0; i < args.length; i++) {
 		const a = args[i];
@@ -804,21 +1089,32 @@ function main() {
 			console.error(`style-check: cannot read ${file}: ${err.code ?? err.message}`);
 			process.exit(2);
 		}
-		const { flags, stats } = checkText(raw, { maxGrade, file, impersonal });
-		const gradeExceeded = docGradeExceeded(stats, maxGrade);
+		let config;
+		try {
+			config = loadConfig(file);
+		} catch (err) {
+			console.error(`style-check: ${err.message}`);
+			process.exit(2);
+		}
+		const opts = { ...config, file,
+			maxGrade: maxGrade ?? config.maxGrade ?? HARD_GRADE,
+			impersonal: impersonal ?? config.impersonal ?? false };
+		const { flags, stats } = checkText(raw, opts);
+		const gradeExceeded = docGradeExceeded(stats, opts.maxGrade);
 		total += flags.length + (gradeExceeded ? 1 : 0);
 		results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });
 		if (json) continue;
 		printFlags(flags);
 		if (gradeExceeded) {
 			console.log(`${file}  [document-grade] "grade ${stats.grade}, target below ` +
-				`${maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
+				`${opts.maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
 		}
 		console.log(`${file}: ${stats.words} words, ~${stats.readingTimeMinutes} min read, ` +
 			`grade ${stats.grade}; adverbs ${stats.adverbs.count}/${stats.adverbs.target}, ` +
 			`passive ${stats.passive.count}/${stats.passive.target}, ` +
 			`qualifiers ${stats.qualifiers.count}/${stats.qualifiers.target}, ` +
-			`AI tells ${stats.aiTells}, hard sentences ${stats.hardSentences}`);
+			`AI tells ${stats.aiTells}, grammar ${stats.grammar}, ` +
+			`hard sentences ${stats.hardSentences}`);
 	}
 	if (json) console.log(JSON.stringify(results, null, 2));
 	else console.log(total === 0 ? 'style-check: clean' : `style-check: ${total} flag(s)`);

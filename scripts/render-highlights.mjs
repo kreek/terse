@@ -23,6 +23,7 @@ const CATEGORIES = {
 	preference: 'Wish, not requirement',
 	'personal-pronoun': 'Personal pronoun',
 	'em-dash': 'Em dash',
+	grammar: 'Grammar',
 };
 
 // Channel by extent: a short span reads as "change this word" and gets an
@@ -146,7 +147,7 @@ function statsHtml(stats) {
 		`grade ${stats.grade} · adverbs ${stats.adverbs.count}/${stats.adverbs.target} · ` +
 		`passive ${stats.passive.count}/${stats.passive.target} · ` +
 		`qualifiers ${stats.qualifiers.count}/${stats.qualifiers.target} · ` +
-		`AI tells ${stats.aiTells}`;
+		`AI tells ${stats.aiTells} · grammar ${stats.grammar}`;
 }
 
 function catCss(cat) {
@@ -174,7 +175,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--c-adverb: #4E9BE8; --c-qualifier: #A574E0;
 	--c-simpler-alternative: #E85FB0; --c-weak-verb: #2FB8B0;
 	--c-em-dash: #F08A2E; --c-preference: #8C6FD8;
-	--c-personal-pronoun: #5F8FA8;
+	--c-personal-pronoun: #5F8FA8; --c-grammar: #D9463E;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -186,7 +187,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 		--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 		--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
 		--c-em-dash: #F0A05A; --c-preference: #A48CE6;
-		--c-personal-pronoun: #7FAAC2;
+		--c-personal-pronoun: #7FAAC2; --c-grammar: #E86A62;
 	}
 }
 :root[data-theme="dark"] {
@@ -198,7 +199,7 @@ export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
 	--c-adverb: #6FAEEE; --c-qualifier: #B48FE8;
 	--c-simpler-alternative: #EE82C4; --c-weak-verb: #52C8C0;
 	--c-em-dash: #F0A05A; --c-preference: #A48CE6;
-	--c-personal-pronoun: #7FAAC2;
+	--c-personal-pronoun: #7FAAC2; --c-grammar: #E86A62;
 }
 * { box-sizing: border-box; }
 body { background: var(--ground); color: var(--ink); margin: 0;
