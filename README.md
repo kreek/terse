@@ -8,7 +8,7 @@ It runs deterministic, and LLM backed checks to catch:
 - AI tells
 - Target voice and reader drift
 
-The two main components are:
+The two main parts are:
 
 - A **checker script** that reads a file and reports the
   problems a traditional word processor would find. Long sentences, passive
