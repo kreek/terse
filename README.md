@@ -1,158 +1,214 @@
 # Terse
 
-Terse is a writing system that runs inside Claude. A document moves
-through three phases. You approve an outline, Claude expands it into
-prose, and an edit pass clears what remains before you publish. At
-each phase a mechanical checker finds the problems the classic
-readability editors found: hard sentences, passive voice, adverbs,
-qualifiers, AI tells. Claude fixes them, and the fixes keep your
-voice. It all runs on the subscription you already pay for.
+Terse is a Claude Code plugin for writing and editing prose. It does
+the job of a readability editor and a grammar assistant. It works on
+markdown, and it runs on the Claude subscription you already have.
 
-## How it works
+Two parts do the work:
 
-Two layers share one findings model.
+- A **checker**, a script that reads a markdown file and reports the
+  problems editors have always looked for. Long sentences, passive
+  voice, adverbs, hedges, and wordy phrases. The phrases that mark
+  machine-written text. The grammar slips a pattern can prove. It runs
+  offline, in Node, with no dependencies and no model call.
+- **Skills**, instructions Claude follows when it writes or edits for
+  you. They tell Claude to run the checker and fix what it finds. They
+  also say what to leave alone, and how to keep your voice.
 
-- **Mechanical** (`scripts/`): pattern matching, word lists, and
-  readability arithmetic. It runs offline with zero dependencies and
-  never calls a model. `style-check.mjs` grades each sentence and
-  flags the readability and wording problems. It catches the AI-tell
-  families in every inflection. It proves the grammar a pattern can
-  prove: doubled words, `could of`, `its` and `their` slips, common
-  misspellings. It is careful with single words: `testament to`
-  flags, a last will and testament does not. `outline-check.mjs`
-  holds a document to its approved outline. `render-highlights.mjs`
-  draws the flags on a page. Run any of them with no arguments for
-  usage; the flag hints name the fix.
-- **Judgment** (`skills/`): the model fixes what the checker finds. A
-  voice playbook governs each fix and knows when a flag is a false
-  alarm. Passive voice with an irrelevant actor stays. A hedge that is
-  the point stays. Your em dashes stay if your voice template says so.
+The checker never guesses and the skills never skip the checker. That
+split is the design.
+
+## What it catches
+
+Given this paragraph:
+
+<!-- terse-ignore -->
+> It's worth noting that the deploy pipeline was redesigned by the
+> platform team in order to seamlessly leverage the new scheduler.
+> Basically, the old cron jobs were very fragile. Note that rollbacks
+> are supported.
+
+the checker reports:
+
+```
+notes.md:3  [ai-tell] "it's worth noting" - an AI tell; state the claim plainly
+notes.md:3  [passive-voice] "was redesigned" - name the actor; keep only if the actor is irrelevant or unknown
+notes.md:3  [simpler-alternative] "in order to" - use "to"
+notes.md:3  [adverb] "seamlessly" - pick a stronger verb or give the number
+notes.md:3  [simpler-alternative] "leverage" - use "use"
+notes.md:3  [adverb] "Basically" - delete it: a comment on the sentence, not on the verb
+notes.md:3  [qualifier] "very" - delete it or state the evidence; keep only if the hedge is the claim
+notes.md:3  [ai-tell] "note that" - an AI tell; state the claim plainly
+notes.md:3  [passive-voice] "are supported" - name the actor; keep only if the actor is irrelevant or unknown
+notes.md: 34 words, ~1 min read, grade 9; adverbs 2/2, passive 2/2, qualifiers 1/2, AI tells 2, grammar 0, hard sentences 0
+```
+
+Each line is a flag: the file and line, a category, the words that
+tripped it, and the fix. The last line is the document's stats. The
+grade is a US reading grade; Terse aims for 10 or below. The counts
+after it are against a target that scales with length, so a long
+document gets more adverbs than a short one.
+
+The categories, in the order you will meet them:
+
+| Category | What it means |
+|---|---|
+| `hard-sentence`, `very-hard-sentence` | Long and dense. Split it, or turn an in-sentence list into bullets. |
+| `long-opening` | The first paragraph runs past 90 words before the reader gets the point. |
+| `passive-voice` | The actor is missing. Name it, unless it does not matter who did it. |
+| `adverb`, `qualifier` | A weak verb propped up, or a claim hedged. Pick the strong verb, or state the evidence. |
+| `simpler-alternative`, `weak-verb` | A five-dollar word or a verb hiding in a noun (`made the decision`). The hint names the plain word. |
+| `ai-tell` | A phrase that marks machine writing: `worth noting`, `delve`, `it's not X, it's Y`, a `Conclusion` heading, emoji. |
+| `grammar` | Doubled words, `could of`, `its` for `it's`, common misspellings. |
+| `em-dash`, `aside` | An em dash, or a parenthetical over six words. |
+| `preference`, `personal-pronoun` | A requirement written as a wish (`I would like`), or first person in a spec. The second is opt-in. |
+
+Claude applies judgment on top. A passive with an irrelevant actor
+stays (`the token is signed`). A hedge that is the point stays. A
+quoted phrase belongs to the person quoted, so flags inside quotation
+marks never fire.
 
 ## Install
 
 Terse runs anywhere Claude Code plugins run: the terminal, the desktop
-app, claude.ai/code, and the IDE extensions. Add this repo as a
-marketplace, then install the plugin:
+app, claude.ai/code, and the IDE extensions. In Claude Code:
 
 ```
 /plugin marketplace add kreek/terse
 /plugin install terse@terse
 ```
 
-## Skills
+## First use
 
-Five skills: the pipeline, three phase commands, and the rulebook they
-share.
+Three ways in, from lightest to fullest.
 
-| Skill | What it does |
-|---|---|
-| `/terse:write <subject>` | One request to a finished document: outline, skeleton, expansion, and the edit gate, with two stops for your sign-off. |
-| `/terse:outline <subject>` | Structure first: one claim and a word budget per section, iterated to your sign-off. |
-| `/terse:draft <outline or subject>` | Anything a reader sees, however short: issues, tickets, PR descriptions, emails, ADRs, docs, posts, proposals, or an approved outline expanded. Your voice, checked at draft time. |
-| `/terse:edit <file>` | The publish gate: collect every finding, then report or fix in stages. |
-| `/terse:style` | The rulebook: voice, clarity, readability, word choice. |
+**Ask Claude to write something.** With the plugin in place, a plain
+request runs under Terse's rules without a command. "Write a README
+for this tool" counts, and so does "draft an issue about the login
+timeout". Claude checks its own draft before it shows you.
 
-The phases hand off through the outline file. You approve it before
-any prose exists, with each section's claim, budget, and evidence on
-record. Draft writes to that file. A section that will not draft goes
-back to the outline, and structural changes need your approval again.
-Edit then checks the finished prose against the same record. Logged
-deviations stand, undocumented drift is a finding, and every section
-must make its assigned claim. The arithmetic part of that promise is
-machine-checked: `outline-check.mjs` compares the document's sections,
-their order, and their word counts against the outline's budgets.
+**Check a file you already have.**
 
-The style skill holds the rules the other four follow: plain words,
-active voice, the reader's vocabulary. It knows the false alarms that
-keep a flag from becoming a bad edit. And because it loads on its own
-whenever Claude writes or edits prose, everyday document work follows
-the same rules without a command.
+```
+/terse:edit docs/design.md
+```
 
-`/terse:edit` takes direction in chat: "report only", "just fix the
-grammar", "make it casual", "cut 15%", "fix only the AI tells",
-"everything except the quotes".
+Claude runs the checker, reads the document, and fixes what it finds
+one sentence at a time. Your structure and your meaning stay as they
+were. Say what you want in plain words. "Report only" shows the
+findings without changes. "Just fix the grammar", "make it casual",
+"cut 15%", and "fix only the AI tells" do what they say.
 
-The two sign-off stops exist to collect your answer. A one-shot or
-scripted session cannot give one. Say so in the request, as in "treat
-the outline as approved, do not pause", and the pipeline runs through
-to the file.
+**Write a longer document from scratch.**
 
-## Your voice
+```
+/terse:write a design doc for the new scheduler
+```
 
-`/terse:draft` offers to learn your voice when no template exists. Point
-it at a directory of your writing. The checker measures your habits as
-numbers. The model names your traits, each with a quoted example. The
-result is a draft `.terse/voice.md`. You review and approve it trait by
-trait; Terse honors no template you have not signed off. Once approved,
-your template overrides the defaults. `/terse:edit` skips the flags your
-voice overrides and names them as covered, and rewrites stay inside
-your measured ranges. The mechanical half of the template lands in
-`.terse/config.json`, below, so the checker honors it too.
+This runs Terse's full process, described next.
 
-## Keep a flag on purpose
+## The process
 
-Some flags are keeps. A quoted tell belongs to the quoted author, so
-lexical flags inside quotation marks and blockquotes never fire. For
-the rest, an HTML comment records the keep in the file:
+Terse treats a document as three jobs done in order, because moving
+bullets takes seconds where moving polished prose takes an afternoon.
+
+1. **Outline.** Claude asks who the reader is and what one question
+   the document answers. Then it writes an outline: one heading per
+   section, one claim per section, and a word budget for each. You
+   edit and approve it. No prose exists yet.
+2. **Draft.** Claude writes the shortest version that makes every
+   claim. It shows you that version with the sentences it proposes to
+   add, and expands only after you approve. Each added sentence
+   answers a question a reader would ask at that spot. Terse expands a
+   lean draft rather than trimming a padded one. "What fact is
+   missing" is a question Claude can answer; "which of my sentences is
+   unnecessary" is not.
+3. **Edit.** The final pass. The checker runs, and Claude fixes the
+   flags in order: structure first, then wording, then grammar last.
+   Then it reads the whole document again for flow.
+
+`/terse:write` runs all three with two stops for your approval.
+`/terse:outline`, `/terse:draft`, and `/terse:edit` run one job each.
+`/terse:style` is the rulebook the others share; you will seldom call
+it yourself.
+
+In a scripted or one-shot session nobody can answer a stop. Say so in
+the request, as in "treat the outline as approved, do not pause", and
+the process runs through to the file.
+
+## Keeping your voice
+
+Terse edits toward plain, direct prose, but it should sound like you,
+not like a style guide. Point `/terse:draft` at a folder of your own
+writing and it builds a voice template, `.terse/voice.md`. The
+template records your measured habits, such as sentence length and
+how often you hedge. It also names your traits in words, each with a
+quoted example from your samples. You approve
+the template trait by trait. From then on Claude writes and edits
+inside those ranges, and rules you override on purpose (you like em
+dashes, say) stop producing flags.
+
+## Keeping a flag on purpose
+
+Sometimes the checker is right that a pattern matched and wrong that
+it matters. Two ways to say so, both of which survive in the file
+rather than in a chat you closed.
+
+For one paragraph, an HTML comment above it:
 
 ```
 <!-- terse-ignore -->
-This paragraph keeps every finding, through its last line.
+This paragraph keeps every finding.
 
 <!-- terse-ignore: em-dash, qualifier -->
 This paragraph keeps only the named categories.
 ```
 
-The comment is invisible in rendered markdown, and the keep survives
-in the file rather than in a chat you closed.
-
-For keeps that hold across a project, `.terse/config.json` sets the
-checker's defaults. The checker finds it by walking up from the file,
-and command-line flags override it:
+For a whole project, `.terse/config.json`, which the checker finds by
+walking up from the file:
 
 ```json
 {
   "maxGrade": 12,
-  "impersonal": false,
   "ignore": ["em-dash", "ai-tell:bold-label bullets"],
   "targets": { "passivePerKword": 20 }
 }
 ```
 
-`ignore` takes a category, or `category:match` for one finding within
-it. `targets` sets the per-thousand-word rates behind the adverb,
-passive, and qualifier targets; a README's passives run higher than
-journalism's. The hook and the CLI read this file, so your voice holds
-without the model in the loop.
-
-## The highlight view
-
-```
-node scripts/render-highlights.mjs draft.md
-```
-
-One self-contained, read-only HTML page. Each flag category gets a
-color, each highlight shows its hint on hover, and the chips at the top
-filter by category. Open it in any browser, or let Claude publish it as
-a page. The preview is for looking; you direct the fixes in chat as
-above. The renderer knows headings, fences, dash lists, bold, links,
-and inline code. Ordered lists, tables, and block quotes render as
-plain paragraphs.
+`maxGrade` is the reading grade to aim for. `ignore` lists categories
+to drop, or one finding within a category as `category:match`.
+`targets` sets how many adverbs, passives, or qualifiers per thousand
+words count as normal. A README's passives run higher than a news
+story's. Building a voice template writes this file for you. The
+checker then honors your voice even when it runs without Claude.
 
 ## Always on
 
-The plugin ships a hook that runs the checker on every markdown file
-Claude writes or edits. The flags return to the session as tool
-feedback. A write reports the whole file. An edit reports only the
-flags inside the text it inserted. One changed line in an old document
-does not replay every old finding. Opt in through your
-settings:
+The plugin includes a hook that runs the checker every time Claude
+writes or edits a markdown file. The flags go back to Claude as
+feedback. An edit reports only the flags in the text Claude inserted.
+Touching one line of an old document does not replay every old
+problem. It is off by default; turn it on in your Claude Code settings:
 
 ```json
 { "env": { "TERSE_HOOK": "1" } }
 ```
 
-## Use the checker standalone
+## A page of highlights
+
+```
+node scripts/render-highlights.mjs draft.md
+```
+
+This writes one HTML file showing your document with each flag colored
+by category and its hint on hover. The classic readability editors
+worked this way. It is a view, not an editor: you look, then
+tell Claude what to fix.
+
+## Using the scripts directly
+
+The checker and its companions are plain Node scripts. They need Node
+18 and nothing else, so they work in CI and in other editors.
 
 ```
 node scripts/style-check.mjs draft.md
@@ -161,26 +217,24 @@ node scripts/style-check.mjs issue.md --impersonal
 node scripts/outline-check.mjs draft.md
 ```
 
-The exit code is nonzero when flags remain, so both scripts work as a
-CI gate. A document at or above the target grade fails even when each
-sentence passes on its own. `--impersonal` adds the pronoun findings
-for issues, specs, and acceptance criteria. There the requirement
-belongs to the system, not to whoever filed it. `outline-check`
-expects `<name>-outline.md` beside `<name>.md`, or `--outline <file>`.
+The exit code is 1 when flags remain and 2 on an error, so a script can
+gate on it. `--impersonal` adds the pronoun flags. Use it for issues
+and specs, where the requirement belongs to the system rather than to
+whoever filed it. `outline-check` compares a document's sections,
+their order, and their word counts against the outline you approved
+for it. It looks for `draft-outline.md` beside `draft.md`.
 
-## Codex and other hosts
+## Other hosts
 
-The checker and the skills are the portable core. The scripts need
-Node 18 and nothing else. The skills are `SKILL.md` files in the Agent
-Skills format, which Codex reads from `~/.codex/skills` or a project's
-skills directory. Copy or link the `skills/` directories there and the
-phase skills work the same way. Two things belong to Claude Code:
+The scripts and the skills are portable. The skills are `SKILL.md`
+files in the Agent Skills format, which Codex reads from
+`~/.codex/skills` or a project's skills directory; copy or link the
+`skills/` folders there. Two things are specific to Claude Code:
 `hooks/hooks.json`, and the `${CLAUDE_PLUGIN_ROOT}` paths inside the
 skills, which mean the plugin's checkout directory. For Codex, register
-the hook in `config.toml` as a `post_tool_use` command running
-`scripts/style-hook.mjs` with `TERSE_HOOK=1`; it reads the same payload
-shape. The tell lexicon came from Claude's habits; GPT's overlap is
-large but not total.
+`scripts/style-hook.mjs` as a `post_tool_use` command with
+`TERSE_HOOK=1`. The list of machine-writing phrases came from Claude's
+habits; GPT's overlap is large but not total.
 
 ## Develop
 
@@ -190,20 +244,16 @@ npm test
 npm run eval:fallback
 ```
 
-The tests pin the checker's behavior, including zero lexical false
-positives on a corpus of Hemingway's journalism. The eval runs each
-case with and without the plugin and scores the delta; `evals/README.md`
-explains the cases and the graders.
-
-To try local changes before pushing, add your checkout as a
-marketplace and install from it:
+The tests pin the checker's behavior, including zero false positives
+from the phrase lists on a corpus of Hemingway's journalism. The eval
+writes the same documents with and without the plugin and scores the
+difference; `evals/README.md` explains the cases. To try local changes,
+add your checkout as a marketplace and install from it:
 
 ```
 /plugin marketplace add ./path/to/terse
 /plugin install terse@terse
 ```
-
-Run `/reload-plugins` if the install summary asks for it.
 
 ## License
 
