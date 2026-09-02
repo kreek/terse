@@ -1,22 +1,28 @@
 # Terse
 
-Terse is a Claude Code plugin for writing and editing prose. It does
-the job of a readability editor and a grammar assistant. It works on
-markdown, and it runs on the Claude subscription you already have.
+Terse is a Claude Code plugin for writing and editing prose.
+It runs deterministic, and LLM backed checks to catch:
+- Grammar mistakes
+- Hard-to-read sentences
+- Passive voice
+- AI tells
+- Target voice and reader drift
 
-Two parts do the work:
+The two main components are:
 
-- A **checker**, a script that reads a markdown file and reports the
-  problems editors have always looked for. Long sentences, passive
-  voice, adverbs, hedges, and wordy phrases. The phrases that mark
-  machine-written text. The grammar slips a pattern can prove. It runs
-  offline, in Node, with no dependencies and no model call.
-- **Skills**, instructions Claude follows when it writes or edits for
-  you. They tell Claude to run the checker and fix what it finds. They
-  also say what to leave alone, and how to keep your voice.
-
-The checker never guesses and the skills never skip the checker. That
-split is the design.
+- A **checker script** that reads a file and reports the
+  problems a traditional word processor would find. Long sentences, passive
+  voice, adverbs, hedges, and wordy phrases. It also flags terms and puffery 
+  common in LLM generated writing. The checker runs offline, in Node, with no 
+  dependencies and no model calls.
+- **Skills**, the instructions Claude follows when it writes or edits
+  for you. They work in three steps. The outline comes first: a
+  short, easy-to-change plan of your argument. You approve it before
+  any prose exists. Claude then drafts each section in your voice.
+  In the edit phase, Claude fixes what the checker flagged, then
+  corrects the grammar. Give Terse a few samples of your writing and
+  it builds a voice template, so the result sounds like you and not
+  like Claude.
 
 ## What it catches
 
@@ -45,7 +51,7 @@ notes.md: 34 words, ~1 min read, grade 9; adverbs 2/2, passive 2/2, qualifiers 1
 
 Each line is a flag: the file and line, a category, the words that
 tripped it, and the fix. The last line is the document's stats. The
-grade is a US reading grade; Terse aims for 10 or below. The counts
+grade is a US reading grade; the target is 10 or below. The counts
 after it are against a target that scales with length, so a long
 document gets more adverbs than a short one.
 
@@ -96,7 +102,7 @@ timeout". Claude checks its own draft before it shows you.
 Claude runs the checker, reads the document, and fixes what it finds
 one sentence at a time. Your structure and your meaning stay as they
 were. Say what you want in plain words. "Report only" shows the
-findings without changes. "Just fix the grammar", "make it casual",
+flags without changes. "Just fix the grammar", "make it casual",
 "cut 15%", and "fix only the AI tells" do what they say.
 
 **Write a longer document from scratch.**
@@ -143,8 +149,8 @@ not like a style guide. Point `/terse:draft` at a folder of your own
 writing and it builds a voice template, `.terse/voice.md`. The
 template records your measured habits, such as sentence length and
 how often you hedge. It also names your traits in words, each with a
-quoted example from your samples. You approve
-the template trait by trait. From then on Claude writes and edits
+quoted example from your samples. You approve the template trait by
+trait. From then on Claude writes and edits
 inside those ranges, and rules you override on purpose (you like em
 dashes, say) stop producing flags.
 
@@ -158,7 +164,7 @@ For one paragraph, an HTML comment above it:
 
 ```
 <!-- terse-ignore -->
-This paragraph keeps every finding.
+This paragraph keeps every flag.
 
 <!-- terse-ignore: em-dash, qualifier -->
 This paragraph keeps only the named categories.
@@ -188,7 +194,7 @@ The plugin includes a hook that runs the checker every time Claude
 writes or edits a markdown file. The flags go back to Claude as
 feedback. An edit reports only the flags in the text Claude inserted.
 Touching one line of an old document does not replay every old
-problem. It is off by default; turn it on in your Claude Code settings:
+flag. It is off by default; turn it on in your Claude Code settings:
 
 ```json
 { "env": { "TERSE_HOOK": "1" } }

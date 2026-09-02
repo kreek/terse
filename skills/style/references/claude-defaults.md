@@ -48,6 +48,12 @@ them; they are model tendencies and need active suppression when editing:
 - Stock figures where a decision or action wants its plain verb:
   `earns its place`, `moves the needle`, `does the heavy lifting`,
   `low-hanging fruit`.
+- The slogan opener: a paragraph that starts on a count, a verdict
+  verb, and then the list or the point (`Four questions settle it.`,
+  `Two parts do the work:`). The shape is the tell, not the verbs the
+  checker happens to list. Open with a connection to the paragraph
+  before, or state the parts (`Terse has two parts:`), and keep the
+  clipped verdict for a closer after a developed point.
 - A closing summary that restates what the reader just read.
 - Mid-sentence bold for emphasis.
 - Citations collected in a sources or references list at the end,

@@ -350,11 +350,13 @@ const AI_TELL_STRUCTURES = [
 	{ phrase: "whether you're X, Y, or Z",
 		re: /\bwhether you['’]re\b[^.;:\n]{5,80},[^.;:\n]{5,80},\s*or\b/gi },
 	// A clipped numbered verdict opening a paragraph ("Four questions settle
-	// it."). Fine as a closer after a developed point; as an opener it is
-	// machine throat-clearing. Anchored to paragraph starts, present tense,
-	// and a small verb/object set to keep human prose clean.
+	// it.", "Two parts do the work:"). The shape is a count, a verdict verb,
+	// and then the list or the point. Fine as a closer after a developed
+	// point; as an opener it is machine throat-clearing. Anchored to
+	// paragraph starts, present tense, and a small verb set to keep human
+	// prose clean: "Two men did the work" and "Terse has two parts:" stay.
 	{ phrase: 'slogan opener',
-		re: /(?<=^|\n[ \t]*\n)(?:One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|\d+)\s+[a-z][\w-]*(?:\s+[a-z][\w-]*)?\s+(?:(?:settles?|decides?|answers?|explains?)\s+(?:it|this|that|everything)|tells?\s+the\s+story|says?\s+it\s+all|sums?\s+it\s+up|matters?\s+(?:here|most))\./g },
+		re: /(?<=^|\n[ \t]*\n)(?:One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|\d+)\s+[a-z][\w-]*(?:\s+[a-z][\w-]*)?\s+(?:(?:settles?|decides?|answers?|explains?)\s+(?:it|this|that|everything)|tells?\s+the\s+story|says?\s+it\s+all|sums?\s+it\s+up|matters?\s+(?:here|most)|do(?:es)?\s+the\s+(?:work|job|heavy\s+lifting)|carr(?:y|ies)\s+the\s+(?:load|weight)|shares?\s+the\s+(?:work|job|load)|makes?\s+up\s+the\s+[\w-]+)[.:]/g },
 ];
 
 // Headings that announce a closing summary. stripMarkdown blanks headings,

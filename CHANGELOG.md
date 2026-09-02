@@ -34,6 +34,11 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`Conclusion`, `Key Takeaways`), emoji, and a run of three or more
   bold-label bullets.
 - UK spellings of the wordy words (`utilise`, `endeavour`).
+- The slogan opener matches its shape, not only its famous verbs: a
+  count, a verdict verb, then the list. `Two parts do the work:` and
+  `Three layers carry the load.` now flag; `Terse has two parts:`
+  does not. The style reference describes the shape for the edit
+  read.
 - Tests for the hook, the config, and the outline checker.
 
 ### Changed

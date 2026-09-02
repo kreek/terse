@@ -33,6 +33,10 @@ const LABELED_TELLS = [
 	{ text: "Whether you're a founder, a writer, or a student, it fits.", tell: "whether you're X, Y, or Z" },
 	{ text: 'Four questions settle it. Ask them before you adopt.', tell: 'slogan opener' },
 	{ text: 'Intro paragraph sits here.\n\nThree things matter here.', tell: 'slogan opener' },
+	// the enumerator shape: a count, a verdict verb, then the list
+	{ text: 'Two parts do the work:\n\n- the checker\n- the skills', tell: 'slogan opener' },
+	{ text: 'Three layers carry the load.', tell: 'slogan opener' },
+	{ text: 'Four scripts make up the toolchain:', tell: 'slogan opener' },
 	{ text: 'The new cache earns its place in the request path.', tell: 'earns its place' },
 	{ text: 'The redesign moves the needle on churn.', tell: 'moves the needle' },
 	{ text: 'The runtime does the heavy lifting for you.', tell: 'heavy lifting' },
@@ -158,6 +162,8 @@ const INNOCENT_LOOKALIKES = [
 	'The revolutionary government fell in March.',
 	'He boasted about the harvest.',
 	'The board discussed the bottom line all quarter.',
+	'Two men did the work before noon.',
+	'Terse has two parts: a checker and a set of skills.',
 ];
 
 // Words demoted from the tell list: still flagged, as wordy words with a
