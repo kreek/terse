@@ -6,8 +6,10 @@ pay for.
 This file tracks the distance to that target. Each milestone names its
 proof. A milestone without passing proof is not done.
 
-The surface is three commands, one per phase: outline, write, edit.
-The always-on `style` skill carries the voice into everyday prose.
+The surface is four commands: `/terse:write` runs the whole pipeline,
+and `/terse:outline`, `/terse:draft`, and `/terse:edit` drive one
+phase each. The always-on `style` skill carries the voice into
+everyday prose.
 
 ## Principles
 
@@ -26,29 +28,40 @@ ablation instead. Eight fresh sessions ran, one per case per arm. The with
 arm reads and follows the terse skills. The without arm gets the task
 alone. The checker scored every produced document.
 
-First delta table. Recorded 2026-08-17, one run per arm, model
-claude-fable-5:
+Delta table. Recorded 2026-09-01 with `npm run eval:fallback`, three
+runs per arm on the subscription login, scored on each case's
+deliverable with the checker of that day:
 
 | Case | Arm | Flags/kword | AI tells | Grade |
 |---|---|---|---|---|
-| claudism-removal | with | 0.0 | 0 | 7 |
-| claudism-removal | without | 29.4 | 0 | 8 |
-| generation-readme | with | 0.0 | 0 | 5 |
-| generation-readme | without | 28.9 | 0 | 6 |
-| generation-explainer | with | 0.0 | 0 | 4 |
-| generation-explainer | without | 24.3 | 0 | 7 |
-| grammar-repair | with | 73.7 | 0 | 8 |
-| grammar-repair | without | 73.7 | 0 | 8 |
+| claudism-removal | with | 0.0 | 0 | 7.0 |
+| claudism-removal | without | 21.1 | 0 | 9.7 |
+| generation-readme | with | 0.0 | 0 | 5.3 |
+| generation-readme | without | 31.3 | 2 | 6.0 |
+| generation-explainer | with | 0.0 | 0 | 6.7 |
+| generation-explainer | without | 43.8 | 4 | 6.7 |
+| grammar-repair | with | 52.6 | 0 | 8.0 |
+| grammar-repair | without | 52.6 | 0 | 8.0 |
 
 Reading it: every style case lands at zero flags with the plugin. The
-same cases run 24 to 29 flags per thousand words without it. The
-grammar case is parity by design. Both arms fixed all 16 planted
-errors and left the style intact. A grammar-scope pass must not add
-style flags, so equality passes there. The delta comes from the style
-layer, so detection breadth (M2) stays next in line.
+same cases run 21 to 44 flags per thousand words without it. A Terse
+skill fired in every with-plugin run of the style cases. The grammar
+case is parity by design. Both arms fixed all 16 planted errors and
+left the style intact, and neither loaded a skill for it. Two results
+stand against the plugin. The README case's 350-word cap failed on
+all three with-plugin runs, at 351 to 487 words. The baseline ran 525
+to 721. The pipeline writes leaner than the baseline and not as lean
+as the grader asks. And the pipeline's two sign-off stops only run
+through in a one-shot session when the request says so; the cases
+now say it. The first table, recorded 2026-08-17 from a manual
+ablation, showed the same shape with one run per arm.
 
 - [ ] Get eval enablement from Anthropic. Rerun with `npm run eval`
-      to score this table with the real tool.
+      to score this table with the real tool. Until then the fallback
+      runner works on the subscription login. Without an API key it
+      isolates each session with `--setting-sources ""` instead of
+      `--bare`. The eval cases grant `Bash` and `Skill`, which the
+      with-plugin arm needs to load a skill and run the checker.
 - [x] Run the suite and confirm the scorer against a real report.
 - [x] Publish the first delta table in this file.
 - [x] Let the numbers set priorities: M2 confirmed as next.
@@ -103,7 +116,7 @@ colored highlights. The edit gate's report mode now renders them.
 
 - [x] `scripts/render-highlights.mjs`: document in, one page out. One
       color per category. The hint shows on hover. Legend chips
-      toggle categories. Flags now carry character spans.
+      toggle categories. Each flag includes its character span.
       Word-level categories mark the phrase; sentence-level ones mark
       the sentence.
 - [x] The report mode offers the rendered view. It publishes the page
@@ -223,7 +236,8 @@ three phases: outline, write, edit.
       everyday prose. Voice analysis moved to an offer inside
       `/terse:write`.
 
-Proof: the skills directory holds four skills. No stale command
+Proof: the skills directory held four skills at the time, five since
+`/terse:write` split from `/terse:draft` in 0.10. No stale command
 references remain in the README or the skills. All 84 tests pass, and
 the contract file passes the checker it describes.
 
@@ -238,7 +252,7 @@ the contract file passes the checker it describes.
 | Tone presets | paid tier | yes | yes, eval pending (M6) |
 | Voice capture with sign-off | no | partial | yes |
 | Colored highlight view | yes | yes | yes (M3) |
-| Always-on checking | app only | everywhere | not yet (M5) |
+| Always-on checking | app only | everywhere | yes, opt-in hook (M5) |
 | Proven ablation delta | no | no | yes, by ablation (M1) |
 | Verified verbatim quotes | no | plagiarism scan only | not yet (M7) |
 | Outline-first composition | no | no | yes |

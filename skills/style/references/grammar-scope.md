@@ -4,6 +4,12 @@ The mechanics stage of the findings contract: correctness errors and
 nothing else. This scope replaces a standalone grammar assistant. It
 must leave style, structure, and voice as found.
 
+The checker proves the mechanical share first. It flags doubled
+function words, `could of`, `its` before a word only `it's` precedes,
+and `their` before a be-verb. It also flags a list of misspellings
+with one correct form. Those arrive as `grammar` flags with the fix in
+the hint. The rest is yours.
+
 Fix:
 
 - spelling and typos

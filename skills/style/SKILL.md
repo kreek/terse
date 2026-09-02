@@ -42,8 +42,11 @@ shares.
    `it earns its place`. The stock figures are the famous cases, not
    the boundary. Test every verb whose subject cannot do the action:
    a log does not `buy` you anything, an analogy does not `hold`,
-   and nobody `mints` a name. An ordinary verb used as a figure
-   slips past any list; the translation test still catches it.
+   and nobody `mints` a name. A domain does not `carry` a weight,
+   and a plan does not `run`. `Carry` for `hold` or `include` is the
+   common case: a report `includes` the stats line. An ordinary verb
+   used as a figure slips past any list; the translation test still
+   catches it.
    Metaphor is for explaining something the reader has not seen yet,
    not for stating a decision, verdict, or action.
 5. **Active voice, strong verbs, direct claims.** Prefer a named actor
@@ -72,9 +75,14 @@ shares.
    new information loses the reader, however clean each one is.
 9. **Never comment on the writing.** No significance announcements
    (`worth noting`, `importantly`), no rhetorical questions answered
-   by the next sentence, no `it's not just X, it's Y`. The test is
-   deletion: cut the phrase, and if the passage loses no information,
-   it was a signpost.
+   by the next sentence, no `it's not just X, it's Y`, no pointing
+   at the argument (`as we will see`). The test is deletion: cut
+   the phrase, and if the passage loses no information, it was a
+   signpost. A verdict delivered before its evidence is the same
+   fault in a different shape: `and it does not need to`,
+   `nor should it`, `and that is fine`. Anticipating the reader's
+   objection is fine; ruling on it by assertion is not. Cut the
+   ruling and let the proof that follows answer.
 10. **Length is a cost the reader pays.** Cut by selecting what to include,
    not by compressing sentences into fragments.
 11. **Links sit on the claim.** A source goes inline, as a link on
@@ -134,6 +142,8 @@ that author.
 
 ## Handoffs
 
+- `/terse:write` runs the three phases below as one pipeline, with
+  two stops for the user's sign-off.
 - `/terse:outline` composes structure first: one claim per section,
   gated on the user's sign-off.
 - `/terse:draft` expands an approved outline (or composes from

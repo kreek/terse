@@ -16,12 +16,22 @@ the skill that owns it, under that skill's rules, so nothing here
 restates them. This skill only orders the phases, carries the files
 between them, and holds the two stops.
 
+A stop exists to collect an answer. The user may give it in advance:
+"treat the outline and skeleton as approved", or "do not pause for
+sign-off". A one-shot or scripted run cannot answer, and the user
+says so. In both cases write the phase's file, mark it
+`status: approved (user, in advance, YYYY-MM-DD)`, and continue. The
+deliverable still lands. Never assume the advance approval; the user
+states it.
+
 ## Workflow
 
 1. Take the request. Name the subject, the reader, the one question,
-   and the target length. Ask for what the user did not say. An
+   and the target length. Ask for what the user did not say. When
+   nobody can answer, take the shortest length the claims need and
+   record the choice in the outline. An
    issue, a PR description, a comment, or a short email under 200
-   words skips to step 4. `/terse:draft` handles it in one pass with
+   words skips to the expansion. `/terse:draft` handles it in one pass with
    no stop, and the gate in step 5 still runs.
 2. Outline, under `/terse:outline`. Write `<name>-outline.md` beside
    where the document will live. It holds the governing thought, the
@@ -29,20 +39,22 @@ between them, and holds the two stops.
    against the target. Show it and stop. The user edits or approves;
    iterate until they approve, then mark the file
    `status: approved (user, YYYY-MM-DD)`.
-3. Skeleton, under `/terse:draft` step 4. Write `<name>-skeleton.md`:
+3. Skeleton, under the `/terse:draft` skeleton step. Write `<name>-skeleton.md`:
    each section's claim as bare prose, the evidence under disputable
    claims, nothing else. List the proposed additions beneath it, one
    line each with the section, the reader question, and the sentence
    in brief. Show both and stop. The user strikes or adds items, then
    approves.
-4. Expand, under `/terse:draft` steps 5 through 8. Write `<name>.md`
+4. Expand, under the `/terse:draft` expansion, whole-document read,
+   and report steps. Write `<name>.md`
    from the approved skeleton and list, every added sentence answering
    its recorded question, the ratio under the ceiling. Record any
    deviation in the outline file. Keep the working note of questions
    for the gate.
-5. Gate, under `/terse:edit` in fix mode. Collect every finding, run
-   the reverse outline and the claim inventory, and fix through the
-   staged loop with grammar last. In `/terse:edit`, `structure`
+5. Gate, under `/terse:edit` in fix mode. Collect every finding. Run
+   the outline checker against the approved outline, then the reverse
+   outline and the claim inventory. Fix through the staged loop with
+   grammar last. In `/terse:edit`, `structure`
    findings wait for the user. Here the approved outline and skeleton
    are the decided structure, so report them with the file instead of
    stopping a third time. Re-read every touched section whole.
@@ -60,5 +72,5 @@ between them, and holds the two stops.
       outline records every deviation.
 - [ ] The gate ran in fix mode with grammar last, without a third
       stop, and any remaining `structure` finding is in the report.
-- [ ] The report carries the stats line, the expansion ratio, and the
+- [ ] The report includes the stats line, the expansion ratio, and the
       length against target.

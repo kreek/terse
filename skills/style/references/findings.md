@@ -7,7 +7,7 @@ findings first, then treat each command as a view over them.
 ## The shape
 
 A finding is what `style-check.mjs --json` emits for a flag: `file`,
-`line`, `category`, `match`, `hint`. Checker flags also carry character
+`line`, `category`, `match`, `hint`. Checker flags also include character
 spans for the highlight view. Judgment findings use the same shape, so
 one report, one preview, and one fix loop serve every category.
 
@@ -23,7 +23,7 @@ one report, one preview, and one fix loop serve every category.
 | personal-pronoun | checker, under `--impersonal` | wording |
 | simpler-alternative, weak-verb, ai-tell | checker | wording |
 | em-dash | checker | wording |
-| grammar | model, `references/grammar-scope.md` | mechanics |
+| grammar | checker (doubled words, `could of`, `its`/`their` slips, common misspellings) and model, `references/grammar-scope.md` | mechanics |
 | voice-drift | model, against the approved template | wording |
 | structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
@@ -31,11 +31,12 @@ one report, one preview, and one fix loop serve every category.
 ## Collection
 
 Collect once, before the report and before any fix. One checker run
-gathers the mechanical flags. One model read emits the `grammar`,
+gathers the mechanical flags, the provable `grammar` findings among
+them. One model read emits the remaining `grammar`,
 `voice-drift`, and `structure` findings in the shape above. The
 `structure` findings come from a reverse outline: one line per
 paragraph stating the claim it makes, built in the same read. Audit
-the list for jumps, misordering, and paragraphs carrying two points.
+the list for jumps, misordering, and paragraphs making two points.
 The repetition audit runs on the claim inventory. Group the lines by
 claim across the whole document, at any distance. A group of two or
 more paragraphs emits one `structure` finding. The finding lists
@@ -52,15 +53,22 @@ sentence in the same read. Do not re-read the prose per category.
 
 ## Suppression
 
-Three layers mark keeps before a finding reaches the report or the loop:
+Four layers mark keeps before a finding reaches the report or the loop:
 
 1. The checker itself. Lexical findings inside quotes and blockquotes
    never emit. A `<!-- terse-ignore -->` line in the file suppresses
-   the next line's findings, all of them or by category.
+   the next paragraph's findings, all of them or by category. The
+   project's `.terse/config.json` removes whole categories, or one
+   finding within a category, everywhere.
 2. An approved `.terse/voice.md`: its exceptions remove matching
    findings, named as covered.
 3. The `style` skill's tripwires: matching findings stay listed,
    marked as false alarms with the table's reason.
+4. The translation test, on `ai-tell` findings from a frame: the
+   checker matches a surface, and the editor reads the sentence. A
+   subject that can do the action, or a word naming the literal
+   thing, makes the finding a keep with that reason. The tripwire
+   table lists the famous cases; the test is the rule behind them.
 
 ## The staged fix loop
 
@@ -103,7 +111,7 @@ view in chat.
 
 `/terse:draft` uses the same model at draft time: it fixes findings
 section by section as prose lands, so the gate afterwards finds
-residue, not problems. Its stats line carries the expansion ratio,
+residue, not problems. Its stats line includes the expansion ratio,
 final words over skeleton words, beside length against target.
 
 Chat filters select findings; they never change the loop. "Fix only the

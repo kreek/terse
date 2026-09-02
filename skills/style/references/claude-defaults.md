@@ -38,7 +38,11 @@ them; they are model tendencies and need active suppression when editing:
   effective").
 - Synonym cycling to avoid repeating a word; repeat the word instead.
 - Participial analysis tails ("...highlighting the need for").
-- Significance announcements (`importantly`, `it's worth noting`).
+- Significance announcements (`importantly`, `it's worth noting`) and
+  pointers at the argument (`as we will see`).
+- A verdict before its evidence: the reader's objection anticipated
+  and ruled on by assertion (`and it does not need to`,
+  `nor should it`). Cut the ruling; the proof that follows answers.
 - Inflated verbs and vocabulary: `leverage`, `delve`, `robust`,
   `seamless`, `crucial`, `foster`, `streamline`.
 - Stock figures where a decision or action wants its plain verb:
@@ -59,6 +63,12 @@ The checker's `ai-tell` category now catches the lexical tells:
   and the metaphor soup (`happy path`, `blast radius`, `spaghetti code`)
 - the reframe structures: `it's not X, it's Y` and its `isn't about`
   and em-dash variants, `not only X but also Y`
+- signposting and document metadiscourse: `note that`,
+  `keep in mind`, `in this document we`, `this section describes`,
+  `let's dive`, and the closing summary announced (`in summary`)
+- what the markdown itself reveals: a closing-summary heading
+  (`Conclusion`, `Key Takeaways`), emoji, and a run of bold-label
+  bullets
 - single words, with caution. A bare word is a tell only when it has
   no everyday literal sense (`delve`, `synergy`). A word with one
   flags only in its tell frame (`testament to`, `underscores the`,

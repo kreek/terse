@@ -35,15 +35,18 @@ the reader from question to answer, ready to expand into prose later.
    docs open with it. A narrative shape may hold it for a nut graf a
    few paragraphs in. Delay is a placement the shape licenses, never
    a reveal saved for the end.
-   Each section gets a heading and a one-line claim: what this section
-   asserts, not what it "covers". A section that cannot state its claim
-   in one line is two sections or none.
+   Each section gets a level-two heading and a one-line claim: what
+   this section asserts, not what it "covers". A section that cannot
+   state its claim in one line is two sections or none. The headings
+   are the contract: the document uses the same ones, in the same
+   order, and `scripts/outline-check.mjs` proves it.
 3. Budget the weight. Give every section the word count its claim
-   needs, then sum the budgets and report the sum against the user's
-   target. Do not distribute the target across sections; the writer
+   needs. Write it as `budget: N` on its own line under the heading,
+   and the target as `target: N` above the first section. Sum the
+   budgets and report the sum against the user's target. Do not distribute the target across sections; the writer
    treats a number handed down as a quota and fills it. The claim
    says what a section asserts; the budget says how much that
-   assertion is worth. Size follows the load the claim carries. A
+   assertion is worth. Size follows the weight of the claim. A
    disputable claim takes its evidence and warrant. An uncontested
    one takes a sentence or two. Setup, transitions, and caveats stay
    short. A sum well
@@ -85,7 +88,7 @@ the reader from question to answer, ready to expand into prose later.
      caveat's budget
    - the budgets sum to less than the target
    - nothing critical is missing: the evidence under each claim is on
-     hand rather than only named, and disputable claims carry a
+     hand rather than only named, and disputable claims have a
      warrant
 
    Rework anything these checks catch before showing the user.
@@ -114,8 +117,8 @@ the reader from question to answer, ready to expand into prose later.
       outline file, and every section supports it.
 - [ ] The shape came from `references/structures.md`, and the answer
       appears where that shape places it.
-- [ ] Every outline section carries a one-line claim.
-- [ ] Every section carries the budget its claim needs, and the
+- [ ] Every outline section states a one-line claim.
+- [ ] Every section has the budget its claim needs, and the
       outline reports the sum against the target rather than filling
       it.
 - [ ] Every claim names its evidence, and disputable claims add a

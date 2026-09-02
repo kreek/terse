@@ -6,6 +6,104 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A mechanics tier in the checker. `grammar` flags cover doubled
+  function words, `could of`, `its` before a word only `it's`
+  precedes, and `their` before a be-verb. A list of misspellings with
+  one correct form joins them. The hook and the CI gate now catch what a grammar assistant's free
+  tier catches; the model keeps the rest of the grammar scope.
+- `.terse/config.json`: the checker's defaults per project (`maxGrade`,
+  `impersonal`, `ignore`, `targets`), found by walking up from the file.
+  Voice analysis writes it, so the hook and the CLI honor an approved
+  voice without the model in the loop. `ignore` takes a category or
+  `category:match`.
+- `scripts/outline-check.mjs`: proves an approved outline's arithmetic.
+  Missing, extra, and reordered sections, a section over its `budget:`,
+  and the document over its `target:` are `structure` findings. The
+  edit gate and the draft report run it.
+- Technical-prose coverage. Nominalizations in every inflection:
+  `made the decision`, `conducted an investigation into`,
+  `provides the capability to`. The wordy connectors `in terms of`
+  and `the reason is because`. The hedges `seems`, `tends to`,
+  `relatively`, and `in some cases`. Signposting: `note that`,
+  `please note`, `keep in mind`. Document metadiscourse:
+  `in this document we`, `this section describes`, `let's dive`. The
+  closing summary announced: `in summary`, `in conclusion`.
+- Structural tells the markdown reveals: a closing-summary heading
+  (`Conclusion`, `Key Takeaways`), emoji, and a run of three or more
+  bold-label bullets.
+- UK spellings of the wordy words (`utilise`, `endeavour`).
+- Tests for the hook, the config, and the outline checker.
+
+### Changed
+
+- Word-level flags report the line the match sits on, not the line
+  the sentence starts on. A `<!-- terse-ignore -->` comment now covers
+  the whole paragraph that follows it, so a keep on a hard-wrapped
+  sentence holds.
+- The hook reports only the flags inside an Edit's inserted text; a
+  Write still reports the whole file.
+- State idioms no longer count as passive voice: `is based on`, `is
+  located in`, `is supposed to`, `get started`, `is meant for`, and
+  their kin. The actor was never missing.
+- A sentence adverb before a comma (`Unfortunately, ...`) hints
+  deletion rather than a stronger verb, and `Firstly` hints `first`.
+- A phrase and a frame matching the same words (`it is worth noting`)
+  count as one tell.
+- `that said` flags only at the start of a sentence; `a note that said
+  goodbye` is a note.
+- The qualifier target rate is 2.7 per thousand words, remeasured on
+  the Hemingway corpus after the new hedges joined the list.
+- The eval cases and the fallback runner allow the `Skill` and `Bash`
+  tools, which the with-plugin arm needs to load a skill and run the
+  checker. Without them the two arms were the same session. The
+  runner now captures each session's transcript, so the `skill-fired`
+  grader scores in the fallback. A failed session reports the
+  transcript's final result event when stderr is silent. Without an
+  API key the runner uses the subscription login with settings
+  isolated. The scorer counts only each case's deliverable, not the
+  outline and skeleton the pipeline writes beside it.
+- The write and draft skills honor approval given in advance. A
+  one-shot or scripted run cannot answer a stop, and the user says
+  so. The skill then writes the phase file, marks it approved in
+  advance, and continues to the deliverable. The generation eval
+  cases say it. Without it the with-plugin arm stopped at the outline
+  and never wrote the document.
+- The README, the roadmap, and the style skill's handoffs name all five
+  skills; the write skill refers to draft's steps by name, not number.
+
+### Fixed
+
+- The roadmap's own `flags now carry character spans` tripped the new
+  carry frame and failed the CI self-check.
+- A qualifier's span pointed at the first look-alike in the sentence,
+  not the occurrence the lexicon matched. In
+  `at the very least, the job is very slow` the span marked the
+  emphasis and missed the hedge. A look-alike inside quotes silenced
+  the real flag. Spans now come from the matching pattern,
+  lookarounds included.
+- `that said` flagged inside `a note that said goodbye`; the hedge now
+  matches only at the start of a sentence.
+
+- The checker flags `carry` as a figure for `hold`, `include`, or
+  `have` (`domains carry fixed weights`, `the report carries the line`,
+  `each option carries a risk`). A porter carrying a crate stays
+  silent. It also flags `what makes it run` and its kin, the verdict
+  whose subject cannot do the verb. Terse's own skills used the carry
+  figure fifteen times; all now say the literal verb.
+- The edit loop reads every `ai-tell` frame match in context before
+  fixing it. The checker matches a surface; the editor runs the
+  translation test on the sentence, and a literal use is a keep with
+  that reason. The tripwire table's false alarms were the only
+  escape before; the test is now the rule behind them.
+- The checker flags metadiscourse pointers (`as we will see`,
+  `as noted above`) and the verdict announced before its evidence
+  (`and it does not need to`, `nor should it`, `and that is fine`).
+  The style skill names both under never commenting on the writing:
+  anticipate the reader's objection, then answer it with proof, not
+  a ruling.
+
 ## [0.11.0] (2026-08-21)
 
 ### Added
@@ -93,7 +191,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   frame. `testament to` flags where a last will and testament does
   not, and a test harness never trips `harness the power`. Words with
   plain synonyms (`robust`, `crucial`, `seamless`, `streamline`)
-  moved to the wordy list, where the flag carries the swap. A
+  moved to the wordy list, where the flag names the swap. A
   dedicated test block pins the literal senses.
 - `very` is a qualifier. `the very least` stays, as emphasis on a
   noun rather than a hedge on a claim.
@@ -130,7 +228,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Four outline shapes: ADR, change request, white paper, and bid
-  response. The bid response carries a rule the others do not. The
+  response. The bid response has a rule the others do not. The
   buyer's structure and vocabulary win, so the `style` skill's word
   choices become documented keeps rather than fixes.
 - A fallback for document types the list does not name. Take the
@@ -303,7 +401,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `weak-verb` category: 27 phrases where a plain verb does the job,
   each hinting the verb.
 - `aside` category for long parentheticals, and a document-grade gate.
-- Flags carry character spans, so previews mark the exact phrase.
+- Flags include character spans, so previews mark the exact phrase.
 - Eval suite (`evals/`) in `claude plugin eval` format, with a
   fallback runner and a post-scorer that gates on the ablation delta.
 - Property and contract tests: input conservation, metamorphic

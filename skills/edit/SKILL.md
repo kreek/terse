@@ -1,6 +1,6 @@
 ---
 name: edit
-description: "The publish gate: collect every finding across readability, style, AI tells, and grammar; report them or fix them in staged order."
+description: "The publish gate: collect every finding across readability, style, AI tells, and grammar; report them or fix them in staged order. Also the proofreader: use it when the user asks to fix the grammar, spelling, or punctuation in a file, to proofread, or to check a document."
 ---
 
 # Edit
@@ -54,7 +54,12 @@ every mode.
 
 1. If `.terse/voice.md` exists with `status: approved`, load it: its
    exceptions suppress matching findings, and its measured ranges bound
-   every rewrite. Ignore a `draft` template and say so.
+   every rewrite. Ignore a `draft` template and say so. The checker
+   reads the mechanical half of those exceptions from
+   `.terse/config.json`: the grade, the ignored categories, and the
+   rates. A finding the template covers should not reach you. When
+   one does, add it to the config rather than skipping it by hand
+   each pass.
 2. Load the `style` skill's Core Ideas and Tripwires, and its
    `${CLAUDE_PLUGIN_ROOT}/skills/style/references/claude-defaults.md`;
    together they govern every rewrite.
@@ -83,7 +88,7 @@ every mode.
    for the repetition audit. Work from the findings, not from a
    free-form read.
 4. Audit the reverse outline before any fix. Read the list for jumps,
-   misordering, and paragraphs carrying two points. Check the flow at
+   misordering, and paragraphs making two points. Check the flow at
    every level. Each subsection makes one point, that point supports
    its section's claim, and the sections in order walk the reader from
    question to answer. Four more checks run against the list:
@@ -96,12 +101,15 @@ every mode.
      A later instance that adds evidence, a qualification, or a new
      consequence is an advance and emits no finding. Only a paragraph
      that brings nothing new joins the group. Two places need a closer
-     look. The paragraph after a strong claim tends to reassert the
-     claim instead of supporting it, and the closing section tends
+     look. The paragraph after a strong claim often reasserts the
+     claim instead of supporting it, and the closing section drifts
      toward summary
-   - length: compare the document against its target, and each section
-     against its budget when an approved outline sets one. An overrun
-     is a finding even when the user did not ask for a trim
+   - length and the outline's arithmetic: run
+     `node ${CLAUDE_PLUGIN_ROOT}/scripts/outline-check.mjs <file>`
+     when an approved outline sits beside the document. It reports a
+     missing, extra, or reordered section, a section over its budget,
+     and the whole over its target, each as a `structure` finding. An
+     overrun is a finding even when the user did not ask for a trim
    - the outline's promises, when an approved outline file exists:
      every section makes its assigned claim. The lead still sets up
      the governing thought, and the last section is the ask or the
@@ -158,9 +166,14 @@ every mode.
      - adverb: choose a stronger verb, or give the number
      - qualifier: delete it or state the evidence
      - simpler alternative and weak verb: substitute the suggested word
-     - ai-tell: delete the tell phrase or swap the inflated word for a
-       plain one. For "it's not X, it's Y", pick the claim you mean
-       and state it once
+     - ai-tell: first read the flag in context. A frame matches a
+       surface, and the surface has literal uses the lexicon cannot
+       list. Run the translation test on the sentence as written.
+       The flag is a keep when the subject can do the action or the
+       word names the literal thing; record that reason. Otherwise
+       delete the tell phrase or swap the inflated word for a plain
+       one. For "it's not X, it's Y", pick the claim you mean and
+       state it once
      - em dash: use a period, colon, or comma. Parentheses work only
        when the span stays under six words, or when the fix trades one
        flag for an aside
@@ -168,8 +181,9 @@ every mode.
    - **mechanics** last, on the wording that now exists: grammar,
      spelling, and punctuation, under the `style` skill's
      `references/grammar-scope.md`.
-   Skip a finding only when it matches a documented false alarm or a
-   voice-template exception; keep a list of skips with the reason.
+   Skip a finding only for a documented false alarm, a voice-template
+   exception, or a pass on the translation test above. Keep a list of
+   skips with the reason.
    `structure` findings go to the report, not the loop.
 7. Preserve the author's voice: every edit stays inside the flagged
    sentence, and the author's order and content survive untouched.
@@ -234,7 +248,8 @@ every mode.
       and meaning are intact.
 - [ ] Cuts removed whole units under the user's direction, and no
       claim shrank to fit a number.
-- [ ] Kept findings each carry a tripwire or voice-template reason.
+- [ ] Kept findings each cite a tripwire, a voice-template
+      exception, or the translation test in context.
 - [ ] You honored the user's stated scope; out-of-scope findings
       appear in the report as decided keeps.
 - [ ] Every touched section was re-read whole after the fixes, and the

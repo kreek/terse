@@ -10,7 +10,7 @@ The report-only mode assesses through these lenses, in order:
   question. Transitions must chain, and key terms must keep their
   names across sections. It ends with an ask, not a trail-off.
 - **Clarity**: terms used before their introduction, asides doing a
-  footnote's job, paragraphs carrying two topics.
+  footnote's job, paragraphs holding two topics.
 - **Voice**: consistency of register and person; if an approved
   `.terse/voice.md` exists, where the document drifts from it.
 - **AI tells**: the habits in `references/claude-defaults.md` beyond

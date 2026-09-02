@@ -33,12 +33,20 @@ Workflow:
      on purpose. An author who uses em dashes stays an author who
      uses em dashes; record that here, and the edit gate stops
      flagging it
+   - the mechanical half of those exceptions as `.terse/config.json`,
+     which the checker reads. `maxGrade` takes the measured grade.
+     `ignore` lists the categories the voice keeps, as `em-dash` or
+     one finding as `ai-tell:bold-label bullets`. `targets` holds
+     measured rates above the defaults: `passivePerKword`,
+     `adverbsPerKword`, `qualifiersPerKword`. The hook and the CLI
+     then honor the voice without the model in the loop
 5. Present the draft trait by trait and ask what to keep, change, or
    drop. The sign-off is the point: never mark the template approved on
    your own judgment.
-6. On approval, set `status: approved` in the frontmatter. Tell the
-   user the location and that `/terse:draft`, `/terse:edit`, and the
-   `style` skill will now honor it.
+6. On approval, set `status: approved` in the frontmatter and write
+   the config file. Tell the user both locations and that
+   `/terse:draft`, `/terse:edit`, the hook, and the `style` skill will
+   now honor them.
 
 How the skills use the template:
 

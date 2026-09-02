@@ -22,7 +22,7 @@ a bare one means naming a missing fact, which you can check.
 
 ## Workflow
 
-1. Resolve the source: an outline file carrying `status: approved`
+1. Resolve the source: an outline file marked `status: approved`
    from `/terse:outline`, or the user's direct request. An outline
    still marked draft goes back for sign-off. For a document longer
    than a few paragraphs with no outline, offer `/terse:write`. It
@@ -84,7 +84,9 @@ a bare one means naming a missing fact, which you can check.
    measure for the final draft. Run the checker on it and record the
    word count. For a document over 200 words, show the skeleton to
    the user before expanding, with the additions you propose listed
-   under it. Each addition is one line: the section, the reader
+   under it. The user may have approved the structure in advance, or
+   said the session cannot take input. Then write the skeleton and
+   the list to the skeleton file and continue without stopping. Each addition is one line: the section, the reader
    question from step 5, and the sentence in brief. The user strikes
    or adds items, and one approval covers the skeleton and the list. The
    skeleton is the cheapest version to judge, and a claim that reads
@@ -146,7 +148,7 @@ a bare one means naming a missing fact, which you can check.
    record in the outline file what changed and why; never drift from
    it in silence. A section with no question beyond its skeleton had
    a thinner claim than the outline thought. One whose questions run
-   past its ceiling tends to hold two claims. A document that lands at
+   past its ceiling holds two claims more often than not. A document that lands at
    two thirds of its target is the expected outcome, not a shortfall.
    Report it as the length the claims needed.
    Both are outline problems, so take them back to the outline rather
@@ -176,9 +178,10 @@ a bare one means naming a missing fact, which you can check.
    - flow at every level: each subsection makes one point, and that
      point supports its section's claim. The sections in order still
      walk the reader from question to answer
-8. Run the checker over the whole document last. Report the stats
-   line, the length against the outline's budget, and the expansion
-   ratio against its ceiling. Report what you fixed by judgment as
+8. Run the checker over the whole document last, and
+   `scripts/outline-check.mjs` beside it when an approved outline
+   exists. Report the stats line, the length against the outline's
+   budget, and the expansion ratio against its ceiling. Report what you fixed by judgment as
    well, so the gate knows what it inherits. That covers grammar
    corrections, any finding no flag covers, and any sentence kept
    without a recorded question. Offer the highlight preview and
@@ -194,7 +197,7 @@ a bare one means naming a missing fact, which you can check.
       when none exists, the user heard the offer to learn one.
 - [ ] The draft held the constraints: grade, the three rates, the
       plain-word choices, and the expansion ceiling.
-- [ ] A skeleton existed before any expansion, and the report carries
+- [ ] A skeleton existed before any expansion, and the report states
       its word count.
 - [ ] A document over 200 words showed the user the skeleton with the
       proposed additions listed, for one approval.
