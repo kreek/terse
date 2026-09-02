@@ -2,9 +2,11 @@
 name: generation-explainer
 tags: [generation]
 runs: 3
-max_turns: 10
-allowed_tools: ["Read", "Write", "Edit"]
+max_turns: 60
+allowed_tools: ["Read", "Write", "Edit", "Bash", "Skill"]
 ---
+This is a one-shot run with nobody to answer questions. Treat any outline or skeleton as approved in advance and do not pause for sign-off; the finished file is the only deliverable.
+
 Write a short technical explainer (400 to 600 words) titled "How database
 indexes speed up queries" for junior developers who know SQL basics but not
 internals. Cover: what an index is, how a B-tree lookup avoids a full table

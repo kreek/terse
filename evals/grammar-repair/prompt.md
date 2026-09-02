@@ -3,7 +3,7 @@ name: grammar-repair
 tags: [grammar]
 runs: 3
 max_turns: 10
-allowed_tools: ["Read", "Write", "Edit"]
+allowed_tools: ["Read", "Write", "Edit", "Bash", "Skill"]
 ---
 Create a file named `notes.md` with exactly the content between the BEGIN
 and END markers (do not include the markers), then fix the grammar,

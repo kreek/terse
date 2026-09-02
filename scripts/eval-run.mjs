@@ -1,19 +1,22 @@
 #!/usr/bin/env node
 // Fallback ablation runner for the evals/ suite, for accounts where
 // `claude plugin eval` is still early-access gated. Runs each case twice in
-// headless sessions (with: --bare --plugin-dir <repo>; without: --bare),
-// applies the regex graders, and writes an aggregate report in the shape
-// scripts/eval-score.mjs consumes. llm and tool_used graders are recorded
+// headless sessions (with: --plugin-dir <repo>; without: nothing), applies
+// the regex graders, and writes an aggregate report in the shape
+// scripts/eval-score.mjs consumes. The stream-json transcript is captured,
+// so tool_used graders score; llm graders stay unscored. With
+// ANTHROPIC_API_KEY set the sessions
+// run --bare. Without it they run on the subscription login, isolated with
+// --setting-sources "" (no user, project, or local settings, so no user
+// hooks or installed plugins) and --strict-mcp-config. llm and tool_used graders are recorded
 // as unscored; the delta table rests on produced files and regex verdicts.
 // Usage: node eval-run.mjs [--runs N] [--case name] [--out path.json]
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { spawn } from 'node:child_process';
 import { readFileSync, readdirSync, writeFileSync, mkdtempSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const execFileP = promisify(execFile);
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const EVALS = join(REPO, 'evals');
 const RUN_TIMEOUT_MS = 10 * 60 * 1000;
@@ -50,6 +53,10 @@ function loadCase(dir, fallbackName) {
 		name: meta.name ?? fallbackName,
 		tags: (meta.tags ?? '').replace(/[[\]]/g, '').split(',')
 			.map((t) => t.trim()).filter(Boolean),
+		// the files the graders name; the pipeline's outline and skeleton
+		// files sit beside them and are not the deliverable
+		deliverables: [...new Set(graders.map((g) =>
+			(g.target ?? '').match(/path:\s*([\w.-]+)/)?.[1]).filter(Boolean))],
 		runs: Number(meta.runs) || 1,
 		maxTurns: Number(meta.max_turns) || 10,
 		prompt: body,
@@ -66,8 +73,43 @@ function toRegex(pattern) {
 	return new RegExp(p, flags);
 }
 
-function gradeFiles(graders, files) {
+function gradeToolUse(g, toolUses) {
+	const want = toRegex(g.input_match ?? '""');
+	const hits = toolUses.filter((t) => t.name === g.tool &&
+		want.test(JSON.stringify(t.input ?? {}))).length;
+	return { name: g.name, type: g.type, scored: true, hits,
+		pass: hits >= (Number(g.min) || 1) };
+}
+
+// The final result event names the failure when stderr does not: an API
+// error, a turn cap, a permission denial.
+function resultDetail(stdout) {
+	for (const line of stdout.split('\n').reverse()) {
+		let event;
+		try { event = JSON.parse(line); } catch { continue; }
+		if (event?.type !== 'result') continue;
+		return [event.subtype, event.is_error && event.result].filter(Boolean).join(': ');
+	}
+	return '';
+}
+
+// Tool uses from a --output-format stream-json transcript, one JSON object
+// per line; lines that are not JSON are ignored.
+function toolUsesOf(stdout) {
+	const uses = [];
+	for (const line of stdout.split('\n')) {
+		let event;
+		try { event = JSON.parse(line); } catch { continue; }
+		for (const block of event?.message?.content ?? []) {
+			if (block.type === 'tool_use') uses.push({ name: block.name, input: block.input });
+		}
+	}
+	return uses;
+}
+
+function gradeFiles(graders, files, toolUses) {
 	return graders.map((g) => {
+		if (g.type === 'tool_used') return gradeToolUse(g, toolUses);
 		if (g.type !== 'regex') return { name: g.name, type: g.type, scored: false };
 		const path = (g.target ?? '').match(/path:\s*([\w.-]+)/)?.[1];
 		const content = path ? files[path] : Object.values(files).join('\n');
@@ -83,24 +125,41 @@ function gradeFiles(graders, files) {
 
 async function runOnce(c, arm) {
 	const dir = mkdtempSync(join(tmpdir(), `terse-eval-${c.name}-${arm}-`));
-	const args = ['-p', c.prompt, '--bare',
-		'--allowedTools', 'Read', 'Write', 'Edit',
-		'--max-turns', String(c.maxTurns)];
+	const args = ['-p', c.prompt, ...ISOLATION,
+		'--allowedTools', 'Read', 'Write', 'Edit', 'Bash', 'Skill',
+		'--max-turns', String(c.maxTurns),
+		'--output-format', 'stream-json', '--verbose'];
 	if (arm === 'with') args.push('--plugin-dir', REPO);
+	const { stdout, stderr, code, killed } = await runClaude(args, dir);
 	let error = null;
-	try {
-		await execFileP('claude', args, { cwd: dir, timeout: RUN_TIMEOUT_MS,
-			maxBuffer: 16 * 1024 * 1024 });
-	} catch (err) {
-		const detail = (err.stderr ?? '').trim().split('\n').at(-1) ?? '';
-		error = err.killed ? 'timeout'
-			: `exit ${err.code}${detail ? `: ${detail.slice(0, 200)}` : ''}`;
+	if (killed) error = 'timeout';
+	else if (code !== 0) {
+		const detail = stderr.trim().split('\n').at(-1) || resultDetail(stdout);
+		error = `exit ${code}${detail ? `: ${detail.slice(0, 200)}` : ''}`;
 	}
 	const files = {};
 	for (const f of readdirSync(dir)) {
 		if (f.endsWith('.md')) files[f] = readFileSync(join(dir, f), 'utf8');
 	}
-	return { dir, files, error, graders: gradeFiles(c.graders, files) };
+	const toolUses = toolUsesOf(stdout);
+	return { dir, files, error, toolUses: toolUses.map((t) => t.name),
+		graders: gradeFiles(c.graders, files, toolUses) };
+}
+
+// stdin closed, so the CLI never waits on a pipe that will not speak.
+function runClaude(args, cwd) {
+	return new Promise((resolve) => {
+		const child = spawn('claude', args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+		let stdout = '';
+		let stderr = '';
+		child.stdout.on('data', (d) => { stdout += d; });
+		child.stderr.on('data', (d) => { stderr += d; });
+		const timer = setTimeout(() => child.kill('SIGKILL'), RUN_TIMEOUT_MS);
+		child.on('close', (code, signal) => {
+			clearTimeout(timer);
+			resolve({ stdout, stderr, code, killed: signal === 'SIGKILL' });
+		});
+	});
 }
 
 const KNOWN_FLAGS = new Set(['--runs', '--case', '--out']);
@@ -125,12 +184,13 @@ if (cases.length === 0) {
 	process.exit(2);
 }
 // --bare sessions never read OAuth or the keychain, so a subscription login
-// cannot carry them. Fail here, not after forty dead runs.
-if (!process.env.ANTHROPIC_API_KEY) {
-	console.error('eval-run: --bare sessions authenticate only with ' +
-		'ANTHROPIC_API_KEY. Export a key, or run `claude plugin eval` instead.');
-	process.exit(2);
-}
+// falls back to settings isolation instead.
+const ISOLATION = process.env.ANTHROPIC_API_KEY
+	? ['--bare']
+	: ['--setting-sources', '', '--strict-mcp-config'];
+console.error(`eval-run: ${process.env.ANTHROPIC_API_KEY
+	? '--bare sessions on ANTHROPIC_API_KEY'
+	: 'subscription sessions with settings isolated'}`);
 mkdirSync(dirname(outPath), { recursive: true });
 
 async function runCase(c, n) {
@@ -149,13 +209,14 @@ async function runCase(c, n) {
 function reportRun(arm, r, i) {
 	const verdicts = r.graders.filter((g) => g.scored)
 		.map((g) => `${g.name}:${g.pass ? 'pass' : 'FAIL'}`).join(' ');
-	console.error(`  ${arm} run ${i + 1}: ${Object.keys(r.files).length} file(s)` +
-		`${r.error ? ` [${r.error}]` : ''} ${verdicts}`);
+	const skills = r.toolUses.filter((t) => t === 'Skill').length;
+	console.error(`  ${arm} run ${i + 1}: ${Object.keys(r.files).length} file(s), ` +
+		`${skills} skill call(s)${r.error ? ` [${r.error}]` : ''} ${verdicts}`);
 }
 
 const report = { schemaVersion: 1, suite: 'terse (fallback runner)', cases: [] };
 for (const c of cases) {
-	report.cases.push({ name: c.name, tags: c.tags,
+	report.cases.push({ name: c.name, tags: c.tags, deliverables: c.deliverables,
 		arms: await runCase(c, runs ?? c.runs) });
 }
 

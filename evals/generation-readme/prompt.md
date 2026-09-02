@@ -2,9 +2,11 @@
 name: generation-readme
 tags: [generation]
 runs: 3
-max_turns: 10
-allowed_tools: ["Read", "Write", "Edit"]
+max_turns: 60
+allowed_tools: ["Read", "Write", "Edit", "Bash", "Skill"]
 ---
+This is a one-shot run with nobody to answer questions. Treat any outline or skeleton as approved in advance and do not pause for sign-off; the finished file is the only deliverable.
+
 Write a README.md for the following command-line tool. Cover what it does,
 installation, usage with examples, configuration, and license. Write it for
 a developer audience. Save it as `README.md`.

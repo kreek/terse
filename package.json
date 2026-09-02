@@ -9,8 +9,8 @@
   "scripts": {
     "check": "node scripts/style-check.mjs",
     "test": "vitest run test",
-    "eval": "claude plugin eval . --json evals/results/latest.json --max-cost-usd 10 --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
-    "eval:quick": "claude plugin eval . --runs 1 --case claudism-removal --json evals/results/latest.json --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
+    "eval": "claude plugin eval . --allow-tools Bash Write Edit --json evals/results/latest.json --max-cost-usd 10 --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
+    "eval:quick": "claude plugin eval . --allow-tools Bash Write Edit --runs 1 --case claudism-removal --json evals/results/latest.json --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
     "eval:fallback": "node scripts/eval-run.mjs && node scripts/eval-score.mjs evals/results/latest.json",
     "eval:fallback:quick": "node scripts/eval-run.mjs --runs 1 --case claudism-removal && node scripts/eval-score.mjs evals/results/latest.json"
   },

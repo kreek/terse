@@ -42,9 +42,23 @@ function collectListedDocs(entries, docs) {
 	}
 }
 
-function scoreArm(runs) {
+// The pipeline writes an outline and a skeleton beside the document. Score
+// the deliverables the case names; without that list, skip the files whose
+// names mark them as the record rather than the document.
+const RECORD_FILE = /(?:^|[-/])(?:outline|skeleton)\.md$/i;
+
+function isDeliverable(name, deliverables) {
+	if (Array.isArray(deliverables) && deliverables.length > 0) {
+		return deliverables.some((d) => name === d || name.endsWith(`/${d}`));
+	}
+	return !RECORD_FILE.test(name);
+}
+
+function scoreArm(runs, deliverables) {
 	const totals = { words: 0, flags: 0, tells: 0, docs: 0, gradeSum: 0 };
-	for (const run of runs) scoreRunDocs(extractDocs(run), totals);
+	for (const run of runs) {
+		scoreRunDocs(extractDocs(run).filter((d) => isDeliverable(d.name, deliverables)), totals);
+	}
 	const { words, flags, tells, docs, gradeSum } = totals;
 	if (docs === 0) return null;
 	return {
@@ -83,7 +97,7 @@ if (cases.length === 0) {
 function scoreAndPrintArms(c) {
 	const scores = {};
 	for (const arm of ARM_NAMES) {
-		scores[arm] = scoreArm(c.arms?.[arm] ?? []);
+		scores[arm] = scoreArm(c.arms?.[arm] ?? [], c.deliverables);
 		if (!scores[arm]) continue;
 		const s = scores[arm];
 		console.log(`${(c.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
