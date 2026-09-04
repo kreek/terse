@@ -1,6 +1,6 @@
 {
   "name": "terse",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Clear professional writing with deterministic style checks and edits that preserve the writer's voice.",
   "author": {
     "name": "Alastair Dawson",

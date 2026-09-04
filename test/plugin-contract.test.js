@@ -19,7 +19,7 @@ describe('Codex plugin contract', () => {
 		const manifest = readJson('.codex-plugin/plugin.json');
 		expect(manifest).toMatchObject({
 			name: 'terse',
-			version: '0.13.0',
+			version: '0.13.1',
 			skills: './skills/',
 			interface: {
 				displayName: 'Terse',
@@ -42,14 +42,14 @@ describe('Codex plugin contract', () => {
 		}
 	});
 
-	it('keeps both host manifests and package metadata on version 0.13.0', () => {
+	it('keeps both host manifests and package metadata on version 0.13.1', () => {
 		const codex = readJson('.codex-plugin/plugin.json');
 		const claude = readJson('.claude-plugin/plugin.json');
 		const claudeMarketplace = readJson('.claude-plugin/marketplace.json');
 		const pkg = readJson('package.json');
 		expect([codex.version, claude.version, claudeMarketplace.metadata.version,
 			claudeMarketplace.plugins[0].version, pkg.version])
-			.toEqual(Array(5).fill('0.13.0'));
+			.toEqual(Array(5).fill('0.13.1'));
 	});
 
 	it('uses either host plugin root for the trusted hook', () => {

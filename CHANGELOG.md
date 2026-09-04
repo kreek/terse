@@ -6,6 +6,14 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.1] (2026-09-04)
+
+### Fixed
+
+- Node 18 CI gives the two multi-process grammar checks enough time to finish
+  under suite contention. Their assertions and production behavior stay the
+  same.
+
 ## [0.13.0] (2026-09-04)
 
 ### Added

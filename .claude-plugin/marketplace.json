@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Clear professional writing with deterministic style checks and voice-preserving edits.",
-    "version": "0.13.0"
+    "version": "0.13.1"
   },
   "plugins": [
     {
       "name": "terse",
       "description": "Deterministic style checks plus model-assisted edits that keep the writer's voice.",
-      "version": "0.13.0",
+      "version": "0.13.1",
       "author": {
         "name": "Alastair Dawson"
       },
