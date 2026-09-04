@@ -1,20 +1,21 @@
 #!/usr/bin/env node
-// Post-scores a `claude plugin eval` run with terse's own checker: flags per
-// thousand words, AI tells, and grade, per arm, with the delta. The eval's
-// graders judge pass/fail per case; this reports the magnitude of the
-// improvement across arms, which is the "demonstrable improvement" number.
+// Post-scores a Terse eval run with the checker: total flags, flags per
+// thousand words, AI tells, and grade, per arm, with the delta.
 // Usage: node eval-score.mjs <aggregate-result.json>
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { gradeRegexGraders, loadGraders } from './eval-graders.mjs';
 import { createDocumentChecker } from './style-check.mjs';
 
 const ARM_NAMES = ['with', 'without'];
+const EVALS = join(dirname(dirname(fileURLToPath(import.meta.url))), 'evals');
+const RECORD_FILE = /(?:^|[-/])(?:outline|skeleton)\.md$/i;
 
-// The aggregate schema may embed produced-file contents or only paths, and
-// early-access builds vary. Walk each arm's runs and accept either shape.
 function extractDocs(run) {
 	const docs = [];
-	const fromMap = (obj) => {
-		for (const [name, value] of Object.entries(obj)) {
+	const fromMap = (files) => {
+		for (const [name, value] of Object.entries(files)) {
 			if (!name.endsWith('.md')) continue;
 			if (typeof value === 'string') docs.push({ name, content: value });
 			else if (value && typeof value.content === 'string') {
@@ -30,26 +31,22 @@ function extractDocs(run) {
 }
 
 function collectListedDocs(entries, docs) {
-	for (const f of entries) {
-		if (typeof f === 'string' && f.endsWith('.md') && existsSync(f)) {
-			docs.push({ name: f, content: readFileSync(f, 'utf8') });
-		} else if (f && typeof f.path === 'string' && f.path.endsWith('.md')) {
-			if (typeof f.content === 'string') docs.push({ name: f.path, content: f.content });
-			else if (existsSync(f.path)) {
-				docs.push({ name: f.path, content: readFileSync(f.path, 'utf8') });
+	for (const file of entries) {
+		if (typeof file === 'string' && file.endsWith('.md') && existsSync(file)) {
+			docs.push({ name: file, content: readFileSync(file, 'utf8') });
+		} else if (file && typeof file.path === 'string' && file.path.endsWith('.md')) {
+			if (typeof file.content === 'string') {
+				docs.push({ name: file.path, content: file.content });
+			} else if (existsSync(file.path)) {
+				docs.push({ name: file.path, content: readFileSync(file.path, 'utf8') });
 			}
 		}
 	}
 }
 
-// The pipeline writes an outline and a skeleton beside the document. Score
-// the deliverables the case names; without that list, skip the files whose
-// names mark them as the record rather than the document.
-const RECORD_FILE = /(?:^|[-/])(?:outline|skeleton)\.md$/i;
-
 function isDeliverable(name, deliverables) {
 	if (Array.isArray(deliverables) && deliverables.length > 0) {
-		return deliverables.some((d) => name === d || name.endsWith(`/${d}`));
+		return deliverables.some((file) => name === file || name.endsWith(`/${file}`));
 	}
 	return !RECORD_FILE.test(name);
 }
@@ -57,13 +54,15 @@ function isDeliverable(name, deliverables) {
 async function scoreArm(checker, runs, deliverables) {
 	const totals = { words: 0, flags: 0, tells: 0, docs: 0, gradeSum: 0 };
 	for (const run of runs) {
-		await scoreRunDocs(checker,
-			extractDocs(run).filter((d) => isDeliverable(d.name, deliverables)), totals);
+		const docs = extractDocs(run)
+			.filter((doc) => isDeliverable(doc.name, deliverables));
+		await scoreRunDocs(checker, docs, totals);
 	}
 	const { words, flags, tells, docs, gradeSum } = totals;
 	if (docs === 0) return null;
 	return {
 		docs,
+		totalFlags: flags,
 		flagsPerKword: words ? (flags / words) * 1000 : 0,
 		aiTells: tells,
 		meanGrade: gradeSum / docs,
@@ -72,28 +71,140 @@ async function scoreArm(checker, runs, deliverables) {
 
 async function scoreRunDocs(checker, docs, totals) {
 	for (const doc of docs) {
-		const r = await checker.checkDocument(doc.content, { file: doc.name });
-		totals.words += r.stats.words;
-		totals.flags += r.flags.length;
-		totals.tells += r.stats.aiTells;
-		totals.gradeSum += r.stats.grade;
+		const result = await checker.checkDocument(doc.content, { file: doc.name });
+		totals.words += result.stats.words;
+		totals.flags += result.flags.length;
+		totals.tells += result.stats.aiTells;
+		totals.gradeSum += result.stats.grade;
 		totals.docs++;
 	}
 }
 
-function fmt(n) { return n.toFixed(1); }
+function currentGraders(evalCase, run) {
+	let definitions;
+	try {
+		definitions = loadGraders(join(EVALS, evalCase.name, 'graders'));
+	} catch {
+		return run.graders ?? [];
+	}
+	const files = Object.fromEntries(extractDocs(run)
+		.filter((doc) => isDeliverable(doc.name, evalCase.deliverables))
+		.map(({ name, content }) => [name, content]));
+	const recordedNonRegex = (run.graders ?? [])
+		.filter((grader) => grader.type !== 'regex');
+	return [...recordedNonRegex, ...gradeRegexGraders(definitions, files)];
+}
 
-async function scoreAndPrintArms(checker, c) {
+function fmt(number) {
+	return number.toFixed(1);
+}
+
+async function scoreAndPrintArms(checker, evalCase) {
 	const scores = {};
 	for (const arm of ARM_NAMES) {
-		scores[arm] = await scoreArm(checker, c.arms?.[arm] ?? [], c.deliverables);
+		scores[arm] = await scoreArm(checker,
+			evalCase.arms?.[arm] ?? [], evalCase.deliverables);
 		if (!scores[arm]) continue;
-		const s = scores[arm];
-		console.log(`${(c.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
-			`${String(s.docs).padEnd(6)}${fmt(s.flagsPerKword).padEnd(10)}` +
-			`${String(s.aiTells).padEnd(10)}${fmt(s.meanGrade)}`);
+		const score = scores[arm];
+		console.log(`${(evalCase.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
+			`${String(score.docs).padEnd(6)}${fmt(score.flagsPerKword).padEnd(10)}` +
+			`${String(score.aiTells).padEnd(10)}${fmt(score.meanGrade)}`);
 	}
 	return scores;
+}
+
+async function scoreReport(report) {
+	const cases = report.cases ?? [];
+	if (cases.length === 0) {
+		console.error('eval-score: no cases in report');
+		return 2;
+	}
+
+	const checker = createDocumentChecker();
+	try {
+		let failures = 0;
+		let scoredAny = false;
+		let improvedAny = false;
+		let improvedStyleCases = 0;
+		console.log('case                    arm      docs  flags/kw  AI tells  grade');
+		for (const evalCase of cases) {
+			const scores = await scoreAndPrintArms(checker, evalCase);
+			if (scores.with || scores.without) scoredAny = true;
+			const withPlugin = scores.with;
+			const withoutPlugin = scores.without;
+			if (!withPlugin || !withoutPlugin) {
+				console.log(`  FAIL ${evalCase.name}: both A/B arms must produce at least one document`);
+				failures++;
+			}
+			if (withPlugin && withPlugin.aiTells > 0) {
+				console.log(`  FAIL ${evalCase.name}: with-plugin output contains ` +
+					`${withPlugin.aiTells} AI tell(s)`);
+				failures++;
+			}
+			const grammarScope = (evalCase.tags ?? []).includes('grammar');
+			const worse = grammarScope
+				? withPlugin?.totalFlags > withoutPlugin?.totalFlags
+				: withPlugin?.totalFlags > 0 &&
+					withPlugin?.totalFlags >= withoutPlugin?.totalFlags;
+			if (withPlugin && withoutPlugin && worse) {
+				console.log(`  FAIL ${evalCase.name}: with-plugin total flags ` +
+					`(${withPlugin.totalFlags}) ${grammarScope ? 'above' : 'not below'} ` +
+					`without (${withoutPlugin.totalFlags})`);
+				failures++;
+			}
+			if (withPlugin && withoutPlugin &&
+				withPlugin.totalFlags < withoutPlugin.totalFlags) {
+				improvedAny = true;
+				if (!grammarScope) improvedStyleCases++;
+			}
+			failures += gradeRuns(evalCase);
+			if (withPlugin && withoutPlugin) {
+				console.log(`  delta ${evalCase.name}: ` +
+					`${fmt(withoutPlugin.flagsPerKword - withPlugin.flagsPerKword)} ` +
+					'fewer flags/kword with the plugin');
+			}
+		}
+
+		if (cases.length > 1 && improvedStyleCases === 0) {
+			console.log('  FAIL suite: no style case improved on its paired baseline');
+			failures++;
+		}
+		if (!scoredAny) {
+			console.error('eval-score: no produced .md files found in the report; ' +
+				'run the eval with --keep-temp or check the aggregate schema');
+			return 2;
+		}
+		const success = improvedAny
+			? 'eval-score: improvement demonstrated'
+			: 'eval-score: acceptance passed (clean tie)';
+		console.log(failures === 0 ? success : `eval-score: ${failures} acceptance failure(s)`);
+		return failures === 0 ? 0 : 1;
+	} finally {
+		await checker.dispose();
+	}
+}
+
+function gradeRuns(evalCase) {
+	let failures = 0;
+	for (const arm of ARM_NAMES) {
+		for (const run of evalCase.arms?.[arm] ?? []) {
+			if (run.error) {
+				console.log(`  FAIL ${evalCase.name}: ${arm}-plugin run error: ${run.error}`);
+				failures++;
+			}
+			for (const grader of currentGraders(evalCase, run)) {
+				if (arm === 'with' && grader.scored && !grader.pass) {
+					console.log(`  FAIL ${evalCase.name}: with-plugin grader ${grader.name} failed`);
+					failures++;
+				}
+				if (arm === 'without' && grader.type === 'tool_used' && grader.pass) {
+					console.log(`  FAIL ${evalCase.name}: Terse activated in the without-plugin arm`);
+					failures++;
+				}
+			}
+		}
+	}
+	return failures;
 }
 
 async function main() {
@@ -104,60 +215,10 @@ async function main() {
 		return;
 	}
 	const report = JSON.parse(readFileSync(path, 'utf8'));
-	const cases = report.cases ?? [];
-	if (cases.length === 0) {
-		console.error('eval-score: no cases in report');
-		process.exitCode = 2;
-		return;
-	}
-
-	const checker = createDocumentChecker();
-	try {
-		let failures = 0;
-		let scoredAny = false;
-		console.log('case                    arm      docs  flags/kw  AI tells  grade');
-		for (const c of cases) {
-			const scores = await scoreAndPrintArms(checker, c);
-			if (scores.with || scores.without) scoredAny = true;
-			const w = scores.with, wo = scores.without;
-			if (w && w.aiTells > 0) {
-				console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);
-				failures++;
-			}
-			// A grammar-scope case must not ADD style flags; equality is correct
-			// behavior (the pass leaves style alone). Style cases must be below the
-			// without arm, except when both arms come out clean: zero cannot improve
-			// on zero, and a clean with-arm is the goal, not a failure.
-			const grammarScope = (c.tags ?? []).includes('grammar');
-			const worse = grammarScope
-				? w?.flagsPerKword > wo?.flagsPerKword
-				: w?.flagsPerKword > 0 && w?.flagsPerKword >= wo?.flagsPerKword;
-			if (w && wo && worse) {
-				console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
-					`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
-				failures++;
-			}
-			if (w && wo) {
-				console.log(`  delta ${c.name}: ${fmt(wo.flagsPerKword - w.flagsPerKword)} ` +
-					`fewer flags/kword with the plugin`);
-			}
-		}
-
-		if (!scoredAny) {
-			console.error('eval-score: no produced .md files found in the report; ' +
-				'run the eval with --keep-temp or check the aggregate schema');
-			process.exitCode = 2;
-			return;
-		}
-		console.log(failures === 0 ? 'eval-score: improvement demonstrated'
-			: `eval-score: ${failures} acceptance failure(s)`);
-		process.exitCode = failures === 0 ? 0 : 1;
-	} finally {
-		await checker.dispose();
-	}
+	process.exitCode = await scoreReport(report);
 }
 
-main().catch((err) => {
-	console.error(`eval-score: ${err.message}`);
+main().catch((error) => {
+	console.error(`eval-score: ${error.message}`);
 	process.exitCode = 2;
 });

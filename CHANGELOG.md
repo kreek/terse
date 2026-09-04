@@ -15,10 +15,6 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stays silent. The `style` skill names the fault under the
   particular-not-the-abstraction rule, with a tripwire.
 
-## [0.12.0] (2026-09-01)
-
-### Added
-
 - A mechanics tier in the checker. `grammar` flags cover doubled
   function words, `could of`, `its` before a word only `it's`
   precedes, and `their` before a be-verb. A list of misspellings with
@@ -58,8 +54,9 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the sentence starts on. A `<!-- terse-ignore -->` comment now covers
   the whole paragraph that follows it, so a keep on a hard-wrapped
   sentence holds.
-- The hook reports only the flags inside an Edit's inserted text; a
-  Write still reports the whole file.
+- The trusted hook now runs without an extra environment flag. It reports only
+  findings inside a Claude Edit or the added lines of a Codex `apply_patch`;
+  a full-file write still reports the whole file.
 - State idioms no longer count as passive voice: `is based on`, `is
   located in`, `is supposed to`, `get started`, `is meant for`, and
   their kin. The actor was never missing.
@@ -86,7 +83,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   advance, and continues to the deliverable. The generation eval
   cases say it. Without it the with-plugin arm stopped at the outline
   and never wrote the document.
-- The README, the roadmap, and the style skill's handoffs name all five
+- The README, the roadmap, and the style skill's handoffs name all six
   skills; the write skill refers to draft's steps by name, not number.
 
 ### Fixed
@@ -119,7 +116,48 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   The style skill names both under never commenting on the writing:
   anticipate the reader's objection, then answer it with proof, not
   a ruling.
+## [0.12.0] (2026-08-25)
 
+### Added
+
+- The `brainstorm` skill finds the angle before any outline: three to
+  five candidate readers, questions, and governing thoughts, converged
+  to one approved brief. The write workflow opens with it when the
+  angle is open, and the outline skill reads its brief.
+- `scripts/quote-check.mjs` proves every quotation against its source.
+  It finds each quote and its nearby link, fetches the source, and
+  matches the words after normalizing only whitespace and quote marks.
+  Unsourced, unverified, and plain-linked quotes join the findings
+  contract in the mechanics stage. The draft skill bans quoting from
+  memory, and the edit gate collects the quote findings beside the
+  style flags. `--offline` keeps the run off the network, and `[...]`
+  marks an editorial elision.
+- A `quote-verification` eval case seeds one altered and one invented
+  quote against a committed source.
+- A Codex plugin manifest and repository marketplace expose the Terse
+  skills in Codex Desktop and Codex CLI. The Claude manifest, marketplace,
+  and commands remain in place.
+- The fallback eval runner now has a Codex provider and an eight-run A/B suite
+  covering a README, explainer, launch post, and planted-tell edit.
+- The corrected Codex corpus records zero flags in every plugin-on output.
+  It preserves facts, isolates skill activation, and beats every paired
+  baseline on total flags.
+- Fresh-task Codex Desktop checks cover both automatic prose activation and
+  direct `$terse:edit` invocation.
+- Published research grounds the GPT-associated editing signals. Regression
+  tests enforce the committed human-prose false-positive limit.
+
+### Changed
+
+- Skills and package metadata use provider-neutral language and shared
+  package-relative references. The model-defaults reference now covers shared,
+  Claude, and GPT/Codex writing tendencies.
+- Automatic prose requests select the style skill. The multi-stop write
+  workflow activates when the user names it.
+- The opt-in style hook accepts Claude file paths and Codex `apply_patch`
+  commands, including multi-file and moved-file patches.
+- Terse treats AI-tell findings as editing signals, never evidence of machine
+  authorship. Em dashes remain a voice-overridable Terse style rule.
 ## [0.11.0] (2026-08-21)
 
 ### Added
@@ -293,7 +331,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   files.
 - Draft-time checking in `/terse:write` means the findings model, not
   the checker alone. The skill fixes grammar inside `grammar-scope.md`
-  in the sentence that raised it, and reads `claude-defaults.md`
+  in the sentence that raised it, and reads `model-defaults.md`
   before drafting. A constraints step front-loads the numbers.
 - `/terse:edit` loads the voice template and the style rules before
   the collection read that needs them, rather than two steps after.

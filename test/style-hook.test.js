@@ -1,86 +1,109 @@
-// The always-on hook: reads the PostToolUse payload, checks the file, and
-// returns the flags on stderr with exit 2. An Edit reports only the flags
-// inside the text it inserted, so a one-line change to a legacy document
-// does not replay every old finding.
-import { describe, it, expect } from 'vitest';
+// Exercises the always-on PostToolUse process boundary for Claude and Codex.
+import { afterEach, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const HERE = fileURLToPath(new URL('.', import.meta.url));
-const script = join(HERE, '..', 'scripts', 'style-hook.mjs');
-const hook = (payload, cwd) => spawnSync(process.execPath, [script], {
-	cwd,
-	encoding: 'utf8',
-	input: JSON.stringify(payload),
-	env: { ...process.env, TERSE_HOOK: '' },
+const SCRIPT = join(import.meta.dirname, '..', 'scripts', 'style-hook.mjs');
+const dirs = [];
+
+function workspace(prefix = 'terse-hook-') {
+	const dir = mkdtempSync(join(tmpdir(), prefix));
+	dirs.push(dir);
+	return dir;
+}
+
+function run(payload, cwd) {
+	return spawnSync(process.execPath, [SCRIPT], {
+		cwd,
+		encoding: 'utf8',
+		input: typeof payload === 'string' ? payload : JSON.stringify(payload),
+		env: { ...process.env, TERSE_HOOK: '' },
+	});
+}
+
+afterEach(() => {
+	for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
-
-const dir = mkdtempSync(join(tmpdir(), 'terse-hook-'));
-const legacy = join(dir, 'legacy.md');
-writeFileSync(legacy, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
 
 describe('style-hook', () => {
 	it('reports every flag on a Claude Write without an opt-in variable', () => {
-		const r = hook({ tool_name: 'Write', tool_input: { file_path: legacy } });
-		expect(r.status).toBe(2);
-		expect(r.stderr).toContain('[simpler-alternative] "utilize"');
-		expect(r.stderr).toContain('[passive-voice]');
+		const dir = workspace();
+		const file = join(dir, 'legacy.md');
+		writeFileSync(file, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
+		const result = run({ tool_name: 'Write', tool_input: { file_path: file } });
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('[simpler-alternative] "utilize"');
+		expect(result.stderr).toContain('[passive-voice]');
 	});
 
-	it('reports only the inserted text on an Edit', () => {
-		const r = hook({ tool_name: 'Edit', tool_input: { file_path: legacy,
+	it('reports only the inserted text on a Claude Edit', () => {
+		const dir = workspace();
+		const file = join(dir, 'legacy.md');
+		writeFileSync(file, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
+		const result = run({ tool_name: 'Edit', tool_input: { file_path: file,
 			old_string: 'was cleared', new_string: 'was cleared quickly' } });
-		expect(r.status).toBe(2);
-		expect(r.stderr).toContain('[adverb] "quickly"');
-		expect(r.stderr).not.toContain('utilize');
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('[adverb] "quickly"');
+		expect(result.stderr).not.toContain('utilize');
 	});
 
-	it('ignores non-markdown files and missing payloads', () => {
-		expect(hook({ tool_name: 'Write', tool_input: { file_path: join(dir, 'a.js') } }).status).toBe(0);
-		expect(hook({}).status).toBe(0);
+	it.each([
+		['malformed JSON', '{not json'],
+		['missing input', {}],
+		['non-Markdown path', { tool_name: 'Write', tool_input: { file_path: '/tmp/a.js' } }],
+	])('silently ignores %s', (_name, payload) => {
+		const result = run(payload);
+		expect(result.status).toBe(0);
+		expect(result.stderr).toBe('');
 	});
 
 	it('honors the project config', () => {
-		const root = mkdtempSync(join(tmpdir(), 'terse-hook-cfg-'));
+		const root = workspace('terse-hook-cfg-');
 		mkdirSync(join(root, '.terse'));
 		writeFileSync(join(root, '.terse', 'config.json'), JSON.stringify({ ignore: ['simpler-alternative'] }));
-		const f = join(root, 'doc.md');
-		writeFileSync(f, 'We utilize it.\n');
-		expect(hook({ tool_name: 'Write', tool_input: { file_path: f } }).status).toBe(0);
+		const file = join(root, 'doc.md');
+		writeFileSync(file, 'We utilize it.\n');
+		expect(run({ tool_name: 'Write', tool_input: { file_path: file } }).status).toBe(0);
 	});
 
-	it('reports nothing for a pure deletion', () => {
-		const r = hook({ tool_name: 'Edit', tool_input: { file_path: legacy, old_string: 'old ', new_string: '' } });
-		expect(r.status).toBe(0);
+	it('reports nothing for a pure Claude deletion', () => {
+		const dir = workspace();
+		const file = join(dir, 'legacy.md');
+		writeFileSync(file, 'We utilize the old path.\n');
+		const result = run({ tool_name: 'Edit', tool_input: { file_path: file,
+			old_string: 'old ', new_string: '' } });
+		expect(result.status).toBe(0);
 	});
 
-	it('reports every occurrence when the inserted text repeats', () => {
-		const f = join(dir, 'repeat.md');
-		writeFileSync(f, 'We utilize it quickly and the tool.\n\nThe new line was cleared quickly and the tool.\n');
-		const r = hook({ tool_name: 'Edit', tool_input: { file_path: f, old_string: '.', new_string: ' quickly and the tool.' } });
-		expect(r.status).toBe(2);
-		expect(r.stderr.match(/\[adverb\] "quickly"/g)).toHaveLength(2);
-		expect(r.stderr).not.toContain('utilize');
+	it('reports every occurrence when inserted text repeats', () => {
+		const dir = workspace();
+		const file = join(dir, 'repeat.md');
+		writeFileSync(file, 'We utilize it quickly and the tool.\n\nThe new line was cleared quickly and the tool.\n');
+		const result = run({ tool_name: 'Edit', tool_input: { file_path: file,
+			old_string: '.', new_string: ' quickly and the tool.' } });
+		expect(result.status).toBe(2);
+		expect(result.stderr.match(/\[adverb\] "quickly"/g)).toHaveLength(2);
+		expect(result.stderr).not.toContain('utilize');
 	});
 
 	it('filters async Harper findings to the inserted range', () => {
-		const f = join(dir, 'grammar-edit.md');
-		writeFileSync(f, 'She go home.\n\nWe could of shipped.\n');
-		const r = hook({ tool_name: 'Edit', tool_input: { file_path: f,
+		const dir = workspace();
+		const file = join(dir, 'grammar-edit.md');
+		writeFileSync(file, 'She go home.\n\nWe could of shipped.\n');
+		const result = run({ tool_name: 'Edit', tool_input: { file_path: file,
 			old_string: 'walk home', new_string: 'go home' } });
-		expect(r.status).toBe(2);
-		expect(r.stderr).toContain('[grammar] "go" - use "goes"');
-		expect(r.stderr).not.toContain('could of');
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('[grammar] "go" - use "goes"');
+		expect(result.stderr).not.toContain('could of');
 	});
 
 	it('reports only added prose from a Codex apply_patch update', () => {
-		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-'));
+		const root = workspace('terse-hook-codex-');
 		mkdirSync(join(root, 'docs'));
-		const file = join(root, 'docs', 'notes.md');
-		writeFileSync(file, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
+		writeFileSync(join(root, 'docs', 'notes.md'),
+			'We utilize the old path.\n\nThe new line was cleared quickly.\n');
 		const command = [
 			'*** Begin Patch',
 			'*** Update File: docs/notes.md',
@@ -89,15 +112,15 @@ describe('style-hook', () => {
 			'+The new line was cleared quickly.',
 			'*** End Patch',
 		].join('\n');
-		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
-		expect(r.status).toBe(2);
-		expect(r.stderr).toContain('[adverb] "quickly"');
-		expect(r.stderr).not.toContain('utilize');
-		expect(r.stderr).toContain('in docs/notes.md');
+		const result = run({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('[adverb] "quickly"');
+		expect(result.stderr).not.toContain('utilize');
+		expect(result.stderr).toContain('in docs/notes.md');
 	});
 
-	it('checks every markdown file added by one Codex apply_patch call', () => {
-		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-multi-'));
+	it('checks every Markdown file added by one Codex patch', () => {
+		const root = workspace('terse-hook-codex-multi-');
 		writeFileSync(join(root, 'one.md'), 'We utilize it.\n');
 		writeFileSync(join(root, 'two.markdown'), 'It was cleared quickly.\n');
 		const command = [
@@ -108,16 +131,16 @@ describe('style-hook', () => {
 			'+It was cleared quickly.',
 			'*** End Patch',
 		].join('\n');
-		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
-		expect(r.status).toBe(2);
-		expect(r.stderr).toContain('[simpler-alternative] "utilize"');
-		expect(r.stderr).toContain('[adverb] "quickly"');
-		expect(r.stderr).toContain('in one.md');
-		expect(r.stderr).toContain('in two.markdown');
+		const result = run({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('[simpler-alternative] "utilize"');
+		expect(result.stderr).toContain('[adverb] "quickly"');
+		expect(result.stderr).toContain('in one.md');
+		expect(result.stderr).toContain('in two.markdown');
 	});
 
 	it('stays silent for a Codex patch that only deletes prose', () => {
-		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-delete-'));
+		const root = workspace('terse-hook-codex-delete-');
 		writeFileSync(join(root, 'notes.md'), 'Clean prose remains.\n');
 		const command = [
 			'*** Begin Patch',
@@ -126,19 +149,35 @@ describe('style-hook', () => {
 			'-We utilize it.',
 			'*** End Patch',
 		].join('\n');
-		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
-		expect(r.status).toBe(0);
-		expect(r.stderr).toBe('');
+		const result = run({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(result.status).toBe(0);
+		expect(result.stderr).toBe('');
+	});
+
+	it('checks the destination of a moved Codex file', () => {
+		const root = workspace('terse-hook-codex-move-');
+		writeFileSync(join(root, 'new.md'), 'We utilize the cache.\n');
+		const command = [
+			'*** Begin Patch',
+			'*** Update File: old.md',
+			'*** Move to: new.md',
+			'+We utilize the cache.',
+			'*** End Patch',
+		].join('\n');
+		const result = run({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(result.status).toBe(2);
+		expect(result.stderr).toContain('new.md:1');
 	});
 
 	it('caps combined findings at twenty', () => {
-		const f = join(dir, 'grammar-cap.md');
-		writeFileSync(f, Array.from({ length: 25 }, () => 'She go home.').join('\n'));
-		const r = hook({ tool_name: 'Write', tool_input: { file_path: f } });
-		expect(r.status).toBe(2);
-		expect(r.stderr.match(/\[grammar\]/g)).toHaveLength(20);
-		expect(r.stderr).toContain('...and 5 more');
-		expect(r.stderr).toContain('terse: 25 flag(s)');
+		const dir = workspace();
+		const file = join(dir, 'grammar-cap.md');
+		writeFileSync(file, Array.from({ length: 25 }, () => 'She go home.').join('\n'));
+		const result = run({ tool_name: 'Write', tool_input: { file_path: file } });
+		expect(result.status).toBe(2);
+		expect(result.stderr.match(/\[grammar\]/g)).toHaveLength(20);
+		expect(result.stderr).toContain('...and 5 more');
+		expect(result.stderr).toContain('terse: 25 flag(s)');
 	});
 
 	it('can be imported without running', async () => {

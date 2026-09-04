@@ -102,8 +102,8 @@ shares.
 
 ## Redirecting the model's own defaults
 
-Host and model defaults shape the agent applying this skill, and they
-often tune it for conversation rather than documents. Read
+Host and model defaults shape the prose produced while applying this skill,
+and they tune it for conversation, not documents. Read
 `references/model-defaults.md` before drafting or editing. It names
 three groups:
 
@@ -142,20 +142,22 @@ template is the author's signed-off voice. Its exceptions override
 this skill's rules where they conflict. Its measured ranges (sentence
 length, grade, hedging rate) bound any prose written or edited for
 that author.
-`terse:draft` offers to build the template from writing samples
+The Terse draft skill offers to build the template from writing samples
 (`references/voice-analysis.md`).
 
 ## Handoffs
 
-- `terse:write` runs the three phases below as one pipeline, with
-  two stops for the user's sign-off.
-- `terse:outline` composes structure first: one claim per section,
+- The Terse brainstorm skill finds the angle when the user has none.
+  It diverges on candidate readers and questions, then converges to
+  one approved brief for the outline.
+- The Terse write skill runs outline, draft, and edit as one pipeline,
+  with two stops for the user's sign-off.
+- The Terse outline skill composes structure first: one claim per section,
   gated on the user's sign-off.
-- `terse:draft` expands an approved outline (or composes from
+- The Terse draft skill expands an approved outline (or composes from
   scratch) in the user's voice, checking at draft time. It offers to
   learn a voice from samples (`references/voice-analysis.md`) when
   none exists.
-- `terse:edit` is the publish gate: it collects every finding and, as
-  directed, reports them, fixes them in stages, proofs grammar alone,
-  or shifts tone. It honors the false alarms above and the approved
-  voice template.
+- The Terse edit skill is the publish gate. As directed, it reports findings,
+  fixes them in stages, proofs grammar alone, or shifts tone. It honors the
+  false alarms above and the approved voice template.

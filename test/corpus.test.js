@@ -10,6 +10,37 @@ import { checkText } from '../scripts/style-check.mjs';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const FIXTURES = join(HERE, 'fixtures', 'human-prose');
 
+// Published GPT corpus evidence seeded these existing rules. Each rule stays
+// an editing signal: literal senses or plain-word suggestions are not treated
+// as proof of authorship.
+const GPT_ASSOCIATED_RULES = [
+	{
+		name: 'delve',
+		positive: ['The report delves into retention.', 'The team delved into retention.'],
+		category: 'ai-tell',
+		literal: 'The Delvefield archive opened in March.',
+	},
+	{
+		name: 'underscore frame',
+		positive: ['The outage underscores the need for retries.',
+			'The outages underscored why retries matter.'],
+		category: 'ai-tell',
+		literal: 'Prefix private names with an underscore.',
+	},
+	{
+		name: 'showcase',
+		positive: ['The demo showcases the editor.', 'The launch showcased the editor.'],
+		category: 'simpler-alternative',
+		literal: 'The museum showcase holds three letters.',
+	},
+	{
+		name: 'pivotal',
+		positive: ['The migration was pivotal.', 'The pivotal vote happened Tuesday.'],
+		category: 'simpler-alternative',
+		literal: 'The pin sits at the pivotal joint.',
+	},
+];
+
 // Each entry plants exactly one tell. Recall must be total: a miss here
 // means the lexicon lost coverage it once had.
 const LABELED_TELLS = [
@@ -193,6 +224,29 @@ const WEAK_VERBS = [
 	{ text: 'The gateway serves as the entry point.', verb: 'is' },
 	{ text: 'Latency is dependent on the region.', verb: 'depends on' },
 ];
+
+describe('published GPT-associated editing signals', () => {
+	for (const rule of GPT_ASSOCIATED_RULES) {
+		it(`${rule.name}: positive and inflected forms`, () => {
+			for (const text of rule.positive) {
+				const categories = checkText(text).flags.map((flag) => flag.category);
+				expect(categories, text).toContain(rule.category);
+			}
+		});
+
+		it(`${rule.name}: literal sense is never authorship evidence`, () => {
+			const { flags } = checkText(rule.literal);
+			expect(flags.filter((flag) => flag.category === rule.category)).toEqual([]);
+		});
+
+		it(`${rule.name}: quoted examples stay exempt`, () => {
+			const { flags } = checkText(`The guide quotes "${rule.positive[0]}" as an example.`);
+			const lexical = flags.filter((flag) =>
+				['ai-tell', 'simpler-alternative'].includes(flag.category));
+			expect(lexical).toEqual([]);
+		});
+	}
+});
 
 describe('labeled tell corpus: total recall', () => {
 	for (const { text, tell } of LABELED_TELLS) {

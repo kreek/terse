@@ -30,7 +30,10 @@ describe('plugin packaging', () => {
 		const marketplace = readJson('.agents/plugins/marketplace.json');
 		const terse = marketplace.plugins.find((plugin) => plugin.name === 'terse');
 		expect(marketplace.name).toBe('terse');
-		expect(terse.source).toEqual({ source: 'local', path: './' });
+		expect(terse.source).toEqual({
+			source: 'url',
+			url: 'https://github.com/kreek/terse.git',
+		});
 		expect(terse.policy).toEqual({
 			installation: 'AVAILABLE',
 			authentication: 'ON_INSTALL',

@@ -1,15 +1,37 @@
 # Roadmap
 
-The target: replace the leading readability and grammar tools for
-markdown writers. All of it runs on the Claude subscription they already
-pay for.
+The target: replace the leading readability and grammar tools for Markdown
+writers. Terse runs as the same skills-only plugin in Codex Desktop, Codex CLI,
+and Claude Code.
 This file tracks the distance to that target. Each milestone names its
 proof. A milestone without passing proof is not done.
 
-The surface is four commands: `/terse:write` runs the whole pipeline,
-and `/terse:outline`, `/terse:draft`, and `/terse:edit` drive one
-phase each. The always-on `style` skill carries the voice into
-everyday prose.
+The surface is one complete workflow plus four phase skills: write,
+brainstorm, outline, draft, and edit. The automatic `style` skill carries the voice into everyday
+prose.
+
+## Runtime coverage
+
+The Codex port keeps the Claude package and command surface. It adds the Codex
+manifest, `$terse:*` syntax, shared hook payload handling, and an authenticated
+Codex ablation runner.
+
+- [x] Package the same six skills for Codex and Claude at version 0.12.0.
+- [x] Parse Claude `file_path` and Codex `apply_patch` events in the always-on
+      style hook.
+- [x] Add manifest, hook-process, GPT-signal, and human-corpus contract tests.
+- [x] Complete the eight authenticated Codex runs and record every result,
+      including invalid ablations and failed graders.
+- [x] Rerun the corrected A/B harness and meet every acceptance condition.
+- [x] Verify direct and automatic activation with Codex CLI.
+- [x] Verify direct and automatic activation in a new Codex Desktop task.
+
+Proof: deterministic validators and tests cover packaging and hook behavior.
+The corrected four-genre corpus produced zero flags in every plugin-on file.
+The paired baselines ranged from 29.8 to 128.2 flags per thousand words, with
+facts preserved and activation isolated. A fresh Desktop task selected the
+draft and edit skills for an unnamed memo request. Its direct `$terse:edit`
+follow-up finished with a clean checker result.
 
 ## Principles
 
@@ -165,8 +187,9 @@ without a command.
       warm median was 7.3 ms. Both beat the 750 ms and 100 ms gates.
 - [ ] A documented CI recipe for other repos.
 
-Proof: the hook fires in a live session (pending). One external repo
-gates its prose on the checker in CI.
+Proof: subprocess tests cover both host payloads. Live CLI and Desktop hook
+trust checks remain pending. One external repo gates its prose on the checker
+in CI.
 
 ## Milestone 6: Editor depth
 
@@ -186,24 +209,36 @@ Model-written documents sometimes invent quotes or drift from the
 source wording. Terse should treat an unverified quote like a grammar
 error. A machine finds it; the fix lands before the document ships.
 
-- [ ] `scripts/quote-check.mjs`: find each quotation and its nearby
+- [x] `scripts/quote-check.mjs`: find each quotation and its nearby
       source link. Fetch the source and prove the quote appears
       verbatim. Normalize only whitespace and quote marks. Same exit
       contract as the style checker: clean, findings, or error.
-- [ ] Quote writing lives in `/terse:draft`: fetch the source, copy the
+      Shipped 2026-08-23, with `[...]` elision support and one shared
+      `quotedRanges` definition between the two checkers.
+- [x] Quote writing lives in `/terse:draft`: fetch the source, copy the
       exact text, and link it. Never quote from memory. The gate treats
-      an unverified quote as a finding, not a new command.
-- [ ] Anchor-deep links. Web sources get text-fragment URLs
+      an unverified quote as a finding, not a new command. The three
+      quote categories joined the findings contract in the mechanics
+      stage.
+- [x] Anchor-deep links. Web sources get text-fragment URLs
       (`#:~:text=`), so the link opens with the quote highlighted.
-      PDF sources get a page anchor (`#page=12`). A plain URL is the
-      fallback, never the goal.
-- [ ] Offline mode: when the fetch fails, the checker marks the quote
-      unverified. No quote passes without its source.
+      A plain URL is the fallback, never the goal. A verified quote
+      on a plain web link draws a `quote-link-plain` finding, and the
+      hint carries the fragment URL to paste. PDF page anchors
+      (`#page=12`) remain open.
+- [x] Offline mode: `--offline` never touches the network, and a fetch
+      failure marks the quote unverified. No quote passes without its
+      source.
 - [ ] An eval case: a seeded document with one altered quote and one
-      invented quote. The with-arm must catch both.
+      invented quote. The with-arm must catch both. The case sits in
+      `evals/quote-verification`; the authenticated run remains open.
 
-Proof: against a fixture source, the checker rejects a tampered quote.
-It accepts the verbatim one. The eval case passes.
+Proof, met in tests against the fixture source in
+`test/fixtures/quotes/`. The checker rejects the tampered quote and
+the invented one. It accepts the verbatim quote and the
+fragment-linked one. The CLI contract tests pin exit codes 0, 1, and
+2, with a fetch failure a finding rather than an error. The eval run
+stays open.
 
 ## Milestone 8: Compose first
 
@@ -245,10 +280,30 @@ three phases: outline, write, edit.
       everyday prose. Voice analysis moved to an offer inside
       `/terse:write`.
 
-Proof: the skills directory held four skills at the time, five since
-`/terse:write` split from `/terse:draft` in 0.10. No stale command
-references remain in the README or the skills. All 84 tests pass, and
-the contract file passes the checker it describes.
+Proof at the milestone: the simplified phase contract passed its tests. The
+current skills directory holds six cross-runtime skills. The runtime-coverage
+section owns their present packaging proof.
+
+## Milestone 10: The angle before the outline
+
+The outline skill starts from a named reader and one question, and
+nothing upstream helped find them. The brainstorm skill fills that
+gap as the phase before the outline.
+
+- [x] `skills/brainstorm/SKILL.md`: diverge on three to five candidate
+      angles, each with a reader, a question, and a governing thought.
+      Converge on the user's explicit pick and write the approved
+      brief (`<name>-brainstorm.md`) the outline skill reads.
+- [x] The write workflow opens with the brainstorm skill when the
+      angle is open. The outline skill takes its inputs from an
+      approved brief.
+- [ ] An eval case for angle quality. Brainstorming is interactive by
+      design, so the case needs a scripted user; the design remains
+      open.
+
+Proof so far: the skill file passes the checker and ships in the same
+cross-runtime package. The ablation runner's activation pattern names
+it. A live convergence run stays open.
 
 ## Parity scorecard
 
@@ -261,9 +316,9 @@ the contract file passes the checker it describes.
 | Tone presets | paid tier | yes | yes, eval pending (M6) |
 | Voice capture with sign-off | no | partial | yes |
 | Colored highlight view | yes | yes | yes (M3) |
-| Always-on checking | app only | everywhere | yes, opt-in hook (M5) |
-| Proven ablation delta | no | no | yes, by ablation (M1) |
-| Verified verbatim quotes | no | plagiarism scan only | not yet (M7) |
+| Always-on checking | app only | everywhere | yes, trusted plugin hook (M5) |
+| Proven ablation delta | no | no | yes, on Claude (M1) and Codex |
+| Verified verbatim quotes | no | plagiarism scan only | yes, eval run pending (M7) |
 | Outline-first composition | no | no | yes |
 
 Neither incumbent can claim the last row. The real-tool rerun in M1

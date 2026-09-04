@@ -5,13 +5,13 @@
     "url": "https://github.com/kreek"
   },
   "metadata": {
-    "description": "Mechanical prose checks and writing skills that keep the author's voice.",
+    "description": "Clear professional writing with deterministic style checks and voice-preserving edits.",
     "version": "0.12.0"
   },
   "plugins": [
     {
       "name": "terse",
-      "description": "Mechanical prose checks plus agent edits that keep the author's voice.",
+      "description": "Deterministic style checks plus model-assisted edits that keep the writer's voice.",
       "version": "0.12.0",
       "author": {
         "name": "Alastair Dawson"

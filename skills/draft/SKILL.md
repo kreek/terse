@@ -1,6 +1,6 @@
 ---
 name: draft
-description: "The expansion phase of `terse:write`, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
+description: "The expansion phase of the Terse write workflow, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
 ---
 
 # Draft
@@ -23,9 +23,9 @@ a bare one means naming a missing fact, which you can check.
 ## Workflow
 
 1. Resolve the source: an outline file marked `status: approved`
-   from `terse:outline`, or the user's direct request. An outline
+   from the Terse outline skill, or the user's direct request. An outline
    still marked draft goes back for sign-off. For a document longer
-   than a few paragraphs with no outline, offer `terse:write`. It
+   than a few paragraphs with no outline, offer the Terse write skill. It
    runs the outline, this skill, and the gate in sequence, and
    structure is cheap to change before prose exists. Short
    pieces are in scope, not exempt. An issue, a ticket, a PR
@@ -74,7 +74,12 @@ a bare one means naming a missing fact, which you can check.
    State a claim once and move on, and list three things when there
    are three. Keep an aside under six words or promote it to its own
    sentence. Put a source inline, as a link on the words it
-   supports, and never in a list at the end. The `style` skill's Core
+   supports, and never in a list at the end. Copy each quotation from
+   its open source, word for word. Put the link on the quoted words
+   as a text-fragment URL (`#:~:text=`), so it opens with the quote
+   highlighted. Never quote from memory: the gate runs
+   `scripts/quote-check.mjs`, which proves every quotation against
+   its source and flags the rest. The `style` skill's Core
    Ideas and `../style/references/model-defaults.md` hold the rest.
 4. Write the skeleton. Each section is its outline claim, stated in
    one or two sentences, plus the evidence the outline listed under a
@@ -186,7 +191,7 @@ a bare one means naming a missing fact, which you can check.
    well, so the gate knows what it inherits. That covers grammar
    corrections, any finding no flag covers, and any sentence kept
    without a recorded question. Offer the highlight preview and
-   `terse:edit` for the final gate. If the reader needs more than
+   the Terse edit skill for the final gate. If the reader needs more than
    the draft gives, the user says where, and that section expands
    under the same proof.
 
@@ -198,6 +203,8 @@ a bare one means naming a missing fact, which you can check.
       when none exists, the user heard the offer to learn one.
 - [ ] The draft held the constraints: grade, the three rates, the
       plain-word choices, and the expansion ceiling.
+- [ ] Every quotation came from its open source, word for word, with
+      a text-fragment link on the quoted words.
 - [ ] A skeleton existed before any expansion, and the report states
       its word count.
 - [ ] A document over 200 words showed the user the skeleton with the

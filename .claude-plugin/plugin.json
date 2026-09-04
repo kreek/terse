@@ -1,7 +1,7 @@
 {
   "name": "terse",
   "version": "0.12.0",
-  "description": "Mechanical prose checks and writing skills that keep the author's voice.",
+  "description": "Clear professional writing with deterministic style checks and edits that preserve the writer's voice.",
   "author": {
     "name": "Alastair Dawson"
   },
@@ -13,8 +13,8 @@
     "editing",
     "readability",
     "style",
-    "claude-code",
     "codex",
+    "claude-code",
     "agent-skills"
   ]
 }

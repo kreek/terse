@@ -1,7 +1,7 @@
 # Voice analysis
 
 Build a voice template from the user's own writing so Terse preserves
-how they sound rather than only fixing flags. `terse:draft` and `terse:edit`
+how they sound rather than only fixing flags. The Terse draft and edit skills
 offer this flow when no approved template exists. The template is a
 contract: the user signs it off before any skill treats it as their
 voice.
@@ -45,15 +45,15 @@ Workflow:
    your own judgment.
 6. On approval, set `status: approved` in the frontmatter and write
    the config file. Tell the user both locations and that
-   `terse:draft`, `terse:edit`, the hook, and the `style` skill will
-   now honor them.
+   the Terse draft and edit skills, the hook, and the `style` skill
+   will now honor them.
 
 How the skills use the template:
 
 - The edit gate: exceptions suppress matching findings, and measured
   ranges bound every rewrite. A 12-word-average author does not get
   30-word rewrites.
-- `terse:draft`: the expansion lands inside the measured ranges.
+- The Terse draft skill: the expansion lands inside the measured ranges.
 - The skills ignore a `draft` template and say so when they skip it.
 
 Verification:

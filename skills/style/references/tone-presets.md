@@ -1,6 +1,6 @@
 # Tone presets
 
-A tone shift is a mode of `terse:edit`: a deliberate rewrite toward a
+A tone shift is a mode of the Terse edit skill: a deliberate rewrite toward a
 named preset, followed by the gate. Claims, structure, and (when a
 template exists) the author's voice survive the shift.
 

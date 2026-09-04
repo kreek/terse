@@ -18,8 +18,13 @@ the reader from question to answer, ready to expand into prose later.
 ## Workflow
 
 1. Name the subject, the reader, the one question the document
-   answers, and the target length. If the user has not said, ask; do
-   not guess the reader. When the user has no length in mind, propose
+   answers, and the target length. An approved brainstorm brief
+   (`<name>-brainstorm.md`, from the Terse brainstorm skill) answers
+   these; take its subject, reader, question, and length. With no
+   brief, and the user has not said, ask; do
+   not guess the reader. When the angle itself is open, offer the
+   Terse brainstorm skill rather than asking the user to pick
+   blind. When the user has no length in mind, propose
    one and get agreement, because step 3 budgets every section against
    it. Then state the governing thought: the answer in one or two
    sentences. The final document supplies the detail. If it will not
@@ -53,7 +58,7 @@ the reader from question to answer, ready to expand into prose later.
    under the target is the normal case, and the outline says so. A
    sum over the target means the document holds more claims than the
    reader asked for, so cut sections rather than shrink them. Every
-   budget is a ceiling: `terse:draft` drafts each section short and
+   budget is a ceiling: the Terse draft skill drafts each section short and
    expands only under proof.
 4. Name the evidence and the reasoning. Under each claim, list the
    evidence it will need. For any claim a reader could dispute, add one
@@ -95,19 +100,19 @@ the reader from question to answer, ready to expand into prose later.
 7. Iterate by editing the outline file until the user approves. Approval
    is explicit; never proceed on your own judgment. On approval, write
    `status: approved (user, YYYY-MM-DD)` at the top of the outline
-   file. Hand off to `terse:draft`, which reads that line to tell an
+   file. Hand off to the Terse draft skill, which reads that line to tell an
    approved outline from a draft. The structure then survives as its
    own record.
 8. Stay open after approval. A section that resists drafting is
    evidence about the outline, not a writing problem to push through.
-   When `terse:draft` reports resistance, come back here and fix the
+   When the draft skill reports resistance, come back here and fix the
    claim, the order, or the budget in the file. The draft may depart
    from the outline, never in silence: record the departure here
    before the next section. Cutting, adding, or reordering a section
    needs the user's approval again, as does any change to the
    governing thought. Re-budgeting within the approved sections does
    not. Record what changed and why, so the file stays the record
-   `terse:edit` checks each section against.
+   the Terse edit skill checks each section against.
 
 ## Verification
 

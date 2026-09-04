@@ -1,19 +1,31 @@
 {
   "name": "terse",
   "version": "0.12.0",
-  "description": "Mechanical prose checks and writing skills that keep the author's voice.",
+  "description": "Clear professional writing with deterministic style checks and voice-preserving edits.",
   "type": "module",
+  "keywords": [
+    "writing",
+    "editing",
+    "readability",
+    "style",
+    "codex",
+    "claude-code",
+    "agent-skills"
+  ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "benchmark:grammar": "node scripts/grammar-benchmark.mjs",
     "check": "node scripts/style-check.mjs",
+    "check:quotes": "node scripts/quote-check.mjs",
     "test": "vitest run test",
     "eval": "claude plugin eval . --allow-tools Bash Write Edit --json evals/results/latest.json --max-cost-usd 10 --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
     "eval:quick": "claude plugin eval . --allow-tools Bash Write Edit --runs 1 --case claudism-removal --json evals/results/latest.json --no-publish && node scripts/eval-score.mjs evals/results/latest.json",
     "eval:fallback": "node scripts/eval-run.mjs && node scripts/eval-score.mjs evals/results/latest.json",
-    "eval:fallback:quick": "node scripts/eval-run.mjs --runs 1 --case claudism-removal && node scripts/eval-score.mjs evals/results/latest.json"
+    "eval:fallback:quick": "node scripts/eval-run.mjs --runs 1 --case claudism-removal && node scripts/eval-score.mjs evals/results/latest.json",
+    "eval:codex": "node scripts/eval-run.mjs --provider codex --runs 1 --tag ai-tells && node scripts/eval-score.mjs evals/results/latest.json",
+    "eval:codex:quick": "node scripts/eval-run.mjs --provider codex --runs 1 --case claudism-removal && node scripts/eval-score.mjs evals/results/latest.json"
   },
   "devDependencies": {
     "vitest": "^3.2.1"

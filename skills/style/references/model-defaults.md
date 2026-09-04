@@ -1,105 +1,91 @@
 # Redirecting model defaults
 
-Agent hosts and language models are often tuned for chat responses, not
-documents. Some of those defaults serve document writing; Terse redirects
-the others when the deliverable is prose. The redirect is explicit because
-the same model defaults shape the agent applying this plugin.
+Writing models favor useful conversation over finished documents.
+Some defaults serve work prose; others need a change. Apply the
+shared rules first, then use the host-specific notes as evidence about what to
+look for. Do not turn a tendency into a claim about who wrote the text.
 
 ## Defaults to keep
 
-These chat defaults align with Terse's voice and carry over unchanged:
+These chat defaults align with Terse and carry over unchanged:
 
-- Minimum formatting for clarity: no excessive bolding, few headers,
-  no bullets where prose belongs.
-- Brief caveats: most of the text on the main point.
+- Minimum formatting for clarity: no excessive bolding, few headers, and no
+  bullets where prose belongs.
+- Brief caveats, with most of the text on the main point.
 - No emojis unless asked.
-- Honest and willing to push back; concise by default.
+- Honest disagreement and concise answers.
 
 ## Defaults to redirect
 
 | Chat default | In a document, do this instead |
 |---|---|
-| Warm, kind conversational tone | Neutral and direct. A document persuades with evidence, not warmth. Cut politeness padding ("feel free to", "you might want to consider"). |
-| Soften refusals and disagreement | State the limitation or counterargument plainly, with the reason. |
-| High-level summary unless depth is requested | The document's genre sets the depth; a spec or analysis owes the full argument, not a chat-sized digest. |
-| Ask a clarifying question when ambiguous | A document cannot ask. Resolve the ambiguity or name the open question in a decisions/open-questions section. |
-| Respond to the person | Write for the named reader of the document, who is often not the person in the conversation. |
-| Brevity as courtesy to the chat partner | Brevity by selection: include what changes the reader's understanding or decision, at whatever length that takes. |
+| Warm conversational tone | Stay neutral and direct. Cut politeness padding such as "feel free to". |
+| Softened refusals and disagreement | State the limit or opposing case with its reason. |
+| High-level summary unless depth is requested | Let the genre set the depth. A spec or analysis owes the full argument. |
+| Ask a follow-up question when unclear | Resolve the gap or record it as an open question. |
+| Respond to the chat partner | Write for the document's named reader. |
+| Brevity as courtesy | Select what changes the reader's understanding or decision. |
 
-## Trained habits with no system-prompt source
+## Shared model tendencies
 
-The system prompt does not cause these, so no instruction there prevents
-them; they are model tendencies and need active suppression when editing:
+Look for these habits during the single collection read. The checker catches
+the framed cases it can; the editor judges the rest:
 
-- Em dashes as the default connector.
-- "It's not just X, it's Y" and compulsive triplets ("clear, concise, and
-  effective").
-- Synonym cycling to avoid repeating a word; repeat the word instead.
-- Participial analysis tails ("...highlighting the need for").
-- Significance announcements (`importantly`, `it's worth noting`) and
-  pointers at the argument (`as we will see`).
-- A verdict before its evidence: the reader's objection anticipated
-  and ruled on by assertion (`and it does not need to`,
-  `nor should it`). Cut the ruling; the proof that follows answers.
-- Inflated verbs and vocabulary: `leverage`, `delve`, `robust`,
-  `seamless`, `crucial`, `foster`, `streamline`.
-- Stock figures where a decision or action wants its plain verb:
-  `earns its place`, `moves the needle`, `does the heavy lifting`,
-  `low-hanging fruit`.
-- The slogan opener: a paragraph that starts on a count, a verdict
-  verb, and then the list or the point (`Four questions settle it.`,
-  `Two parts do the work:`). The shape is the tell, not the verbs the
-  checker happens to list. Open with a connection to the paragraph
-  before, or state the parts (`Terse has two parts:`), and keep the
-  clipped verdict for a closer after a developed point.
-- The pointer noun: `this approach`, `that split`, `this shift`
-  standing in for the previous paragraph. The reader has to rebuild
-  what it points at. Name the thing instead.
-- A closing summary that restates what the reader just read.
-- Mid-sentence bold for emphasis.
-- Citations collected in a sources or references list at the end,
-  with bare claims above. Link the claim itself, inline.
+- phrases that announce importance, such as `importantly` and `worth noting`
+- negative parallelism such as `it's not just X, it's Y`
+- synonym cycling, compulsive triplets, and uniform paragraph shapes
+- trailing analysis such as "highlighting the need for"
+- inflated vocabulary, stock figures, and formal connective tissue
+- a slogan opener built from a count, verdict verb, and list, such as
+  `Two parts do the work:`
+- pointer nouns such as `this approach` or `that split` that make the reader
+  reconstruct the preceding idea
+- closing summaries that restate the document
+- mid-sentence bold used only for emphasis
+- sources collected at the end instead of linked to the claims they support
 
-The checker's `ai-tell` category now catches the lexical tells:
+The `ai-tell` category is an editing signal. It marks wording that often makes
+model-written prose less direct; it never proves who wrote the text. A fixed
+rule needs a safe frame or plain replacement and zero
+false positives in the committed human-prose corpus. Quoted text and
+quoted blocks remain exempt. `<!-- terse-ignore -->` records a chosen keep.
 
-- the tell phrases (`worth noting`, `at its core`, `load-bearing`),
-  in every inflection
-- the candor and validation phrases (`the honest answer`,
-  `great question`, `spot on`)
-- the hedging connectives (`that said`, `to be fair`, `non-trivial`)
-  and the metaphor soup (`happy path`, `blast radius`, `spaghetti code`)
-- the reframe structures: `it's not X, it's Y` and its `isn't about`
-  and em-dash variants, `not only X but also Y`
-- the pointer nouns: `this approach`, `that split`,
-  `these trade-offs`, with the relative clause
-  (`the comma that split the sentence`) left silent
-- signposting and document metadiscourse: `note that`,
-  `keep in mind`, `in this document we`, `this section describes`,
-  `let's dive`, and the closing summary announced (`in summary`)
-- what the markdown itself reveals: a closing-summary heading
-  (`Conclusion`, `Key Takeaways`), emoji, and a run of bold-label
-  bullets
-- single words, with caution. A bare word is a tell only when it has
-  no everyday literal sense (`delve`, `synergy`). A word with one
-  flags only in its tell frame (`testament to`, `underscores the`,
-  `the data ecosystem`), and words with plain synonyms (`robust`,
-  `crucial`, `seamless`) flag as wordy, with the swap in the hint
+Em dashes follow the same boundary. Terse flags them because a period, colon,
+or comma is often clearer, not because a dash proves machine authorship. An
+approved voice template can keep them.
 
-Quoted tells and blockquotes stay silent, and a
-`<!-- terse-ignore -->` line records a keep in the file itself. The
-editor still owns what no pattern can see:
+## Claude tendencies
 
-- synonym cycling and compulsive triplets
-- participial analysis tails
-- closing summaries and mid-sentence bold
-- figures of speech beyond the listed ones, including ordinary verbs
-  used as figures
+Anthropic publishes [Claude system
+prompts](https://platform.claude.com/docs/en/release-notes/system-prompts).
+They explain the chat defaults above. Review Claude prose for warm framing and
+chat-sized summaries. Also check em-dash connectors, negative parallelism,
+triplets, and closing summaries. Keep the document's reader and genre in
+control.
 
-No lexicon can enumerate figures of speech. The checker frames the
-common metaphorical verbs (`holds`, `buys`, `mints`, `carries`,
-`forces`, `lives in`) in their machine shapes; the editor hunts the rest.
-Apply the translation test from the `style` skill's Core Ideas to
-every verb whose subject cannot do the action. If the literal verb
-loses nothing, the figure is a finding. When `terse:edit` runs,
-hunt these in the same pass and treat them as flags of equal
-standing.
+## GPT and Codex tendencies
+
+Corpus research links GPT-written text to excess style vocabulary. Examples
+include `delve`, framed forms of `underscore`, `showcase`, `intricate`,
+`meticulous`, and `pivotal`. Expert research also points to formulaic
+forms, stiff prose, low novelty, and uniform text. The checker handles the
+safe lexical cases. The editor looks for the broader tendencies without
+assuming that any one passage has a machine author.
+
+Use the plain replacement when it preserves meaning: `show`, not `showcase`;
+`complex` or `detailed`, not `intricate`; `careful`, not `meticulous`; `key`,
+not `pivotal`. Keep the technical or literal sense when the replacement is
+less precise. Repeat a necessary term instead of cycling through synonyms.
+
+The evidence, admission method, rejected candidates, and false-positive limits
+live in `docs/research/gpt-writing-tells.md`.
+
+## What remains editorial judgment
+
+No lexicon can enumerate figures of speech or formulaic structure. The checker
+frames common figurative verbs such as `holds`, `buys`, `mints`, `carries`,
+`forces`, and `lives in`; the editor hunts the rest. Apply the translation test
+from the style skill on each verb whose subject cannot do the action. If the
+literal verb loses nothing, record a finding. In the same pass, review synonym
+cycling, triplets, trailing analysis, and slogan openers. Also review pointer
+nouns, closing summaries, uniform paragraph shapes, and decorative bold.
