@@ -1,6 +1,6 @@
 ---
 name: draft
-description: "The expansion phase of `/terse:write`, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
+description: "The expansion phase of `terse:write`, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
 ---
 
 # Draft
@@ -23,9 +23,9 @@ a bare one means naming a missing fact, which you can check.
 ## Workflow
 
 1. Resolve the source: an outline file marked `status: approved`
-   from `/terse:outline`, or the user's direct request. An outline
+   from `terse:outline`, or the user's direct request. An outline
    still marked draft goes back for sign-off. For a document longer
-   than a few paragraphs with no outline, offer `/terse:write`. It
+   than a few paragraphs with no outline, offer `terse:write`. It
    runs the outline, this skill, and the gate in sequence, and
    structure is cheap to change before prose exists. Short
    pieces are in scope, not exempt. An issue, a ticket, a PR
@@ -35,10 +35,11 @@ a bare one means naming a missing fact, which you can check.
 2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
    the expansion writes in the user's measured voice, not the model's
    default. If none exists, offer to learn one from a samples directory
-   (the flow is the `style` skill's `references/voice-analysis.md`).
+   (the flow is the `style` skill's
+   `../style/references/voice-analysis.md`).
    If the user declines, continue in the `style` skill's default
    voice. Either way, load the `style` skill's rules and read
-   `${CLAUDE_PLUGIN_ROOT}/skills/style/references/claude-defaults.md`
+   `../style/references/model-defaults.md`
    before drafting. It names the chat
    habits a first draft produces, and what to do instead:
    - directness where warmth creeps in
@@ -74,7 +75,7 @@ a bare one means naming a missing fact, which you can check.
    are three. Keep an aside under six words or promote it to its own
    sentence. Put a source inline, as a link on the words it
    supports, and never in a list at the end. The `style` skill's Core
-   Ideas and `references/claude-defaults.md` hold the rest.
+   Ideas and `../style/references/model-defaults.md` hold the rest.
 4. Write the skeleton. Each section is its outline claim, stated in
    one or two sentences, plus the evidence the outline listed under a
    claim it marked disputable. With no outline, write the claims first
@@ -137,7 +138,7 @@ a bare one means naming a missing fact, which you can check.
    section leaves a non sequitur, so cut both or keep both. Run the
    checker as you go and fix findings in the section that raised
    them. Grammar is a draft-time finding within the `style` skill's
-   `references/grammar-scope.md`: correct the typo in the sentence
+   `../style/references/grammar-scope.md`: correct the typo in the sentence
    you just wrote. Shape each added sentence as you write it:
    - one point per paragraph, stated in the topic sentence
    - the known-new contract: open on what the reader has, end on the
@@ -185,7 +186,7 @@ a bare one means naming a missing fact, which you can check.
    well, so the gate knows what it inherits. That covers grammar
    corrections, any finding no flag covers, and any sentence kept
    without a recorded question. Offer the highlight preview and
-   `/terse:edit` for the final gate. If the reader needs more than
+   `terse:edit` for the final gate. If the reader needs more than
    the draft gives, the user says where, and that section expands
    under the same proof.
 

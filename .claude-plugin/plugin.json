@@ -1,7 +1,7 @@
 {
   "name": "terse",
   "version": "0.12.0",
-  "description": "Terse: a writing system for Claude. Mechanical style checks plus AI edits that keep your voice.",
+  "description": "Mechanical prose checks and writing skills that keep the author's voice.",
   "author": {
     "name": "Alastair Dawson"
   },
@@ -14,6 +14,7 @@
     "readability",
     "style",
     "claude-code",
+    "codex",
     "agent-skills"
   ]
 }

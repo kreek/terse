@@ -1,11 +1,9 @@
-# Redirecting Claude's default style
+# Redirecting model defaults
 
-Claude's
-[published system prompts](https://platform.claude.com/docs/en/release-notes/system-prompts)
-tune it for chat responses, not documents. Some of those defaults serve
-document writing; Terse overrides the others when the deliverable is
-prose. The redirect is explicit because the model applying this plugin
-is the same model those defaults shape.
+Agent hosts and language models are often tuned for chat responses, not
+documents. Some of those defaults serve document writing; Terse redirects
+the others when the deliverable is prose. The redirect is explicit because
+the same model defaults shape the agent applying this plugin.
 
 ## Defaults to keep
 
@@ -102,6 +100,6 @@ common metaphorical verbs (`holds`, `buys`, `mints`, `carries`,
 `forces`, `lives in`) in their machine shapes; the editor hunts the rest.
 Apply the translation test from the `style` skill's Core Ideas to
 every verb whose subject cannot do the action. If the literal verb
-loses nothing, the figure is a finding. When `/terse:edit` runs,
+loses nothing, the figure is a finding. When `terse:edit` runs,
 hunt these in the same pass and treat them as flags of equal
 standing.

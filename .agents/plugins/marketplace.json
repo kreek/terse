@@ -1,0 +1,20 @@
+{
+  "name": "terse",
+  "interface": {
+    "displayName": "Terse"
+  },
+  "plugins": [
+    {
+      "name": "terse",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

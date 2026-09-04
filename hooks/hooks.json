@@ -6,7 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/style-hook.mjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/style-hook.mjs\"",
+            "commandWindows": "node \"%CLAUDE_PLUGIN_ROOT%\\scripts\\style-hook.mjs\""
           }
         ]
       }

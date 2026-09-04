@@ -11,21 +11,19 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const script = join(HERE, '..', 'scripts', 'style-hook.mjs');
-const hook = (payload, env = { TERSE_HOOK: '1' }) => spawnSync(process.execPath, [script],
-	{ encoding: 'utf8', input: JSON.stringify(payload), env: { ...process.env, TERSE_HOOK: '', ...env } });
+const hook = (payload, cwd) => spawnSync(process.execPath, [script], {
+	cwd,
+	encoding: 'utf8',
+	input: JSON.stringify(payload),
+	env: { ...process.env, TERSE_HOOK: '' },
+});
 
 const dir = mkdtempSync(join(tmpdir(), 'terse-hook-'));
 const legacy = join(dir, 'legacy.md');
 writeFileSync(legacy, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
 
 describe('style-hook', () => {
-	it('stays silent unless TERSE_HOOK=1', () => {
-		const r = hook({ tool_name: 'Write', tool_input: { file_path: legacy } }, { TERSE_HOOK: '' });
-		expect(r.status).toBe(0);
-		expect(r.stderr).toBe('');
-	});
-
-	it('reports every flag on a Write', () => {
+	it('reports every flag on a Claude Write without an opt-in variable', () => {
 		const r = hook({ tool_name: 'Write', tool_input: { file_path: legacy } });
 		expect(r.status).toBe(2);
 		expect(r.stderr).toContain('[simpler-alternative] "utilize"');
@@ -76,6 +74,61 @@ describe('style-hook', () => {
 		expect(r.status).toBe(2);
 		expect(r.stderr).toContain('[grammar] "go" - use "goes"');
 		expect(r.stderr).not.toContain('could of');
+	});
+
+	it('reports only added prose from a Codex apply_patch update', () => {
+		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-'));
+		mkdirSync(join(root, 'docs'));
+		const file = join(root, 'docs', 'notes.md');
+		writeFileSync(file, 'We utilize the old path.\n\nThe new line was cleared quickly.\n');
+		const command = [
+			'*** Begin Patch',
+			'*** Update File: docs/notes.md',
+			'@@',
+			'-The new line was cleared.',
+			'+The new line was cleared quickly.',
+			'*** End Patch',
+		].join('\n');
+		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(r.status).toBe(2);
+		expect(r.stderr).toContain('[adverb] "quickly"');
+		expect(r.stderr).not.toContain('utilize');
+		expect(r.stderr).toContain('in docs/notes.md');
+	});
+
+	it('checks every markdown file added by one Codex apply_patch call', () => {
+		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-multi-'));
+		writeFileSync(join(root, 'one.md'), 'We utilize it.\n');
+		writeFileSync(join(root, 'two.markdown'), 'It was cleared quickly.\n');
+		const command = [
+			'*** Begin Patch',
+			'*** Add File: one.md',
+			'+We utilize it.',
+			'*** Add File: two.markdown',
+			'+It was cleared quickly.',
+			'*** End Patch',
+		].join('\n');
+		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(r.status).toBe(2);
+		expect(r.stderr).toContain('[simpler-alternative] "utilize"');
+		expect(r.stderr).toContain('[adverb] "quickly"');
+		expect(r.stderr).toContain('in one.md');
+		expect(r.stderr).toContain('in two.markdown');
+	});
+
+	it('stays silent for a Codex patch that only deletes prose', () => {
+		const root = mkdtempSync(join(tmpdir(), 'terse-hook-codex-delete-'));
+		writeFileSync(join(root, 'notes.md'), 'Clean prose remains.\n');
+		const command = [
+			'*** Begin Patch',
+			'*** Update File: notes.md',
+			'@@',
+			'-We utilize it.',
+			'*** End Patch',
+		].join('\n');
+		const r = hook({ tool_name: 'apply_patch', cwd: root, tool_input: { command } }, root);
+		expect(r.status).toBe(0);
+		expect(r.stderr).toBe('');
 	});
 
 	it('caps combined findings at twenty', () => {

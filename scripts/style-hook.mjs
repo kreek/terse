@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-// PostToolUse hook: after Claude writes or edits a markdown file, run the
-// checker on it and feed the flags back into the session as tool feedback.
-// The leading grammar assistants win on presence; this is Terse's answer.
-// Opt in by setting TERSE_HOOK=1 (for example in settings.json "env").
-// A Write reports the whole file. An Edit reports only the flags inside the
-// inserted text, so one changed line in a legacy document does not replay
-// every old finding. The project's .terse/config.json applies.
-// Exit 0 is silence; exit 2 returns stderr to Claude without blocking.
+// PostToolUse hook: after an agent writes or edits Markdown, run the checker
+// and return the flags as tool feedback. A full-file write reports the whole
+// file. An edit reports only findings that overlap added text, so one changed
+// line in a legacy document does not replay every old finding. The project's
+// .terse/config.json applies. Exit 0 is silence; exit 2 returns feedback.
 import { readFileSync } from 'node:fs';
+import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { checkDocument, loadConfig } from './style-check.mjs';
 
@@ -27,46 +25,101 @@ function readStdin() {
 // than once every occurrence counts. A deletion inserted nothing and reports
 // nothing. When the text cannot be found (the file moved on), the whole
 // file reports.
-function inserted(flags, raw, newString) {
-	if (typeof newString !== 'string') return flags;
-	if (newString.length === 0) return [];
+function inserted(flags, raw, fragments) {
+	if (!Array.isArray(fragments)) return flags;
+	const additions = fragments.filter((value) => typeof value === 'string' && value.length > 0);
+	if (additions.length === 0) return [];
 	const ranges = [];
-	for (let at = raw.indexOf(newString); at >= 0; at = raw.indexOf(newString, at + 1)) {
-		ranges.push([at, at + newString.length]);
+	for (const addition of additions) {
+		for (let at = raw.indexOf(addition); at >= 0; at = raw.indexOf(addition, at + 1)) {
+			ranges.push([at, at + addition.length]);
+		}
 	}
 	if (ranges.length === 0) return flags;
 	return flags.filter((f) => !f.span ||
 		ranges.some(([start, end]) => f.span[0] < end && f.span[1] > start));
 }
 
-export async function hookReport(payload) {
+function addTarget(targets, target, added) {
+	if (!target || target.action === 'Delete') return;
+	if (target.action === 'Update') target.fragments = [...added];
+	targets.push(target);
+}
+
+function patchTargets(command, cwd) {
+	if (typeof command !== 'string') return [];
+	const targets = [];
+	let target = null;
+	let added = [];
+	for (const line of command.split(/\r?\n/)) {
+		const header = /^\*\*\* (Add|Update|Delete) File: (.+)$/.exec(line);
+		if (header) {
+			addTarget(targets, target, added);
+			target = { action: header[1], displayPath: header[2].trim() };
+			added = [];
+			continue;
+		}
+		const move = /^\*\*\* Move to: (.+)$/.exec(line);
+		if (move && target) target.displayPath = move[1].trim();
+		if (target?.action === 'Update' && line.startsWith('+')) added.push(line.slice(1));
+	}
+	addTarget(targets, target, added);
+	return targets.map((item) => ({
+		...item,
+		filePath: isAbsolute(item.displayPath) ? item.displayPath : resolve(cwd, item.displayPath),
+	}));
+}
+
+function hookTargets(payload) {
 	const input = payload?.tool_input;
-	const filePath = input?.file_path;
-	if (!filePath || !/\.(?:md|markdown)$/i.test(filePath)) return null;
+	if (typeof input?.file_path === 'string' && input.file_path.length > 0) {
+		const cwd = typeof payload.cwd === 'string' ? payload.cwd : process.cwd();
+		return [{
+			displayPath: input.file_path,
+			filePath: isAbsolute(input.file_path) ? input.file_path : resolve(cwd, input.file_path),
+			fragments: payload.tool_name === 'Edit' ? [input.new_string] : undefined,
+		}];
+	}
+	if (payload?.tool_name !== 'apply_patch') return [];
+	const cwd = typeof payload.cwd === 'string' ? payload.cwd : process.cwd();
+	return patchTargets(input?.command, cwd);
+}
+
+async function checkTarget(target) {
+	if (!/\.(?:md|markdown)$/i.test(target.displayPath)) return null;
 	let raw;
 	try {
-		raw = readFileSync(filePath, 'utf8');
+		raw = readFileSync(target.filePath, 'utf8');
 	} catch {
 		return null;
 	}
-	const config = loadConfig(filePath);
-	const all = (await checkDocument(raw, { ...config, file: filePath })).flags;
-	const flags = inserted(all, raw, input.new_string);
+	const config = loadConfig(target.filePath);
+	const all = (await checkDocument(raw, { ...config, file: target.displayPath })).flags;
+	return { ...target, flags: inserted(all, raw, target.fragments) };
+}
+
+function formatReport(results) {
+	const flags = results.flatMap((result) => result.flags);
 	if (flags.length === 0) return null;
 	const lines = flags.slice(0, MAX_REPORTED).map((f) =>
 		`${f.file}:${f.line}  [${f.category}] "${f.match}" - ${f.hint}`);
 	if (flags.length > MAX_REPORTED) {
 		lines.push(`...and ${flags.length - MAX_REPORTED} more`);
 	}
-	lines.push(`terse: ${flags.length} flag(s) in ${filePath}; fix them, or ` +
-		'keep them with a reason per the style skill (quotes, ' +
-		'<!-- terse-ignore --> paragraphs, and .terse/config.json ignores ' +
-		'are already exempt)');
+	for (const result of results.filter((item) => item.flags.length > 0)) {
+		lines.push(`terse: ${result.flags.length} flag(s) in ${result.displayPath}`);
+	}
+	lines.push('Fix them, or keep them with a reason per the style skill (quotes, ' +
+		'<!-- terse-ignore --> paragraphs, and .terse/config.json ignores are already exempt).');
 	return lines.join('\n');
 }
 
+export async function hookReport(payload) {
+	const checked = await Promise.all(hookTargets(payload).map(checkTarget));
+	return formatReport(checked.filter(Boolean));
+}
+
 async function main() {
-	if (process.env.TERSE_HOOK !== '1') process.exit(0);
 	let payload;
 	try {
 		payload = JSON.parse(readStdin());

@@ -13,7 +13,7 @@ The report-only mode assesses through these lenses, in order:
   footnote's job, paragraphs holding two topics.
 - **Voice**: consistency of register and person; if an approved
   `.terse/voice.md` exists, where the document drifts from it.
-- **AI tells**: the habits in `references/claude-defaults.md` beyond
+- **AI tells**: the habits in `references/model-defaults.md` beyond
   the checker's reach (synonym cycling, closing summaries).
 - **Grammar**: note errors for the grammar-only mode; a report never
   fixes them.

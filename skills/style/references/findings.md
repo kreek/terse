@@ -102,7 +102,7 @@ finding is a marked keep.
 
 ## Modes as views
 
-`/terse:edit` is the one command over this model; the user picks the
+`terse:edit` is the one command over this model; the user picks the
 view in chat.
 
 | Direction | View |
@@ -113,7 +113,7 @@ view in chat.
 | "review it, don't edit" | report everything, led by the findings no mechanical fix covers |
 | "make it casual" | rewrite toward a tone preset, then run the gate |
 
-`/terse:draft` uses the same model at draft time: it fixes findings
+`terse:draft` uses the same model at draft time: it fixes findings
 section by section as prose lands, so the gate afterwards finds
 residue, not problems. Its stats line includes the expansion ratio,
 final words over skeleton words, beside length against target.

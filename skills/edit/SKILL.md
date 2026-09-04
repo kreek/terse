@@ -10,9 +10,9 @@ description: "The publish gate: collect every finding across readability, style,
 `EVERY REWRITE TRACES TO A FINDING. MEANING AND VOICE SURVIVE EVERY EDIT.`
 
 Run the findings contract (the `style` skill's
-`references/findings.md`) end to end: collect everything at once, then
+`../style/references/findings.md`) end to end: collect everything at once, then
 report or fix as the user directs. This is Terse's publish gate, run
-like a linter: prose written under `/terse:draft` should need little
+like a linter: prose written under `terse:draft` should need little
 repair, and imported or older text gets full repair. The checker finds,
 this skill judges and rewrites, and grammar comes last on every
 sentence it touches. Every rewrite traces to a finding, because the
@@ -28,16 +28,17 @@ every mode.
 - **report only** (`check this`, `review it, don't edit`): report the
   findings and stop. Lead with the `structure` and `voice-drift`
   findings no mechanical fix covers, assess through the `style`
-  skill's `references/review-lenses.md`, and offer the highlight
+  skill's `../style/references/review-lenses.md`, and offer the highlight
   preview. The document stays unmodified.
 - **grammar only** ("proofread", "just fix the grammar"): the mechanics
-  stage alone, under the `style` skill's `references/grammar-scope.md`.
+  stage alone, under the `style` skill's
+  `../style/references/grammar-scope.md`.
   No style opinions.
 - **tone** (`make it casual`, `simpler, grade 8`): rewrite toward a
-  preset per the `style` skill's `references/tone-presets.md`, then run
+  preset per the `style` skill's `../style/references/tone-presets.md`, then run
   the gate; a tone pass must not add new findings.
 - **trim** ("cut 15%", "this runs long"): the user sets the target as a
-  percent or a word count. A draft from `/terse:draft` carries a
+  percent or a word count. A draft from `terse:draft` carries a
   working note of reader questions. Cut the sentences with no
   question first. Cutting is structural, so it runs like any
   `structure` finding. Propose the cuts against the reverse outline,
@@ -61,7 +62,7 @@ every mode.
    one does, add it to the config rather than skipping it by hand
    each pass.
 2. Load the `style` skill's Core Ideas and Tripwires, and its
-   `${CLAUDE_PLUGIN_ROOT}/skills/style/references/claude-defaults.md`;
+   `../style/references/model-defaults.md`;
    together they govern every rewrite.
    The defaults reference also lists trained habits the checker cannot
    catch. Hunt them in the collection read that follows: synonym
@@ -71,8 +72,9 @@ every mode.
    the list. Hunt metaphorical verbs in the same read. The checker
    frames the common ones. The style skill's translation test owns
    every other verb whose subject cannot do the action.
-3. Collect per the contract: run
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/style-check.mjs <file...>` for
+3. Resolve `<terse-root>` from this `SKILL.md` file's location: the
+   plugin root is two directories above it. Then run
+   `node "<terse-root>/scripts/style-check.mjs" <file...>` for
    the mechanical flags, and read the document once for the `grammar`
    and `voice-drift` findings. `--max-grade N` sets the target reading
    level. A voice template or a document type that fixes a grade
@@ -105,7 +107,7 @@ every mode.
      claim instead of supporting it, and the closing section drifts
      toward summary
    - length and the outline's arithmetic: run
-     `node ${CLAUDE_PLUGIN_ROOT}/scripts/outline-check.mjs <file>`
+     `node "<terse-root>/scripts/outline-check.mjs" <file>`
      when an approved outline sits beside the document. It reports a
      missing, extra, or reordered section, a section over its budget,
      and the whole over its target, each as a `structure` finding. An
@@ -117,7 +119,7 @@ every mode.
      evidence
    - the outline's record: deviations logged during drafting count as
      decided keeps, not findings. Only undocumented drift counts
-   - omission, on a draft from `/terse:draft`: the draft is short by
+   - omission, on a draft from `terse:draft`: the draft is short by
      design, so check what it left out. Four gaps count. A disputable
      claim with no evidence. A term the reader does not own. A step
      the draft does not give the reader enough to take. A sentence
@@ -143,7 +145,7 @@ every mode.
    by impact on the reader, grouped by category within that, each with
    a `file:line` reference and a one-sentence fix. Close by naming the
    mode that fixes each category. Offer the highlight preview: run
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/render-highlights.mjs <file>`
+   `node "<terse-root>/scripts/render-highlights.mjs" <file>`
    for a self-contained, read-only page; publish it when the host
    supports pages. The page renders the checker's categories; judgment
    findings go in the chat report. Stop here.
@@ -180,7 +182,7 @@ every mode.
      - voice-drift: return to the template's register
    - **mechanics** last, on the wording that now exists: grammar,
      spelling, and punctuation, under the `style` skill's
-     `references/grammar-scope.md`.
+     `../style/references/grammar-scope.md`.
    Skip a finding only for a documented false alarm, a voice-template
    exception, or a pass on the translation test above. Keep a list of
    skips with the reason.

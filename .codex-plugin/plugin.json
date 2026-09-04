@@ -1,0 +1,38 @@
+{
+  "name": "terse",
+  "version": "0.12.0",
+  "description": "Mechanical prose checks and writing skills that keep the author's voice.",
+  "author": {
+    "name": "Alastair Dawson",
+    "url": "https://github.com/kreek"
+  },
+  "homepage": "https://github.com/kreek/terse",
+  "repository": "https://github.com/kreek/terse",
+  "license": "MIT",
+  "keywords": [
+    "writing",
+    "editing",
+    "readability",
+    "style",
+    "codex",
+    "agent-skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Terse",
+    "shortDescription": "Edit prose without sanding off its voice",
+    "longDescription": "Terse combines deterministic readability, grammar, and AI-tell checks with writing skills that preserve the author's voice.",
+    "developerName": "Alastair Dawson",
+    "category": "Productivity",
+    "capabilities": [
+      "Write",
+      "Edit"
+    ],
+    "websiteURL": "https://github.com/kreek/terse",
+    "defaultPrompt": [
+      "Edit this Markdown file with Terse.",
+      "Write a concise design document with Terse.",
+      "Proofread this document with Terse."
+    ]
+  }
+}

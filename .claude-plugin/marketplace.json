@@ -5,13 +5,13 @@
     "url": "https://github.com/kreek"
   },
   "metadata": {
-    "description": "Terse: a writing system for Claude.",
+    "description": "Mechanical prose checks and writing skills that keep the author's voice.",
     "version": "0.12.0"
   },
   "plugins": [
     {
       "name": "terse",
-      "description": "Mechanical style checks plus AI edits that keep your voice. Everything the classic readability editors did, on your existing Claude subscription.",
+      "description": "Mechanical prose checks plus agent edits that keep the author's voice.",
       "version": "0.12.0",
       "author": {
         "name": "Alastair Dawson"
