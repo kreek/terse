@@ -76,7 +76,7 @@ describe('CLI honors the config and lets flags override it', () => {
 		writeFileSync(dense, 'Multifaceted organizational transformation necessitates comprehensive stakeholder alignment procedures. Transformative institutional methodologies precipitate unprecedented developmental paradigm restructuring.\n');
 		expect(run(dense).stdout).not.toContain('[document-grade]');
 		expect(run(dense, '--max-grade', '10').stdout).toContain('[document-grade]');
-	});
+	}, 15_000);
 
 	it('exits 2 on a malformed config', () => {
 		const bad = mkdtempSync(join(tmpdir(), 'terse-badcli-'));

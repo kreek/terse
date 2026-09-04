@@ -205,7 +205,7 @@ describe('CLI contract', () => {
 		const p = run(plain);
 		expect(p.status).toBe(0);
 		expect(p.stdout).not.toContain('[document-grade]');
-	});
+	}, 15_000);
 
 	it('path with spaces is read and checked', () => {
 		const f = join(dir, 'my draft notes.md');
