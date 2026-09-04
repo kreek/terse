@@ -6,9 +6,11 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkText, loadConfig } from '../scripts/style-check.mjs';
 
-const script = join(import.meta.dirname, '..', 'scripts', 'style-check.mjs');
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const script = join(HERE, '..', 'scripts', 'style-check.mjs');
 const run = (...args) => spawnSync(process.execPath, [script, ...args], { encoding: 'utf8' });
 
 function project(config) {

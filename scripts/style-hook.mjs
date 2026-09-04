@@ -9,7 +9,7 @@
 // Exit 0 is silence; exit 2 returns stderr to Claude without blocking.
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { checkText, loadConfig } from './style-check.mjs';
+import { checkDocument, loadConfig } from './style-check.mjs';
 
 const MAX_REPORTED = 20;
 
@@ -39,7 +39,7 @@ function inserted(flags, raw, newString) {
 		ranges.some(([start, end]) => f.span[0] < end && f.span[1] > start));
 }
 
-export function hookReport(payload) {
+export async function hookReport(payload) {
 	const input = payload?.tool_input;
 	const filePath = input?.file_path;
 	if (!filePath || !/\.(?:md|markdown)$/i.test(filePath)) return null;
@@ -50,7 +50,7 @@ export function hookReport(payload) {
 		return null;
 	}
 	const config = loadConfig(filePath);
-	const all = checkText(raw, { ...config, file: filePath }).flags;
+	const all = (await checkDocument(raw, { ...config, file: filePath })).flags;
 	const flags = inserted(all, raw, input.new_string);
 	if (flags.length === 0) return null;
 	const lines = flags.slice(0, MAX_REPORTED).map((f) =>
@@ -65,7 +65,7 @@ export function hookReport(payload) {
 	return lines.join('\n');
 }
 
-function main() {
+async function main() {
 	if (process.env.TERSE_HOOK !== '1') process.exit(0);
 	let payload;
 	try {
@@ -75,7 +75,7 @@ function main() {
 	}
 	let report;
 	try {
-		report = hookReport(payload);
+		report = await hookReport(payload);
 	} catch (err) {
 		console.error(`terse: ${err.message}`);
 		process.exit(2);
@@ -85,4 +85,9 @@ function main() {
 	process.exit(2);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	main().catch((err) => {
+		console.error(`terse: ${err.message}`);
+		process.exitCode = 2;
+	});
+}

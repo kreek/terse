@@ -5,6 +5,9 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = fileURLToPath(new URL('.', import.meta.url));
 import { compareOutline } from '../scripts/outline-check.mjs';
 
 const outline = `---
@@ -62,7 +65,7 @@ describe('compareOutline', () => {
 
 describe('outline-check CLI', () => {
 	const dir = mkdtempSync(join(tmpdir(), 'terse-outline-'));
-	const script = join(import.meta.dirname, '..', 'scripts', 'outline-check.mjs');
+	const script = join(HERE, '..', 'scripts', 'outline-check.mjs');
 	const run = (...args) => spawnSync(process.execPath, [script, ...args], { encoding: 'utf8' });
 
 	it('finds <name>-outline.md beside the document and exits by the contract', () => {
@@ -99,7 +102,7 @@ describe('outline parsing edge cases', () => {
 
 	it('refuses to compare a document against itself', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'terse-outline-self-'));
-		const script = join(import.meta.dirname, '..', 'scripts', 'outline-check.mjs');
+		const script = join(HERE, '..', 'scripts', 'outline-check.mjs');
 		writeFileSync(join(dir, 'notes.txt'), '## A\n\nText.');
 		expect(spawnSync(process.execPath, [script, join(dir, 'notes.txt')], { encoding: 'utf8' }).status).toBe(2);
 	});

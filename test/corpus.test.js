@@ -4,9 +4,11 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkText } from '../scripts/style-check.mjs';
 
-const FIXTURES = join(import.meta.dirname, 'fixtures', 'human-prose');
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const FIXTURES = join(HERE, 'fixtures', 'human-prose');
 
 // Each entry plants exactly one tell. Recall must be total: a miss here
 // means the lexicon lost coverage it once had.
@@ -244,7 +246,7 @@ describe('edited human prose: zero lexical false positives', () => {
 	}
 });
 
-const SAMPLES = join(import.meta.dirname, '..', 'samples', 'hemingway');
+const SAMPLES = join(HERE, '..', 'samples', 'hemingway');
 
 // "Use short first paragraphs" is the second Kansas City Star rule. The
 // threshold has to clear the prose it was drawn from, so the journalism is
@@ -329,8 +331,8 @@ describe('render-highlights', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 	const doc = "Here's the thing — the cache was cleared quickly.\n\nWe utilize retries (which nobody had reviewed before the deadline arrived).";
 
-	it('conserves the prose through rendering', () => {
-		const html = renderPage(doc);
+	it('conserves the prose through rendering', async () => {
+		const html = await renderPage(doc);
 		const main = html.match(/<main>([\s\S]*?)<\/main>/)[1];
 		const text = main.replace(/<[^>]+>/g, '')
 			.replace(/&amp;/g, '&').replace(/&lt;/g, '<')
@@ -340,9 +342,9 @@ describe('render-highlights', async () => {
 		expect(lines(text)).toEqual(lines(doc));
 	});
 
-	it('renders markdown structure around the marks', () => {
+	it('renders markdown structure around the marks', async () => {
 		const md = '# Title\n\nWe **utilize** the `cache` in [docs](https://x.test/a).\n\n- first item\n- second item\n\n```\ncode here\n```';
-		const html = renderPage(md).match(/<main>([\s\S]*?)<\/main>/)[1];
+		const html = (await renderPage(md)).match(/<main>([\s\S]*?)<\/main>/)[1];
 		expect(html).toContain('<h1>Title</h1>');
 		expect(html).toMatch(/<strong><mark[^>]*>utilize<\/mark><\/strong>/);
 		expect(html).toContain('<code>cache</code>');
@@ -352,13 +354,19 @@ describe('render-highlights', async () => {
 		expect(html).not.toMatch(/^#/m);
 	});
 
-	it('marks every category present with a hint tooltip', () => {
-		const html = renderPage(doc);
+	it('marks every category present with a hint tooltip', async () => {
+		const html = await renderPage(doc);
 		expect(html).toContain('class="ai-tell');
 		expect(html).toContain('em-dash');
 		expect(html).toContain('passive-voice');
 		expect(html).toContain('aside');
 		expect(html).toMatch(/title="[^"]*state the claim plainly/);
+	});
+
+	it('paints Harper grammar spans', async () => {
+		const html = await renderPage('She go home.');
+		expect(html).toMatch(/<mark[^>]*class="grammar [^"]*"[^>]*>go<\/mark>/);
+		expect(html).toContain('title="Grammar: use &quot;goes&quot;"');
 	});
 
 	it('emits spans on every flag it paints', () => {
@@ -371,15 +379,15 @@ describe('render-highlights', async () => {
 describe('page script integrity', async () => {
 	const { renderPage } = await import('../scripts/render-highlights.mjs');
 
-	it('the emitted page script parses and the stylesheet keeps its id', () => {
-		const html = renderPage('We utilize retries quite often (more than anyone would like to admit).');
+	it('the emitted page script parses and the stylesheet keeps its id', async () => {
+		const html = await renderPage('We utilize retries quite often (more than anyone would like to admit).');
 		const src = html.match(/<script id="page-js">([\s\S]*?)<\/script>/)[1];
 		expect(() => new Function(src)).not.toThrow();
 		expect(html).toContain('<style id="page-css">');
 	});
 
-	it('the preview is read-only: no accept controls, no publish call', () => {
-		const html = renderPage('We utilize retries quite often.');
+	it('the preview is read-only: no accept controls, no publish call', async () => {
+		const html = await renderPage('We utilize retries quite often.');
 		expect(html).not.toContain('data-act=');
 		expect(html).not.toContain('artifact.publish');
 		expect(html).not.toContain('<artifact-sync>');

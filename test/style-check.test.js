@@ -104,7 +104,7 @@ describe('checkText', () => {
 	it('keeps the aside preview well-formed when emoji straddle the cut', () => {
 		const { flags } = checkText(`Ship it (${'a'.repeat(39)}🎉 and more words to pass the threshold) now.`);
 		const aside = flags.find((f) => f.category === 'aside');
-		expect(aside.match.isWellFormed()).toBe(true);
+		expect(() => encodeURIComponent(aside.match)).not.toThrow();
 	});
 
 	it('treats unpunctuated list items as separate sentences', () => {

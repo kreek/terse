@@ -7,7 +7,10 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkText, splitSentences, stripMarkdown } from '../scripts/style-check.mjs';
+
+const HERE = fileURLToPath(new URL('.', import.meta.url));
 
 // Deterministic PRNG so failures reproduce; the seed is printed on failure.
 function mulberry32(seed) {
@@ -155,7 +158,7 @@ describe('metamorphic relations', () => {
 });
 
 describe('CLI contract', () => {
-	const script = join(import.meta.dirname, '..', 'scripts', 'style-check.mjs');
+	const script = join(HERE, '..', 'scripts', 'style-check.mjs');
 	const dir = mkdtempSync(join(tmpdir(), 'terse-cli-'));
 	const run = (...args) => spawnSync(process.execPath, [script, ...args],
 		{ encoding: 'utf8' });

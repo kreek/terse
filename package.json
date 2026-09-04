@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "benchmark:grammar": "node scripts/grammar-benchmark.mjs",
     "check": "node scripts/style-check.mjs",
     "test": "vitest run test",
     "eval": "claude plugin eval . --allow-tools Bash Write Edit --json evals/results/latest.json --max-cost-usd 10 --no-publish && node scripts/eval-score.mjs evals/results/latest.json",

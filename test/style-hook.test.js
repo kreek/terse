@@ -7,8 +7,10 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const script = join(import.meta.dirname, '..', 'scripts', 'style-hook.mjs');
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const script = join(HERE, '..', 'scripts', 'style-hook.mjs');
 const hook = (payload, env = { TERSE_HOOK: '1' }) => spawnSync(process.execPath, [script],
 	{ encoding: 'utf8', input: JSON.stringify(payload), env: { ...process.env, TERSE_HOOK: '', ...env } });
 
@@ -64,6 +66,26 @@ describe('style-hook', () => {
 		expect(r.status).toBe(2);
 		expect(r.stderr.match(/\[adverb\] "quickly"/g)).toHaveLength(2);
 		expect(r.stderr).not.toContain('utilize');
+	});
+
+	it('filters async Harper findings to the inserted range', () => {
+		const f = join(dir, 'grammar-edit.md');
+		writeFileSync(f, 'She go home.\n\nWe could of shipped.\n');
+		const r = hook({ tool_name: 'Edit', tool_input: { file_path: f,
+			old_string: 'walk home', new_string: 'go home' } });
+		expect(r.status).toBe(2);
+		expect(r.stderr).toContain('[grammar] "go" - use "goes"');
+		expect(r.stderr).not.toContain('could of');
+	});
+
+	it('caps combined findings at twenty', () => {
+		const f = join(dir, 'grammar-cap.md');
+		writeFileSync(f, Array.from({ length: 25 }, () => 'She go home.').join('\n'));
+		const r = hook({ tool_name: 'Write', tool_input: { file_path: f } });
+		expect(r.status).toBe(2);
+		expect(r.stderr.match(/\[grammar\]/g)).toHaveLength(20);
+		expect(r.stderr).toContain('...and 5 more');
+		expect(r.stderr).toContain('terse: 25 flag(s)');
 	});
 
 	it('can be imported without running', async () => {

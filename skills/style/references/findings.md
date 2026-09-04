@@ -8,8 +8,10 @@ findings first, then treat each command as a view over them.
 
 A finding is what `style-check.mjs --json` emits for a flag: `file`,
 `line`, `category`, `match`, `hint`. Checker flags also include character
-spans for the highlight view. Judgment findings use the same shape, so
-one report, one preview, and one fix loop serve every category.
+spans for the highlight view. Harper findings may add `engine: "harper"`,
+the pinned `ruleId`, and a `suggestions` array. Judgment findings use the
+same required shape, so one report, one preview, and one fix loop serve
+every category.
 
 ## Categories and stages
 
@@ -23,16 +25,18 @@ one report, one preview, and one fix loop serve every category.
 | personal-pronoun | checker, under `--impersonal` | wording |
 | simpler-alternative, weak-verb, ai-tell | checker | wording |
 | em-dash | checker | wording |
-| grammar | checker (doubled words, `could of`, `its`/`their` slips, common misspellings) and model, `references/grammar-scope.md` | mechanics |
+| grammar | native checker, admitted Harper rules, and model, `references/grammar-scope.md` | mechanics |
 | voice-drift | model, against the approved template | wording |
 | structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
 
 ## Collection
 
-Collect once, before the report and before any fix. One checker run
-gathers the mechanical flags, the provable `grammar` findings among
-them. One model read emits the remaining `grammar`,
+Collect once, before the report and before any fix. The synchronous
+`checkText` API gathers native style, readability, and grammar flags.
+Executable consumers use async `checkDocument`, which adds admitted
+Harper grammar findings and applies the same suppressions. One model
+read emits the remaining `grammar`,
 `voice-drift`, and `structure` findings in the shape above. The
 `structure` findings come from a reverse outline: one line per
 paragraph stating the claim it makes, built in the same read. Audit

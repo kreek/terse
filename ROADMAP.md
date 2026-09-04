@@ -156,6 +156,13 @@ without a command.
       2026-08-19.
 - [x] The false-alarm workflow: quoted material and blockquotes stay
       silent, and `<!-- terse-ignore -->` records a keep in the file.
+- [x] A pinned offline Harper 2.7.0 grammar tier. Seven admitted rules
+      pass their positive, negative, and human-prose gates. Default
+      deterministic coverage on the 16-error grammar fixture rose from
+      3 to 6 errors. The model still owns the other 10.
+- [x] A grammar benchmark for the always-on path. On the 2026-09-02
+      development machine, the 10 KB check took 454.6 ms cold. Its
+      warm median was 7.3 ms. Both beat the 750 ms and 100 ms gates.
 - [ ] A documented CI recipe for other repos.
 
 Proof: the hook fires in a live session (pending). One external repo
@@ -163,8 +170,10 @@ gates its prose on the checker in CI.
 
 ## Milestone 6: Editor depth
 
-- [ ] Harden the grammar mode: detect the document's spelling
-      convention, test that quotes keep their original errors.
+- [x] Keep quoted grammar unchanged, including multi-paragraph quotes.
+      Offer opt-in spelling dialects with project words.
+- [ ] Detect a document's spelling convention before it suggests a
+      dialect. Explicit configuration remains the rule.
 - [ ] A before-and-after eval case per tone preset.
 - [ ] Tune the review lenses on documents from writers other than the
       author.

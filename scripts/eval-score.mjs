@@ -5,7 +5,7 @@
 // improvement across arms, which is the "demonstrable improvement" number.
 // Usage: node eval-score.mjs <aggregate-result.json>
 import { readFileSync, existsSync } from 'node:fs';
-import { checkText } from './style-check.mjs';
+import { createDocumentChecker } from './style-check.mjs';
 
 const ARM_NAMES = ['with', 'without'];
 
@@ -54,10 +54,11 @@ function isDeliverable(name, deliverables) {
 	return !RECORD_FILE.test(name);
 }
 
-function scoreArm(runs, deliverables) {
+async function scoreArm(checker, runs, deliverables) {
 	const totals = { words: 0, flags: 0, tells: 0, docs: 0, gradeSum: 0 };
 	for (const run of runs) {
-		scoreRunDocs(extractDocs(run).filter((d) => isDeliverable(d.name, deliverables)), totals);
+		await scoreRunDocs(checker,
+			extractDocs(run).filter((d) => isDeliverable(d.name, deliverables)), totals);
 	}
 	const { words, flags, tells, docs, gradeSum } = totals;
 	if (docs === 0) return null;
@@ -69,9 +70,9 @@ function scoreArm(runs, deliverables) {
 	};
 }
 
-function scoreRunDocs(docs, totals) {
+async function scoreRunDocs(checker, docs, totals) {
 	for (const doc of docs) {
-		const r = checkText(doc.content, { file: doc.name });
+		const r = await checker.checkDocument(doc.content, { file: doc.name });
 		totals.words += r.stats.words;
 		totals.flags += r.flags.length;
 		totals.tells += r.stats.aiTells;
@@ -82,22 +83,10 @@ function scoreRunDocs(docs, totals) {
 
 function fmt(n) { return n.toFixed(1); }
 
-const path = process.argv[2];
-if (!path) {
-	console.error('usage: node eval-score.mjs <aggregate-result.json>');
-	process.exit(2);
-}
-const report = JSON.parse(readFileSync(path, 'utf8'));
-const cases = report.cases ?? [];
-if (cases.length === 0) {
-	console.error('eval-score: no cases in report');
-	process.exit(2);
-}
-
-function scoreAndPrintArms(c) {
+async function scoreAndPrintArms(checker, c) {
 	const scores = {};
 	for (const arm of ARM_NAMES) {
-		scores[arm] = scoreArm(c.arms?.[arm] ?? [], c.deliverables);
+		scores[arm] = await scoreArm(checker, c.arms?.[arm] ?? [], c.deliverables);
 		if (!scores[arm]) continue;
 		const s = scores[arm];
 		console.log(`${(c.name ?? '?').padEnd(24)}${arm.padEnd(9)}` +
@@ -107,41 +96,68 @@ function scoreAndPrintArms(c) {
 	return scores;
 }
 
-let failures = 0;
-let scoredAny = false;
-console.log('case                    arm      docs  flags/kw  AI tells  grade');
-for (const c of cases) {
-	const scores = scoreAndPrintArms(c);
-	if (scores.with || scores.without) scoredAny = true;
-	const w = scores.with, wo = scores.without;
-	if (w && w.aiTells > 0) {
-		console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);
-		failures++;
+async function main() {
+	const path = process.argv[2];
+	if (!path) {
+		console.error('usage: node eval-score.mjs <aggregate-result.json>');
+		process.exitCode = 2;
+		return;
 	}
-	// A grammar-scope case must not ADD style flags; equality is correct
-	// behavior (the pass leaves style alone). Style cases must be below the
-	// without arm, except when both arms come out clean: zero cannot improve
-	// on zero, and a clean with-arm is the goal, not a failure.
-	const grammarScope = (c.tags ?? []).includes('grammar');
-	const worse = grammarScope
-		? w?.flagsPerKword > wo?.flagsPerKword
-		: w?.flagsPerKword > 0 && w?.flagsPerKword >= wo?.flagsPerKword;
-	if (w && wo && worse) {
-		console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
-			`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
-		failures++;
+	const report = JSON.parse(readFileSync(path, 'utf8'));
+	const cases = report.cases ?? [];
+	if (cases.length === 0) {
+		console.error('eval-score: no cases in report');
+		process.exitCode = 2;
+		return;
 	}
-	if (w && wo) {
-		console.log(`  delta ${c.name}: ${fmt(wo.flagsPerKword - w.flagsPerKword)} ` +
-			`fewer flags/kword with the plugin`);
+
+	const checker = createDocumentChecker();
+	try {
+		let failures = 0;
+		let scoredAny = false;
+		console.log('case                    arm      docs  flags/kw  AI tells  grade');
+		for (const c of cases) {
+			const scores = await scoreAndPrintArms(checker, c);
+			if (scores.with || scores.without) scoredAny = true;
+			const w = scores.with, wo = scores.without;
+			if (w && w.aiTells > 0) {
+				console.log(`  FAIL ${c.name}: with-plugin output contains ${w.aiTells} AI tell(s)`);
+				failures++;
+			}
+			// A grammar-scope case must not ADD style flags; equality is correct
+			// behavior (the pass leaves style alone). Style cases must be below the
+			// without arm, except when both arms come out clean: zero cannot improve
+			// on zero, and a clean with-arm is the goal, not a failure.
+			const grammarScope = (c.tags ?? []).includes('grammar');
+			const worse = grammarScope
+				? w?.flagsPerKword > wo?.flagsPerKword
+				: w?.flagsPerKword > 0 && w?.flagsPerKword >= wo?.flagsPerKword;
+			if (w && wo && worse) {
+				console.log(`  FAIL ${c.name}: with-plugin flags/kword (${fmt(w.flagsPerKword)}) ` +
+					`${grammarScope ? 'above' : 'not below'} without (${fmt(wo.flagsPerKword)})`);
+				failures++;
+			}
+			if (w && wo) {
+				console.log(`  delta ${c.name}: ${fmt(wo.flagsPerKword - w.flagsPerKword)} ` +
+					`fewer flags/kword with the plugin`);
+			}
+		}
+
+		if (!scoredAny) {
+			console.error('eval-score: no produced .md files found in the report; ' +
+				'run the eval with --keep-temp or check the aggregate schema');
+			process.exitCode = 2;
+			return;
+		}
+		console.log(failures === 0 ? 'eval-score: improvement demonstrated'
+			: `eval-score: ${failures} acceptance failure(s)`);
+		process.exitCode = failures === 0 ? 0 : 1;
+	} finally {
+		await checker.dispose();
 	}
 }
 
-if (!scoredAny) {
-	console.error('eval-score: no produced .md files found in the report; ' +
-		'run the eval with --keep-temp or check the aggregate schema');
-	process.exit(2);
-}
-console.log(failures === 0 ? 'eval-score: improvement demonstrated'
-	: `eval-score: ${failures} acceptance failure(s)`);
-process.exit(failures === 0 ? 0 : 1);
+main().catch((err) => {
+	console.error(`eval-score: ${err.message}`);
+	process.exitCode = 2;
+});

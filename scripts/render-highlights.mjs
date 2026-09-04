@@ -7,7 +7,7 @@
 // Usage: node render-highlights.mjs <file> [--out page.html] [--max-grade N]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { checkText } from './style-check.mjs';
+import { checkDocument, loadConfig } from './style-check.mjs';
 
 const CATEGORIES = {
 	'very-hard-sentence': 'Very hard sentence',
@@ -156,8 +156,10 @@ mark.u-${cat} { text-decoration-line: underline; text-decoration-color: var(--c-
 .chip.${cat} i { background: var(--c-${cat}); }`;
 }
 
-export function renderPage(rawText, { file = 'document', maxGrade } = {}) {
-	const { flags, stats } = checkText(rawText, { maxGrade, file });
+export async function renderPage(rawText, { file = 'document', maxGrade,
+		grammar, ignore } = {}) {
+	const { flags, stats } = await checkDocument(rawText,
+		{ maxGrade, file, grammar, ignore });
 	const body = renderMarkdown(
 		buildRuns(rawText, flags).map((r) => runHtml(r, flags)).join(''));
 	const score = qualityScore(stats, flags.length);
@@ -266,7 +268,7 @@ document.querySelector('nav').addEventListener('click', (e) => {
 </script>`;
 }
 
-function main() {
+async function main() {
 	const args = process.argv.slice(2);
 	const opt = (name) => {
 		const i = args.indexOf(name);
@@ -279,11 +281,17 @@ function main() {
 		console.error('usage: node render-highlights.mjs <file> [--out page.html] [--max-grade N]');
 		process.exit(2);
 	}
-	const html = renderPage(readFileSync(file, 'utf8'),
-		{ file, maxGrade: maxGrade ? Number(maxGrade) : undefined });
+	const config = loadConfig(file);
+	const html = await renderPage(readFileSync(file, 'utf8'),
+		{ ...config, file, maxGrade: maxGrade ? Number(maxGrade) : config.maxGrade });
 	const target = out ?? file.replace(/\.\w+$/, '') + '.terse.html';
 	writeFileSync(target, html);
 	console.log(target);
 }
 
-if (process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]))) main();
+if (process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]))) {
+	main().catch((err) => {
+		console.error(`render-highlights: ${err.message}`);
+		process.exitCode = 2;
+	});
+}

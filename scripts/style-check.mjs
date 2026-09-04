@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // Terse's mechanical style checker: deterministic pattern matching, word
-// lists, and readability arithmetic. No AI, no network, no dependencies.
+// lists, and readability arithmetic. No AI, network, or runtime package install.
 // Usage: node style-check.mjs <file...> [--max-grade N] [--impersonal] [--json]
 // A project's .terse/config.json (found by walking up from each file) sets
 // the defaults: { maxGrade, impersonal, ignore, targets }. Flags override it.
 import { readFileSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
+import { createGrammarPool } from './grammar-check.mjs';
 
 const HARD_GRADE = 10; // document grade target; also the hard-sentence floor
 // Sentence flags are length-led, calibrated against 514 sentences of
@@ -494,6 +495,7 @@ const MISSPELLINGS = {
 	lisence: 'license', millenium: 'millennium', miniscule: 'minuscule',
 	pronounciation: 'pronunciation', reccomend: 'recommend',
 	seige: 'siege', tendancy: 'tendency', useable: 'usable',
+	quater: 'quarter',
 };
 delete MISSPELLINGS.necessary;
 
@@ -903,6 +905,18 @@ function quotedRanges(text) {
 			ranges.push([base + m.index, base + m.index + m[0].length - 1]);
 		}
 	}
+	// A quotation may span paragraphs. Only extend a quote across a blank line
+	// when its opening mark begins a prose block and its closing mark ends one;
+	// this avoids letting a stray unmatched mark exempt the rest of a document.
+	for (const opener of text.matchAll(/(?:^|\n[ \t]*\n)[ \t]*(?<mark>["“])/g)) {
+		const start = opener.index + opener[0].lastIndexOf(opener.groups.mark);
+		const closeMark = opener.groups.mark === '“' ? '”' : '"';
+		const tail = text.slice(start + 1);
+		const close = new RegExp(`${closeMark}(?=[ \\t]*(?:\\n[ \\t]*\\n|$))`).exec(tail);
+		if (!close) continue;
+		const end = start + 1 + close.index;
+		if (/\n[ \t]*\n/.test(text.slice(start, end))) ranges.push([start, end]);
+	}
 	return ranges;
 }
 
@@ -934,6 +948,17 @@ export function loadConfig(filePath) {
 function isIgnored(ignore, flag) {
 	return ignore.includes(flag.category) ||
 		ignore.includes(`${flag.category}:${flag.match}`);
+}
+
+function filterFindings(rawText, text, flags, ignore) {
+	const suppressions = collectSuppressions(rawText);
+	const quoted = quotedRanges(text);
+	const lines = text.split('\n');
+	const inBlockquote = (line) => /^[ \t]*>/.test(lines[line - 1] ?? '');
+	return flags.filter((f) =>
+		!isSuppressed(suppressions, f) && !isIgnored(ignore, f) &&
+		!(QUOTED_EXEMPT.has(f.category) && f.span &&
+			(inQuotedRange(quoted, f.span) || inBlockquote(f.line))));
 }
 
 export function checkText(rawText,
@@ -1002,15 +1027,67 @@ export function checkText(rawText,
 		allWords.push(...words);
 		sentenceLengths.push(words.length);
 	}
-	const suppressions = collectSuppressions(rawText);
-	const quoted = quotedRanges(text);
-	const lines = text.split('\n');
-	const inBlockquote = (line) => /^[ \t]*>/.test(lines[line - 1] ?? '');
-	const kept = dedupeTells(flags).filter((f) =>
-		!isSuppressed(suppressions, f) && !isIgnored(ignore, f) &&
-		!(QUOTED_EXEMPT.has(f.category) && f.span &&
-			(inQuotedRange(quoted, f.span) || inBlockquote(f.line))));
+	const kept = filterFindings(rawText, text, dedupeTells(flags), ignore);
 	return { flags: kept, stats: docStats(allWords, sentenceLengths, kept, targets) };
+}
+
+function replacementOf(flag) {
+	if (flag.suggestions?.length === 1) return flag.suggestions[0];
+	return /^use "([^"]+)"$/.exec(flag.hint)?.[1];
+}
+
+function overlaps(a, b) {
+	return a.span && b.span && a.span[0] < b.span[1] && b.span[0] < a.span[1];
+}
+
+function mergeGrammarFindings(nativeFlags, harperFlags) {
+	const merged = [...nativeFlags];
+	for (const harper of harperFlags) {
+		const replacement = replacementOf(harper);
+		const duplicate = replacement && nativeFlags.some((native) =>
+			native.category === 'grammar' && overlaps(native, harper) &&
+			replacementOf(native) === replacement);
+		if (!duplicate) merged.push(harper);
+	}
+	return merged;
+}
+
+async function checkDocumentWithPool(pool, rawText, options = {}) {
+	const base = checkText(rawText, options);
+	const ignore = Array.isArray(options.ignore) ? options.ignore : [];
+	const lineAt = makeLineIndex(rawText);
+	const harper = (await pool.check(rawText, options)).map((flag) => ({
+		...flag,
+		line: lineAt(flag.span[0]),
+	}));
+	const kept = filterFindings(rawText, stripMarkdown(rawText), harper, ignore);
+	const flags = mergeGrammarFindings(base.flags, kept);
+	return { flags, stats: { ...base.stats,
+		grammar: flags.filter((f) => f.category === 'grammar').length } };
+}
+
+// A reusable checker keeps one Harper WASM linter per effective grammar
+// configuration. Executables that process several files own and dispose it;
+// one-shot callers use checkDocument below.
+export function createDocumentChecker() {
+	const pool = createGrammarPool();
+	return {
+		checkDocument(rawText, options = {}) {
+			return checkDocumentWithPool(pool, rawText, options);
+		},
+		dispose() {
+			return pool.dispose();
+		},
+	};
+}
+
+export async function checkDocument(rawText, options = {}) {
+	const checker = createDocumentChecker();
+	try {
+		return await checker.checkDocument(rawText, options);
+	} finally {
+		await checker.dispose();
+	}
 }
 
 // A phrase and a frame can match the same words ("it is worth noting" hits
@@ -1066,7 +1143,7 @@ function docStats(words, sentenceLengths, flags, targets = {}) {
 	};
 }
 
-function main() {
+async function main() {
 	const args = process.argv.slice(2);
 	const files = [];
 	let json = false;
@@ -1087,48 +1164,64 @@ function main() {
 	if (files.length === 0 || Number.isNaN(maxGrade) || badArg) {
 		console.error('usage: node style-check.mjs <file...> ' +
 			'[--max-grade N] [--impersonal] [--json]');
-		process.exit(2);
+		process.exitCode = 2;
+		return;
 	}
 	let total = 0;
 	const results = [];
-	for (const file of files) {
-		let raw;
-		try {
-			raw = readFileSync(file, 'utf8');
-		} catch (err) {
-			console.error(`style-check: cannot read ${file}: ${err.code ?? err.message}`);
-			process.exit(2);
+	const checker = createDocumentChecker();
+	try {
+		for (const file of files) {
+			let raw;
+			try {
+				raw = readFileSync(file, 'utf8');
+			} catch (err) {
+				console.error(`style-check: cannot read ${file}: ${err.code ?? err.message}`);
+				process.exitCode = 2;
+				return;
+			}
+			let config;
+			try {
+				config = loadConfig(file);
+			} catch (err) {
+				console.error(`style-check: ${err.message}`);
+				process.exitCode = 2;
+				return;
+			}
+			const opts = { ...config, file,
+				maxGrade: maxGrade ?? config.maxGrade ?? HARD_GRADE,
+				impersonal: impersonal ?? config.impersonal ?? false };
+			let result;
+			try {
+				result = await checker.checkDocument(raw, opts);
+			} catch (err) {
+				console.error(`style-check: ${err.message}`);
+				process.exitCode = 2;
+				return;
+			}
+			const { flags, stats } = result;
+			const gradeExceeded = docGradeExceeded(stats, opts.maxGrade);
+			total += flags.length + (gradeExceeded ? 1 : 0);
+			results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });
+			if (json) continue;
+			printFlags(flags);
+			if (gradeExceeded) {
+				console.log(`${file}  [document-grade] "grade ${stats.grade}, target below ` +
+					`${opts.maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
+			}
+			console.log(`${file}: ${stats.words} words, ~${stats.readingTimeMinutes} min read, ` +
+				`grade ${stats.grade}; adverbs ${stats.adverbs.count}/${stats.adverbs.target}, ` +
+				`passive ${stats.passive.count}/${stats.passive.target}, ` +
+				`qualifiers ${stats.qualifiers.count}/${stats.qualifiers.target}, ` +
+				`AI tells ${stats.aiTells}, grammar ${stats.grammar}, ` +
+				`hard sentences ${stats.hardSentences}`);
 		}
-		let config;
-		try {
-			config = loadConfig(file);
-		} catch (err) {
-			console.error(`style-check: ${err.message}`);
-			process.exit(2);
-		}
-		const opts = { ...config, file,
-			maxGrade: maxGrade ?? config.maxGrade ?? HARD_GRADE,
-			impersonal: impersonal ?? config.impersonal ?? false };
-		const { flags, stats } = checkText(raw, opts);
-		const gradeExceeded = docGradeExceeded(stats, opts.maxGrade);
-		total += flags.length + (gradeExceeded ? 1 : 0);
-		results.push({ file, flags, stats, docGradeExceeded: gradeExceeded });
-		if (json) continue;
-		printFlags(flags);
-		if (gradeExceeded) {
-			console.log(`${file}  [document-grade] "grade ${stats.grade}, target below ` +
-				`${opts.maxGrade}" - swap five-dollar words for plain ones and split dense sentences`);
-		}
-		console.log(`${file}: ${stats.words} words, ~${stats.readingTimeMinutes} min read, ` +
-			`grade ${stats.grade}; adverbs ${stats.adverbs.count}/${stats.adverbs.target}, ` +
-			`passive ${stats.passive.count}/${stats.passive.target}, ` +
-			`qualifiers ${stats.qualifiers.count}/${stats.qualifiers.target}, ` +
-			`AI tells ${stats.aiTells}, grammar ${stats.grammar}, ` +
-			`hard sentences ${stats.hardSentences}`);
+	} finally {
+		await checker.dispose();
 	}
 	if (json) console.log(JSON.stringify(results, null, 2));
 	else console.log(total === 0 ? 'style-check: clean' : `style-check: ${total} flag(s)`);
-	process.exit(total === 0 ? 0 : 1);
+	process.exitCode = total === 0 ? 0 : 1;
 }
 
 function printFlags(flags) {
@@ -1137,4 +1230,9 @@ function printFlags(flags) {
 	}
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	main().catch((err) => {
+		console.error(`style-check: ${err.message}`);
+		process.exitCode = 2;
+	});
+}
