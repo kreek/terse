@@ -6,6 +6,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The pointer noun joins the `ai-tell` frames: `this approach`,
+  `that split`, `these trade-offs`, a demonstrative on a noun that
+  stands in for the previous paragraph. The hint says to name the
+  thing. The relative clause (`the comma that split the sentence`)
+  stays silent. The `style` skill names the fault under the
+  particular-not-the-abstraction rule, with a tripwire.
+
 ## [0.12.0] (2026-09-01)
 
 ### Added

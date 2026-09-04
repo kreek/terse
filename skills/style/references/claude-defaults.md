@@ -54,6 +54,9 @@ them; they are model tendencies and need active suppression when editing:
   checker happens to list. Open with a connection to the paragraph
   before, or state the parts (`Terse has two parts:`), and keep the
   clipped verdict for a closer after a developed point.
+- The pointer noun: `this approach`, `that split`, `this shift`
+  standing in for the previous paragraph. The reader has to rebuild
+  what it points at. Name the thing instead.
 - A closing summary that restates what the reader just read.
 - Mid-sentence bold for emphasis.
 - Citations collected in a sources or references list at the end,
@@ -69,6 +72,9 @@ The checker's `ai-tell` category now catches the lexical tells:
   and the metaphor soup (`happy path`, `blast radius`, `spaghetti code`)
 - the reframe structures: `it's not X, it's Y` and its `isn't about`
   and em-dash variants, `not only X but also Y`
+- the pointer nouns: `this approach`, `that split`,
+  `these trade-offs`, with the relative clause
+  (`the comma that split the sentence`) left silent
 - signposting and document metadiscourse: `note that`,
   `keep in mind`, `in this document we`, `this section describes`,
   `let's dive`, and the closing summary announced (`in summary`)

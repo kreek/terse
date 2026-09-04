@@ -225,6 +225,9 @@ describe('checkText', () => {
 		expect(stats.aiTells).toBe(0);
 		expect(checkText('He noted the worth of the change.').stats.aiTells).toBe(0);
 		expect(checkText('This is an important note.').stats.aiTells).toBe(0);
+		// a relative clause, not a pointer noun
+		expect(checkText('The comma that split the sentence stays.').stats.aiTells).toBe(0);
+		expect(checkText('The split exists because a model cannot judge its own prose.').stats.aiTells).toBe(0);
 	});
 
 	it('does not read "rather than" comparisons as hedges', () => {

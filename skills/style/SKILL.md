@@ -33,7 +33,11 @@ shares.
    the rule behind Hemingway's narrator finding abstract words obscene
    beside "the concrete names of villages, the numbers of roads". Keep
    an abstraction only when it names a category the reader will meet
-   again.
+   again. The commonest abstraction is the pointer noun:
+   `this approach`, `that split`, `this pattern`. It stands in for
+   the previous paragraph, and the reader has to hold it in mind and
+   match it back. Repeat the thing it stands for:
+   `here is what the checker catches`, not `here is that split`.
 4. **Say the action outright.** A stock figure (`earns its place`,
    `moves the needle`, `does the heavy lifting`) is a fancy phrase the
    way a five-dollar word is a fancy word. The reader must translate
@@ -124,6 +128,7 @@ three groups:
 | "The turn of phrase reads better than the plain claim" | State the decision or action with its literal verb. | The figure explains a mechanism the reader has not seen, or an approved voice template uses it. |
 | "The verb is ordinary, not a listed figure" | Run the translation test: if the subject cannot literally do the action, write the literal verb. | The verb is literal here, or the figure explains a mechanism the reader has not met. |
 | "The bare noun is shorter (`a rename`, `the deploy`)" | Give the action a gerund or a full clause. | The noun is the domain's own term: `a commit`, `a build`, `a release`. |
+| "`This approach` saves repeating the last paragraph" | Name the thing: `the checker and the skills`, `the outline and the skeleton`. | The noun names a thing the reader has met under that name: `this commit`, `that branch`. |
 | "The flagged word is what this domain calls the thing" | Swap the inflated word for the plain claim. | The word is literal here: a real journey, a real landscape, the plumbing under a sink. Keep it and name the keep. |
 | "Leave it implicit; the reader will infer it" | State the fact, the number, or the requirement outright. Omission creates pressure in fiction, where the reader supplies the feeling; in a document it leaves a hole the reader fills with a guess. | The material is out of scope, and the document says so. |
 | "The opening needs to set the scene first" | Open on the fact the reader came for; move the setup below it. | The genre opens on a scene, and the outline placed the answer accordingly. |

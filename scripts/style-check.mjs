@@ -311,6 +311,14 @@ const AI_TELL_REGEXES = [
 	{ re: /\bspaghetti\s+code\b/gi },
 	{ re: /\bjust\s+plumbing\b|\bplumbing\s+of\b/gi },
 	{ re: /\bbottom\s+line\s*[:,]|\bthe\s+bottom\s+line\s+is\b/gi },
+	// the pointer noun: a demonstrative on a noun that stands in for the
+	// previous paragraph, so the reader must rebuild what it points at.
+	// The lookahead keeps the relative clause silent: "the comma that
+	// split the sentence" is a comma, not a pointer.
+	{ re: /\b(?:this|that)\s+(?:approach|split|shift|move|pattern|distinction|framing|tension|dynamic|nuance|insight|asymmetry|mismatch|trade-?off|subtlety|wrinkle|twist)\b(?!\s+(?:the|a|an|it|them|us|you|your|its|their|his|her|my|our|into|up|off|out|away)\b)/gi,
+		hint: 'a pointer noun; name the thing it stands for' },
+	{ re: /\b(?:these|those)\s+(?:approaches|splits|shifts|moves|patterns|distinctions|framings|tensions|dynamics|nuances|insights|asymmetries|mismatches|trade-?offs|subtleties|wrinkles|twists)\b/gi,
+		hint: 'a pointer noun; name the things it stands for' },
 ];
 
 const AI_TELL_PATTERNS = [
@@ -821,12 +829,12 @@ function checkLexicon(sentence, flags, file, line, impersonal) {
 		pushMatches(sentence, re, flags, { file, line,
 			category: 'simpler-alternative', match: phrase, hint: `use "${simpler}"` });
 	}
-	for (const { re } of AI_TELL_PATTERNS) {
+	for (const { re, hint } of AI_TELL_PATTERNS) {
 		// report the surface form, so "delved" reads as itself, not "delve"
 		for (const m of sentence.matchAll(re)) {
 			flags.push({ file, line, category: 'ai-tell', _re: re,
 				match: m[0].toLowerCase().replace(/\s+/g, ' '),
-				hint: 'an AI tell; state the claim plainly' });
+				hint: hint ?? 'an AI tell; state the claim plainly' });
 		}
 	}
 	for (const { phrase, verb, re } of WEAK_VERB_PATTERNS) {

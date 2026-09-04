@@ -61,6 +61,10 @@ const LABELED_TELLS = [
 	{ text: 'Each option carries a risk.', tell: 'carries a risk' },
 	{ text: 'A booked date is what makes the plan run.', tell: 'what makes the plan run' },
 	{ text: 'The uptime is a testament to the design.', tell: 'testament to' },
+	// the pointer noun standing in for the previous paragraph
+	{ text: 'Here is that split on a real paragraph.', tell: 'that split' },
+	{ text: 'This approach has two drawbacks.', tell: 'this approach' },
+	{ text: 'Those trade-offs decide the design.', tell: 'those trade-offs' },
 	{ text: 'The codebase is a tapestry of styles.', tell: 'tapestry of' },
 	{ text: 'That lives in the realm of speculation.', tell: 'realm of' },
 	{ text: 'The security landscape shifted this year.', tell: 'security landscape' },
