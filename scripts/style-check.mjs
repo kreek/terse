@@ -2,9 +2,11 @@
 // Terse's mechanical style checker: deterministic pattern matching, word
 // lists, and readability arithmetic. No AI, network, or runtime package install.
 // Usage: node style-check.mjs <file...> [--max-grade N] [--impersonal] [--json]
-// A project's .terse/config.json (found by walking up from each file) sets
-// the defaults: { maxGrade, impersonal, ignore, targets }. Flags override it.
+// The personal ~/.terse/config.json and the nearest project .terse/config.json
+// above each file set the defaults: { maxGrade, impersonal, ignore, targets }.
+// The project layers over the personal voice; flags override both.
 import { readFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { createGrammarPool } from './grammar-check.mjs';
@@ -943,26 +945,81 @@ function inQuotedRange(ranges, span) {
 	return ranges.some(([a, b]) => span[0] > a && span[1] <= b);
 }
 
-// The nearest .terse/config.json above the file, or {} when there is none.
-// Keys: maxGrade (number), impersonal (boolean), ignore (an array of
-// category names, or "category:match" for one finding within a category),
-// and targets ({ adverbsPerKword, passivePerKword, qualifiersPerKword }).
-export function loadConfig(filePath) {
+// The effective config for a file: the personal <home>/.terse/config.json,
+// with the nearest project .terse/config.json above the file layered over it.
+// Returns {} when neither exists. Keys: maxGrade (number), impersonal
+// (boolean), ignore (an array of category names, or "category:match" for one
+// finding within a category), targets ({ adverbsPerKword, passivePerKword,
+// qualifiersPerKword }), grammar (see grammar-check.mjs), and personal: a
+// project that sets it to false, or a null home, reads the project config
+// alone. Throws, naming the file, when a config is not a JSON object or
+// personal is not a boolean.
+export function loadConfig(filePath, home = homeFolder()) {
+	const personalPath = home ? join(home, '.terse', 'config.json') : null;
+	const projectPath = findProjectConfig(filePath, personalPath);
+	const project = projectPath ? readConfig(projectPath) : {};
+	if (project.personal === false || !personalPath) return project;
+	return layerConfigs(readConfig(personalPath), project);
+}
+
+// os.homedir() throws in a container with no HOME and no passwd entry for the
+// user. The checker still runs there, on the project config alone.
+function homeFolder() {
+	try {
+		return homedir();
+	} catch {
+		return null;
+	}
+}
+
+// The nearest .terse/config.json above the file, or null. The walk stops at
+// the personal config: a home folder is not a project.
+function findProjectConfig(filePath, personalPath) {
 	let dir = dirname(resolve(filePath));
 	for (;;) {
 		const candidate = join(dir, '.terse', 'config.json');
-		if (existsSync(candidate)) {
-			try {
-				return JSON.parse(readFileSync(candidate, 'utf8'));
-			} catch (err) {
-				throw new Error(`${candidate}: ${err.message}`);
-			}
-		}
+		if (candidate === personalPath) return null;
+		if (existsSync(candidate)) return candidate;
 		const parent = dirname(dir);
-		if (parent === dir) return {};
+		if (parent === dir) return null;
 		dir = parent;
 	}
 }
+
+function readConfig(path) {
+	if (!existsSync(path)) return {};
+	let config;
+	try {
+		config = JSON.parse(readFileSync(path, 'utf8'));
+	} catch (err) {
+		throw new Error(`${path}: ${err.message}`);
+	}
+	if (!config || typeof config !== 'object' || Array.isArray(config)) {
+		throw new Error(`${path}: must be a JSON object`);
+	}
+	if ('personal' in config && typeof config.personal !== 'boolean') {
+		throw new Error(`${path}: personal must be true or false`);
+	}
+	return config;
+}
+
+// Project keys replace personal ones, except the two a voice accumulates:
+// the ignore lists combine, and targets merge rate by rate. A project can
+// therefore add keeps to a personal voice but not remove them.
+function layerConfigs(personal, project) {
+	const layered = { ...personal, ...project };
+	if ('ignore' in personal || 'ignore' in project) {
+		layered.ignore = [...new Set([...asList(personal.ignore), ...asList(project.ignore)])];
+	}
+	if ('targets' in personal || 'targets' in project) {
+		layered.targets = { ...asRecord(personal.targets), ...asRecord(project.targets) };
+	}
+	return layered;
+}
+
+const asList = (value) => (Array.isArray(value) ? value : []);
+const asRecord = (value) =>
+	(value && typeof value === 'object' && !Array.isArray(value) ? value : {});
 
 function isIgnored(ignore, flag) {
 	return ignore.includes(flag.category) ||
