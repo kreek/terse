@@ -54,14 +54,18 @@ every mode.
 
 ## Workflow
 
-1. If `.terse/voice.md` exists with `status: approved`, load it: its
-   exceptions suppress matching findings, and its measured ranges bound
-   every rewrite. Ignore a `draft` template and say so. The checker
-   reads the mechanical half of those exceptions from
-   `.terse/config.json`: the grade, the ignored categories, and the
+1. Load the first approved voice template: the project's
+   `.terse/voice.md`, then `~/.terse/voice.md` unless the project's
+   `.terse/config.json` sets `"personal": false`. Its exceptions
+   suppress matching findings, and its measured ranges bound every
+   rewrite. Each habit it lists to drop is a `voice-drift` finding
+   wherever the document shows it. Ignore a `draft` template and say
+   so. The checker reads
+   the mechanical half of those exceptions from the `config.json`
+   files beside them: the grade, the ignored categories, and the
    rates. A finding the template covers should not reach you. When
-   one does, add it to the config rather than skipping it by hand
-   each pass.
+   one does, add it to the `config.json` beside the template rather
+   than skipping it by hand each pass.
 2. Load the `style` skill's Core Ideas and Tripwires, and its
    `../style/references/model-defaults.md`;
    together they govern every rewrite.

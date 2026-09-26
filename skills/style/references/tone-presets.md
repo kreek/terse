@@ -13,9 +13,9 @@ Workflow:
 
 1. Run the checker (with `--max-grade <target>` for "simpler") to
    record the baseline flags and stats before touching the document.
-2. Load an approved `.terse/voice.md`. A tone shift moves within the
-   author's voice, not out of it: their vocabulary register and
-   exception list still hold.
+2. Load the approved voice template, as the `style` skill finds it.
+   A tone shift moves within the author's voice, not out of it: their
+   vocabulary register and exception list still hold.
 3. Rewrite sentence by sentence toward the preset. Rules that survive
    every preset:
    - claims, facts, and their hedging state are invariant; "confident"

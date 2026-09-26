@@ -32,11 +32,11 @@ a bare one means naming a missing fact, which you can check.
    description, or a comment under 200 words skips the skeleton
    checkpoint and the whole-document read. It takes the voice, the
    constraints, the skeleton, and the expansion.
-2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
-   the expansion writes in the user's measured voice, not the model's
-   default. If none exists, offer to learn one from a samples directory
-   (the flow is the `style` skill's
-   `../style/references/voice-analysis.md`).
+2. Load the voice: the first approved template of the project's
+   `.terse/voice.md` and `~/.terse/voice.md`, as the `style` skill
+   finds it. With one, the expansion
+   writes in the user's measured voice, not the model's default. With
+   neither, offer to learn one with the Terse voice skill.
    If the user declines, continue in the `style` skill's default
    voice. Either way, load the `style` skill's rules and read
    `../style/references/model-defaults.md`

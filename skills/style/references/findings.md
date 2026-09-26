@@ -27,7 +27,7 @@ every category.
 | em-dash | checker | wording |
 | grammar | native checker, admitted Harper rules, and model, `references/grammar-scope.md` | mechanics |
 | quote-unsourced, quote-unverified, quote-link-plain | quote checker (`scripts/quote-check.mjs`) | mechanics |
-| voice-drift | model, against the approved template | wording |
+| voice-drift | model, against the approved template: its register, its measured ranges, and each habit it lists to drop | wording |
 | structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
 
@@ -64,10 +64,11 @@ Four layers mark keeps before a finding reaches the report or the loop:
 1. The checker itself. Lexical findings inside quotes and blockquotes
    never emit. A `<!-- terse-ignore -->` line in the file suppresses
    the next paragraph's findings, all of them or by category. The
-   project's `.terse/config.json` removes whole categories, or one
-   finding within a category, everywhere.
-2. An approved `.terse/voice.md`: its exceptions remove matching
-   findings, named as covered.
+   `.terse/config.json` files, the project's layered over the personal
+   one in `~/.terse`, remove whole categories, or one finding within a
+   category, everywhere.
+2. The approved voice template, as the `style` skill finds it: its
+   exceptions remove matching findings, named as covered.
 3. The `style` skill's tripwires: matching findings stay listed,
    marked as false alarms with the table's reason.
 4. The translation test, on `ai-tell` findings from a frame: the

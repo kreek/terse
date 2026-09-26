@@ -137,13 +137,14 @@ three groups:
 
 ## The user's voice
 
-If the project has `.terse/voice.md` with `status: approved`, that
-template is the author's signed-off voice. Its exceptions override
-this skill's rules where they conflict. Its measured ranges (sentence
-length, grade, hedging rate) bound any prose written or edited for
-that author.
-The Terse draft skill offers to build the template from writing samples
-(`references/voice-analysis.md`).
+The author's signed-off voice is the first template marked
+`status: approved` of two: the project's `.terse/voice.md`, then the
+personal `~/.terse/voice.md`. A project whose `.terse/config.json` sets
+`"personal": false` skips the personal one. Its exceptions override this skill's
+rules where they conflict. Its measured ranges (sentence length,
+grade, hedging rate) bound any prose written or edited for that
+author, and its habits to drop are drift. The Terse voice skill builds
+the template from the author's past writing.
 
 ## Handoffs
 
@@ -155,9 +156,10 @@ The Terse draft skill offers to build the template from writing samples
 - The Terse outline skill composes structure first: one claim per section,
   gated on the user's sign-off.
 - The Terse draft skill expands an approved outline (or composes from
-  scratch) in the user's voice, checking at draft time. It offers to
-  learn a voice from samples (`references/voice-analysis.md`) when
-  none exists.
+  scratch) in the user's voice, checking at draft time. It offers the
+  Terse voice skill when no voice exists.
+- The Terse voice skill learns the user's voice from their past
+  writing, tests it blind, and writes the template on their sign-off.
 - The Terse edit skill is the publish gate. As directed, it reports findings,
   fixes them in stages, proofs grammar alone, or shifts tone. It honors the
   false alarms above and the approved voice template.
