@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { createGrammarPool } from './grammar-check.mjs';
 
-const HARD_GRADE = 10; // document grade target; also the hard-sentence floor
+export const HARD_GRADE = 10; // document grade target; also the hard-sentence floor
 // Sentence flags are length-led, calibrated against 514 sentences of
 // Hemingway's journalism: the old grade-only rule flagged 26.8% of his
 // sentences, because ARI's character counting punishes long vocabulary in
@@ -1193,7 +1193,7 @@ export function docGradeExceeded(stats, maxGrade) {
 // samples/hemingway): 7.5 adverbs, 8.2 passives, and 2.7 qualifiers (the
 // qualifier rate remeasured after "seems" and "tends to" joined the list).
 // A project's config can set its own rates: a README's passives run higher.
-const DEFAULT_RATES = { adverbsPerKword: 7.5, passivePerKword: 8.2,
+export const DEFAULT_RATES = { adverbsPerKword: 7.5, passivePerKword: 8.2,
 	qualifiersPerKword: 2.7 };
 
 function docStats(words, sentenceLengths, flags, targets = {}) {
