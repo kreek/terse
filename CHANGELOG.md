@@ -6,6 +6,48 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `/terse:voice` (`$terse:voice` in Codex) learns the user's voice from
+  their past writing. It reads a folder, the user's GitHub PRs and issues, or
+  a connected document or mail tool once the user agrees. It compares each
+  sample with what Terse writes from the same facts, and keeps only the
+  differences as traits. The user answers yes-or-no questions backed by their
+  own sentences, then picks between two blind versions before approving.
+- `scripts/voice-profile.mjs` screens samples and measures the voice. It
+  sets aside a sample with 2 or more AI tells, at 3 or more per 1,000 words,
+  so the voice never learns a model's polish. Emoji do not count toward the
+  screen. The profile reports the sentence-length spread and the grade. It
+  gives a rate and an example per category, and the config the numbers
+  suggest. It lists each habit the author might keep as an `ignore` key.
+  A word-level key names one phrase; a structural key names a category.
+- A personal voice in `~/.terse/voice.md` and `~/.terse/config.json`. The
+  checker and the hook layer the nearest project config over it: project keys
+  replace personal ones, `ignore` lists combine, and `targets` merge rate by
+  rate. A project can add keeps but cannot remove a personal one. An approved
+  project `.terse/voice.md` still wins inside its project.
+- `"personal": false` in a project's `.terse/config.json` leaves the personal
+  voice out of that project: the checker and the skills read the project's
+  files alone. Terse's own repository sets it, so local checks match CI.
+
+### Changed
+
+- The draft, edit, and style skills find the voice in the project first,
+  then in `~/.terse`, and offer the voice skill when neither exists.
+- The voice template gains a habits-to-drop section. The edit skill reports
+  those habits as `voice-drift`.
+- A `~/.terse/config.json` now applies to every file, and a project config
+  layers over it instead of replacing it. It used to apply only to files
+  under the home folder, and only where no nearer project config existed.
+  Set `"personal": false` in a project to restore the old result there.
+- A suggested `maxGrade` sits one above the measured grade. The checker fails
+  a document at or above its limit, so the measured grade itself failed the
+  author's typical document.
+
+### Removed
+
+- `skills/style/references/voice-analysis.md`. The voice skill replaces it.
+
 ## [0.13.1] (2026-09-04)
 
 ### Fixed
