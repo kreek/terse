@@ -1,0 +1,27 @@
+# Synced from eval/verifier/shared/judge/quality.toml by eval/scripts/sync_tests.py. Do not edit in tasks/.
+# sync_tests.py appends each task's [[criterion]] tables from its terse.json.
+# REWARDKIT_JUDGE (set in task.toml [verifier.env]) overrides `judge` at run time.
+# claude-code runs the judge through the Claude Code CLI, the one client that
+# accepts a subscription token. It ignores `files` and `reasoning_effort`, so
+# terse_lib.py `prepare` inlines the instruction and bundle into prompt.md and
+# test.sh sets the CLI's effort. An LLM judge override reads `files` instead.
+# isolated stays false: RewardKit isolates with an overlay mount, which fails in
+# Harbor's unprivileged Docker trials. cwd is "/" because `claude -p` denies
+# reads outside its working directory, and the inputs live under /tests and /logs.
+[judge]
+judge = "claude-code"
+model = "anthropic/claude-sonnet-5"
+isolated = false
+cwd = "/"
+files = ["/tests/judge/instruction.md", "/logs/verifier/judge-bundle.md"]
+prompt_template = "prompt.md"
+reasoning_effort = "low"
+timeout = 300
+
+[scoring]
+aggregation = "weighted-mean"
+
+[[criterion]]
+name = "covers_topics"
+description = "Technically correct, covers all four required topics, right audience level. Answer yes only if the explainer correctly covers: what an index is, B-tree lookup versus full table scan, the write penalty of additional indexes, and when not to index. Terminology beyond SQL basics must be introduced before use, and there are no technical errors."
+type = "binary"

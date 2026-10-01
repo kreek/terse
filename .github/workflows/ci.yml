@@ -20,4 +20,20 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: Self-check the repo's prose
-        run: node scripts/style-check.mjs README.md ROADMAP.md CHANGELOG.md evals/README.md docs/research/*.md skills/*/SKILL.md skills/*/references/*.md
+        run: node scripts/style-check.mjs README.md ROADMAP.md CHANGELOG.md evals/README.md eval/README.md docs/research/*.md skills/*/SKILL.md skills/*/references/*.md
+
+  eval-verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The oldest Python the driver scripts support; macOS ships 3.9.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Vendored verifier copies match eval/verifier/shared
+        run: python3 eval/scripts/sync_tests.py --check
+      - name: Verifier, driver, and lift tests
+        run: python3 -m unittest discover eval/verifier/tests
