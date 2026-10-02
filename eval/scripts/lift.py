@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare a bare Harbor job with a terse job: lift, graders, checker metrics, acceptance.
 
-  python3 eval/scripts/lift.py runs/<bare-job> runs/<terse-job>
+  python3 eval/scripts/lift.py eval/runs/<bare-job> eval/runs/<terse-job>
 
 Lift is the terse arm's mean reward minus the bare arm's, per task and for the
 suite. The suite lift carries a 90% bootstrap interval over trials resampled
