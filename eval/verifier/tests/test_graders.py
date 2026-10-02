@@ -70,5 +70,108 @@ class LengthAndTellGraderTest(unittest.TestCase):
         self.assertFalse(passes("generation-launch", "no-ai-tells", "Fast — and local."))
 
 
+
+GOOD_ISSUE = """# Export invoices to CSV
+
+Finance users copy invoice rows by hand. Add a CSV export to the invoice list.
+
+The export respects the list's current filters and includes the invoice number,
+customer name, issue date, due date, amount, currency, and status. Dates use
+ISO 8601. Only the Billing Admin role can export. An export over 10,000 rows
+arrives as an emailed download link.
+
+## Acceptance criteria
+
+- A Billing Admin can export the filtered list to CSV.
+- Other roles see no export action.
+- An export over 10,000 rows sends an email with a download link.
+"""
+
+GOOD_SLACK = ("Payments deploy moved from 14:00 today to 10:00 UTC tomorrow. The DB migration failed "
+              "its staging dry run; production is fine. Priya is fixing it. Please hold merges to the "
+              "payments repo until it ships.\n")
+
+GOOD_EMAIL = """Subject: Moving our renewal to April 1
+
+Dana, can we move our contract renewal from March 1 to April 1 on the same terms?
+Our budget approval meeting is on March 20, so we cannot sign before then.
+Could you let me know by February 14 so I can tell finance?
+"""
+
+GOOD_VOICE_EMAIL = """Subject: Final logo files by Thursday
+
+Can you send the final logo files in SVG, with the one-colour version, by
+Thursday? The print vendor needs them Friday morning for the trade-show banners.
+"""
+
+
+def failing(task: str, prose: str) -> list[str]:
+    meta = tl.load_task_meta(EVAL_DIR / "tasks" / task / "tests")
+    return [g["name"] for g in meta["graders"] if not tl.grade_text(prose, g["pattern"], g["match"])]
+
+
+class LengthTaskGraderTest(unittest.TestCase):
+    def test_a_person_sized_deliverable_passes_every_grader(self):
+        for task, prose in (("generation-issue", GOOD_ISSUE), ("generation-slack", GOOD_SLACK),
+                            ("generation-email", GOOD_EMAIL), ("voice-email-length", GOOD_VOICE_EMAIL)):
+            self.assertEqual(failing(task, prose), [], task)
+
+    def test_a_user_story_fails_the_issue(self):
+        story = GOOD_ISSUE + "\nAs a finance user, I want to export invoices so that I stop copying rows.\n"
+        self.assertEqual(failing("generation-issue", story), ["no-user-story"])
+
+    def test_a_sixth_acceptance_criterion_fails_the_issue(self):
+        extra = "".join(f"- Criterion {n} holds.\n" for n in range(4, 7))
+        self.assertEqual(failing("generation-issue", GOOD_ISSUE + extra), ["at-most-five-criteria"])
+        self.assertEqual(failing("generation-issue", GOOD_ISSUE + extra.split("\n", 2)[-1]), [])
+
+    def test_a_memo_shaped_slack_message_fails(self):
+        self.assertIn("no-headings", failing("generation-slack", "## Deploy update\n\n" + GOOD_SLACK))
+        self.assertIn("under-length", failing("generation-slack", GOOD_SLACK + GOOD_SLACK))
+
+    def test_a_padded_email_fails_the_length(self):
+        padded = GOOD_EMAIL + "\n" + " ".join(["More background about the account history."] * 15)
+        self.assertEqual(failing("generation-email", padded), ["under-length"])
+
+    def test_the_default_email_shape_fails_the_voice(self):
+        default = ("Hi Sam,\n\nThanks for all your great work on this project. The board really liked the "
+                   "last round.\n\n" + GOOD_VOICE_EMAIL.split("\n", 2)[2] +
+                   "\nLet me know if anything gets in the way.\n\nThanks,\nAlastair\n")
+        self.assertEqual(failing("voice-email-length", default),
+                         ["under-voice-length", "no-greeting", "no-sign-off"])
+
+    def test_a_list_after_the_criteria_is_not_a_criterion(self):
+        fields = "\n## Fields\n\n- invoice number\n- customer name\n- issue date\n"
+        self.assertEqual(failing("generation-issue", GOOD_ISSUE + fields), [])
+
+    def test_code_and_markdown_symbols_do_not_count_as_words(self):
+        code = "\n```\n" + " ".join(["token"] * 300) + "\n```\n"
+        table = "\n| Field | Type |\n|---|---|\n| amount | decimal |\n"
+        self.assertEqual(failing("generation-issue", GOOD_ISSUE + code + table), [])
+
+    def test_user_story_variants(self):
+        for story in ("As finance users, we want to export invoices.", "As a Billing Admin I'd like a CSV button."):
+            self.assertIn("no-user-story", failing("generation-issue", GOOD_ISSUE + story + "\n"), story)
+        plain = GOOD_ISSUE + "As a result, I can stop copying rows.\n"
+        self.assertNotIn("no-user-story", failing("generation-issue", plain))
+
+    def test_common_slack_wordings_keep_the_facts(self):
+        for hold in ("Please don't merge to the payments repo", "Avoid merging to payments", "Merge freeze on payments"):
+            message = ("Payments deploy rescheduled to 10:00 UTC tomorrow. The migration failed its staging dry "
+                       f"run; production is fine. Priya is on it. {hold} until then.\n")
+            self.assertEqual(failing("generation-slack", message), [], hold)
+
+    def test_ordinal_dates_keep_the_email_facts(self):
+        email = GOOD_EMAIL.replace("March 1 to April 1", "1st March to 1st April")
+        self.assertEqual(failing("generation-email", email), [])
+
+    def test_voice_sign_off_and_greeting_variants(self):
+        body = GOOD_VOICE_EMAIL.split("\n", 2)[2]
+        self.assertIn("no-greeting", failing("voice-email-length", "Sam,\n\n" + body))
+        self.assertIn("no-sign-off", failing("voice-email-length", body + "\nThanks for turning these around fast.\n"))
+        self.assertIn("no-sign-off", failing("voice-email-length", body + "\nAlastair\n"))
+        self.assertEqual(failing("voice-email-length", "Subject: Logo\n\nBest format is SVG.\n" + body), [])
+
+
 if __name__ == "__main__":
     unittest.main()

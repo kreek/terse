@@ -119,6 +119,13 @@ every mode.
      missing, extra, or reordered section, a section over its budget,
      and the whole over its target, each as a `structure` finding. An
      overrun is a finding even when the user did not ask for a trim
+   - length against the genre, when no approved outline exists.
+     `../style/references/document-lengths.md` gives the order: a
+     length the user stated, then the approved voice's, then the
+     default. Compare the word count with the first that applies.
+     An overrun is a `structure` finding
+     that names the genre and the ceiling. So is a shape the genre
+     does not take, such as a user story in an issue
    - the outline's promises, when an approved outline file exists:
      every section makes its assigned claim. The lead still sets up
      the governing thought, and the last section is the ask or the
@@ -244,7 +251,7 @@ every mode.
       keep, and went to the report for the user's direction.
 - [ ] A later instance that advanced its claim raised no finding.
 - [ ] The audit covered restatement, length against target and
-      budget, and omission on a short draft, skeleton compression
+      budget or against the genre ceiling, and omission on a short draft, skeleton compression
       included.
 - [ ] The warrant audit ran: every sentence still ties to its
       section's claim on the page.

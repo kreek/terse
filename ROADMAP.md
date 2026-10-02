@@ -162,6 +162,8 @@ The voice template works but is young.
 
 - [ ] An eval case with an approved fixture template. The edit pass
       stays inside the measured ranges and honors exceptions.
+      `voice-email-length` is the first task with an approved fixture.
+      It covers the voice's genre length, not an edit pass.
 - [ ] Multiple voices per project, such as a README voice beside a spec
       voice.
 - [ ] Fast re-analysis, so the template tracks an author whose writing

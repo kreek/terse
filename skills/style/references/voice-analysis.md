@@ -11,24 +11,37 @@ Workflow:
 1. Resolve the samples directory from the user's request. Read every
    prose file in it (markdown, text); skip code and generated files.
    Fewer than three samples or under about 1,500 words total is a
-   thin corpus: say so and continue only if the user confirms.
+   thin corpus: say so and continue only if the user confirms. Short
+   genres, such as emails or Slack messages, count pieces rather
+   than words. Three pieces of a genre are enough to measure its
+   length.
+   Group the samples by genre, using the genre names in
+   `document-lengths.md`. A subdirectory (`samples/email/`) or a
+   `genre:` frontmatter key names the genre. Otherwise infer it from
+   the content and mark the group `inferred`.
 2. Measure the mechanical profile with `style-check.mjs --json`.
    Record the average sentence length and its spread (from
    `stats.sentenceLengths`), plus the document grade. Add the rates
    of adverbs, passive voice, and qualifiers per thousand words.
-   These are the numbers the template records as observed, not
-   aspirational.
+   Record each sample's `stats.words`, and per genre the sample
+   count, the median, and the maximum. These are the numbers the
+   template records as observed, not aspirational.
 3. Read the samples for the voice on the page: typical sentence
    openers and connectors, paragraph length, formatting habits, and
    vocabulary register. Note recurring phrases, how the author
    handles hedging and emphasis, first or third person, and
-   contractions.
+   contractions. Per genre, note the shape: greeting, sign-off,
+   lists, headings, and how a subject line reads.
 4. Draft `voice.md` in the project's `.terse/` directory (create it)
    with:
    - frontmatter: `status: draft`, sample sources, date
    - the mechanical profile as measured numbers
    - the qualitative profile as short declarative traits, each with one
      quoted example from the samples as evidence
+   - a "Lengths by genre" table: genre, sample count, `labelled` or
+     `inferred`, median words, maximum words, and the shape notes. A
+     genre with fewer than three samples reads "too few samples,
+     default applies"
    - an exceptions section for the Terse rules this voice overrides
      on purpose. An author who uses em dashes stays an author who
      uses em dashes; record that here, and the edit gate stops
@@ -41,7 +54,7 @@ Workflow:
      `adverbsPerKword`, `qualifiersPerKword`. The hook and the CLI
      then honor the voice without the model in the loop
 5. Present the draft trait by trait and ask what to keep, change, or
-   drop. The sign-off is the point: never mark the template approved on
+   drop. Confirm each `inferred` genre group with the user. The sign-off is the point: never mark the template approved on
    your own judgment.
 6. On approval, set `status: approved` in the frontmatter and write
    the config file. Tell the user both locations and that
@@ -54,6 +67,9 @@ How the skills use the template:
   ranges bound every rewrite. A 12-word-average author does not get
   30-word rewrites.
 - The Terse draft skill: the expansion lands inside the measured ranges.
+  A genre with three or more samples sets its own length. Its maximum
+  replaces the ceiling in `document-lengths.md`. Its shape notes
+  replace the default shape.
 - The skills ignore a `draft` template and say so when they skip it.
 
 Verification:
@@ -64,3 +80,5 @@ Verification:
 - [ ] The user's approval was explicit; `approved` was never set
       unprompted.
 - [ ] The exceptions section exists, even if empty.
+- [ ] The genre word counts came from the checker's `stats.words`.
+- [ ] The user confirmed every `inferred` genre group.

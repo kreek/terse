@@ -14,6 +14,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the bare arm's. Unit tests, the verifier in its Docker image, and
   install-only runs prove it offline. The live run is still open, so
   the old harness in `evals/` stays as `npm run eval:legacy*`.
+- Default lengths and shapes for common genres, in
+  `skills/style/references/document-lengths.md`. Each genre in the table
+  has a ceiling, from a text message to an ADR. A feature request
+  carries no user story unless the repository's template asks for one, and at
+  most five acceptance criteria. The draft, outline, and edit skills apply the
+  ceilings, and `docs/research/document-lengths.md` records the evidence.
+- Voice analysis groups samples by genre and records each genre's length and
+  shape. A genre with three or more samples replaces the default.
+- Four length tasks in the Harbor eval suite (`eval/suites/length.json`).
+  One, `voice-email-length`, ships an approved voice template whose emails run
+  shorter than the default.
 
 ## [0.13.1] (2026-09-04)
 

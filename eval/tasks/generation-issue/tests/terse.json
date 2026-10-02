@@ -1,0 +1,60 @@
+{
+	"task": "generation-issue",
+	"tags": [
+		"generation",
+		"length"
+	],
+	"deliverables": [
+		"issue.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "no-user-story",
+			"path": "issue.md",
+			"match": "not_contains",
+			"pattern": "(?i)\\bas (?:an? |the )?(?!result\\b|rule\\b)[^,.\\n]{1,60},?\\s+(?:I|we)\\s*(?:want|need|would like|['’]d like)\\b",
+			"why": "The issue states the requirement instead of an \"As a user, I want\" story."
+		},
+		{
+			"name": "at-most-five-criteria",
+			"path": "issue.md",
+			"match": "not_contains",
+			"pattern": "(?i)acceptance criteria[^\\n]*\\n(?:[ \\t]*\\n)*(?:[ \\t]*(?:[-*]|\\d+\\.)[ \\t][^\\n]*\\n?){6}",
+			"why": "An acceptance-criteria list, when present, holds five items or fewer."
+		},
+		{
+			"name": "under-length",
+			"path": "issue.md",
+			"match": "max_words",
+			"pattern": "200",
+			"why": "The issue stays at or under 200 prose words, the feature-request ceiling. Code blocks and Markdown symbols do not count."
+		},
+		{
+			"name": "facts-present",
+			"path": "issue.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*CSV)(?=.*invoice\\s+number)(?=.*customer)(?=.*issue\\s+date)(?=.*due\\s+date)(?=.*amount)(?=.*currency)(?=.*status)(?=.*filter)(?=.*10,?000)(?=.*e-?mail)(?=.*ISO\\s*8601)(?=.*Billing\\s+Admin)",
+			"why": "Every supplied requirement remains visible."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "issue.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|streamlines?|journey|landscape)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "No em dashes, inflated vocabulary, or tell phrases."
+		}
+	],
+	"judge": [
+		{
+			"name": "accurate_requirements",
+			"description": "The issue states every supplied requirement and invents none. Answer yes only if it covers the CSV export, all seven fields, the list filters, emailed links above 10,000 rows, ISO 8601 dates, and the Billing Admin restriction, and adds no requirement, field, or role the request did not give."
+		}
+	]
+}

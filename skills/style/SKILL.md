@@ -88,7 +88,9 @@ shares.
    objection is fine; ruling on it by assertion is not. Cut the
    ruling and let the proof that follows answer.
 10. **Length is a cost the reader pays.** Cut by selecting what to include,
-   not by compressing sentences into fragments.
+   not by compressing sentences into fragments. Write a genre at the length
+   a person would. `references/document-lengths.md` gives the ceiling and
+   shape for each common genre, from a Slack message to an issue.
 11. **Links sit on the claim.** A source goes inline, as a link on
    the words it supports. "Kafka treats two names as
    [colliding](url) when swapping dots for underscores makes them
@@ -141,7 +143,8 @@ If the project has `.terse/voice.md` with `status: approved`, that
 template is the author's signed-off voice. Its exceptions override
 this skill's rules where they conflict. Its measured ranges (sentence
 length, grade, hedging rate) bound any prose written or edited for
-that author.
+that author. Its lengths by genre replace the defaults in
+`references/document-lengths.md`.
 The Terse draft skill offers to build the template from writing samples
 (`references/voice-analysis.md`).
 

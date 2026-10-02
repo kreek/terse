@@ -1,6 +1,6 @@
 ---
 name: draft
-description: "The expansion phase of the Terse write workflow, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
+description: "The expansion phase of the Terse write workflow, usable on its own. Write anything a reader will see, however short: issues and tickets (GitHub, GHE, Jira), PR descriptions and comments, emails, Slack and chat messages, ADRs, change requests, design docs, specs, READMEs, blog posts, articles, white papers, bid responses, or an approved outline expanded. The user's voice, checked at draft time."
 ---
 
 # Draft
@@ -28,10 +28,11 @@ a bare one means naming a missing fact, which you can check.
    than a few paragraphs with no outline, offer the Terse write skill. It
    runs the outline, this skill, and the gate in sequence, and
    structure is cheap to change before prose exists. Short
-   pieces are in scope, not exempt. An issue, a ticket, a PR
-   description, or a comment under 200 words skips the skeleton
-   checkpoint and the whole-document read. It takes the voice, the
-   constraints, the skeleton, and the expansion.
+   pieces are in scope, not exempt. A piece under 200 words
+   skips the skeleton checkpoint and the whole-document read.
+   Issues, tickets, PR descriptions, comments, emails, and Slack or
+   text messages are the usual cases. A short piece still takes the
+   voice, the constraints, the skeleton, and the expansion.
 2. Load the voice. If `.terse/voice.md` exists with `status: approved`,
    the expansion writes in the user's measured voice, not the model's
    default. If none exists, offer to learn one from a samples directory
@@ -59,6 +60,11 @@ a bare one means naming a missing fact, which you can check.
    - issues, specs, and acceptance criteria stay impersonal: state the
      requirement rather than the wish for it, and run the checker with
      `--impersonal`
+   - the length ceiling and shape for the genre, from
+     `../style/references/document-lengths.md`. An approved voice's
+     genre lengths replace them, and a length the user states or an
+     outline's target comes first. A Slack message stays a Slack
+     message, and an issue carries no user story it did not ask for
    - the expansion ceiling for the document type, from the table in
      step 5. The outline's budgets are ceilings too: a section may
      come in under its number, never over
@@ -203,6 +209,8 @@ a bare one means naming a missing fact, which you can check.
       when none exists, the user heard the offer to learn one.
 - [ ] The draft held the constraints: grade, the three rates, the
       plain-word choices, and the expansion ceiling.
+- [ ] The draft stayed under its genre's length ceiling and took the
+      genre's shape, from the voice when it covers the genre.
 - [ ] Every quotation came from its open source, word for word, with
       a text-fragment link on the quoted words.
 - [ ] A skeleton existed before any expansion, and the report states

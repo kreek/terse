@@ -25,8 +25,10 @@ the reader from question to answer, ready to expand into prose later.
    not guess the reader. When the angle itself is open, offer the
    Terse brainstorm skill rather than asking the user to pick
    blind. When the user has no length in mind, propose
-   one and get agreement, because step 3 budgets every section against
-   it. Then state the governing thought: the answer in one or two
+   one and get agreement, because step 3 budgets every section
+   against it. For a genre in
+   `../style/references/document-lengths.md`, propose a target under
+   the genre's ceiling, or under the approved voice's length. Then state the governing thought: the answer in one or two
    sentences. The final document supplies the detail. If it will not
    fit in two, check whether the subject is too wide or you are
    writing two documents.

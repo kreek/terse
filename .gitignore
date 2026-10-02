@@ -5,3 +5,6 @@ evals/results/
 examples/
 .terse/
 drafts/
+
+# Eval task fixtures ship an approved voice template.
+!eval/tasks/*/environment/workspace/.terse/
