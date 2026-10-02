@@ -1,0 +1,46 @@
+{
+	"task": "generation-readme",
+	"tags": [
+		"generation",
+		"ai-tells"
+	],
+	"deliverables": [
+		"README.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "README.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*(?:stdin|standard\\s+input))(?=.*files?)(?=.*--level)(?=.*--since)(?=.*--until)(?=.*--where)(?=.*--format)(?=.*--config)(?=.*~/\\.logsift\\.toml)(?=.*brew\\s+install\\s+logsift)(?=.*release\\s+binary)(?=.*\\x600\\x60.{0,100}(?:match|record))(?=.*\\x601\\x60.{0,100}(?:none|no.{0,20}(?:record(?:s)?|match(?:es)?)|without.{0,20}(?:record(?:s)?|match(?:es)?)|empty))(?=.*\\x602\\x60.{0,120}(?:usage|invalid|read|error))(?=.*MIT)",
+			"why": "Every supplied interface, installation path, exit-code meaning, and license remains mechanically visible."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "README.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|blazingly|effortlessly|leverages?|delves?|streamlines?|crucial|pivotal|ecosystem|journey)\\b|worth noting|here['’]s the thing|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s",
+			"why": "The README contains no em dashes, inflated vocabulary, tell phrases, or \"it's not X, it's Y\" constructions."
+		},
+		{
+			"name": "under-length",
+			"path": "README.md",
+			"match": "not_contains",
+			"pattern": "(?:\\S+\\s+){200}\\S+",
+			"why": "The README stays under 200 words, below the interactive skeleton checkpoint. The `accurate-content` grader is the other half: short because it dropped a required fact fails there."
+		}
+	],
+	"judge": [
+		{
+			"name": "accurate_content",
+			"description": "Complete, accurate, and free of invented features. Answer yes only if the README documents all given facts (stdin and file input, the four filter/format flag groups, config file path, both install methods, the three exit codes, MIT license), invents no features or flags beyond them, and the usage examples are consistent with the stated flags."
+		}
+	]
+}

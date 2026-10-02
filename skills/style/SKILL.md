@@ -21,7 +21,9 @@ shares.
 
 1. **Plain, direct, concrete language.** Keep sentences short, but vary
    their length so the text has a natural cadence rather than blunt,
-   isolated statements.
+   isolated statements. A sentence joined by `, so` or `because` stays
+   whole when it is readable on one pass. When it must split, the second
+   sentence opens on the shared term rather than a bare `So`.
 2. **Prefer the word the reader already has.** Use a technical term
    only when it is more precise than the plain description and the
    audience owns it. Write the plain version first; keep the term of art
@@ -73,10 +75,31 @@ shares.
    and the correction is the point. This is the Kansas City Star's
    fourth rule. It holds hardest for instructions: a reader follows
    "do y" where "don't do x" leaves them guessing.
-8. **The known-new contract.** Open a sentence with what the reader
-   already has; the new or important information goes at the end,
-   where the emphasis falls. A run of sentences that each open with
-   new information loses the reader, however clean each one is.
+8. **Each sentence follows from the last.** In a paragraph, each
+   sentence depends on the one before it, and true claims with no
+   links between them read as a list. Open each sentence on something
+   the reader already has, most often what the previous sentence
+   named. End it on the new information, where the emphasis falls. In
+   a parallel sequence, each item may open on its own name instead. A run of sentences that each open on new information
+   loses the reader, however clean each one is.
+   The link between two sentences has one of six names: cause,
+   consequence, contrast, example, elaboration, or sequence. When the
+   reader could miss a cause, consequence, or contrast, a plain marker
+   word states it: `so`, `because`, `but`, `then`. Those words state
+   the relation, so they are never padding. A link the reader infers
+   without effort needs no marker. Put the marker inside the sentence,
+   as `, so`, `because`, or `which means`. Three
+   sentences in a paragraph that each open on `So` are a tic of their
+   own.
+   A back reference is a link as well, so it must resolve. `Also`,
+   `this`, `these`, `both`, and `the new X` point at something already
+   stated, in the right number. For the same reason, introduce a term
+   before a sentence treats it as given.
+   A sentence whose link has no name is out of order, missing a step,
+   or in the wrong paragraph. Reorder it, add the marker word or a
+   clause, or state the missing step. A connective sentence
+   (`This matters because...`) is not a fix, because it adds a link
+   with no claim of its own.
 9. **Never comment on the writing.** No significance announcements
    (`worth noting`, `importantly`), no rhetorical questions answered
    by the next sentence, no `it's not just X, it's Y`, no pointing
@@ -88,7 +111,9 @@ shares.
    objection is fine; ruling on it by assertion is not. Cut the
    ruling and let the proof that follows answer.
 10. **Length is a cost the reader pays.** Cut by selecting what to include,
-   not by compressing sentences into fragments.
+   not by compressing sentences into fragments. Write a genre at the length
+   a person would. `references/document-lengths.md` gives the ceiling and
+   shape for each common genre, from a Slack message to an issue.
 11. **Links sit on the claim.** A source goes inline, as a link on
    the words it supports. "Kafka treats two names as
    [colliding](url) when swapping dots for underscores makes them
@@ -131,6 +156,9 @@ three groups:
 | "`This approach` saves repeating the last paragraph" | Name the thing: `the checker and the skills`, `the outline and the skeleton`. | The noun names a thing the reader has met under that name: `this commit`, `that branch`. |
 | "The flagged word is what this domain calls the thing" | Swap the inflated word for the plain claim. | The word is literal here: a real journey, a real landscape, the plumbing under a sink. Keep it and name the keep. |
 | "Leave it implicit; the reader will infer it" | State the fact, the number, or the requirement outright. Omission creates pressure in fiction, where the reader supplies the feeling; in a document it leaves a hole the reader fills with a guess. | The material is out of scope, and the document says so. |
+| "Connective words are padding" | Keep `so`, `because`, and `but`: they state the relation the reader would otherwise guess. | The word is a formal opener with no logic in it: `Furthermore`, `Moreover`, `Additionally`. |
+| "Each sentence is true, so the paragraph works" | Name each sentence's link to the one before it. Fix any pair whose link has no name. | The text is a list or a table, where the items are parallel by design. |
+| "Split the long sentence" | Keep the relation word in the second half, or leave the sentence whole. | The two halves are parallel facts with no relation to mark. |
 | "The opening needs to set the scene first" | Open on the fact the reader came for; move the setup below it. | The genre opens on a scene, and the outline placed the answer accordingly. |
 | "I would like this changed" | State the requirement: what the system does once the change lands. A wish is something the reader can decline. | The document is a comment or a note where the preference itself is the content. |
 | "Third person reads stiff here" | In an issue, a spec, or acceptance criteria, name the system, the actor, or the user, and run the checker with `--impersonal`. | The genre writes to a reader, as docs, blog posts, and memos do, where "you" is correct. |
@@ -143,8 +171,9 @@ personal `~/.terse/voice.md`. A project whose `.terse/config.json` sets
 `"personal": false` skips the personal one. Its exceptions override this skill's
 rules where they conflict. Its measured ranges (sentence length,
 grade, hedging rate) bound any prose written or edited for that
-author, and its habits to drop are drift. The Terse voice skill builds
-the template from the author's past writing.
+author, and its habits to drop are drift. Its lengths by genre replace
+the defaults in `references/document-lengths.md`. The Terse voice skill
+builds the template from the author's past writing.
 
 ## Handoffs
 
@@ -162,4 +191,7 @@ the template from the author's past writing.
   writing, tests it blind, and writes the template on their sign-off.
 - The Terse edit skill is the publish gate. As directed, it reports findings,
   fixes them in stages, proofs grammar alone, or shifts tone. It honors the
-  false alarms above and the approved voice template.
+  false alarms above and the approved voice template. A request to edit a
+  whole existing document goes to the edit skill, because only its
+  collection read finds the `flow` faults between sentences. This skill alone
+  covers prose written in passing.

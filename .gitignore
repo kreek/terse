@@ -6,3 +6,6 @@ examples/
 .terse/*
 !.terse/config.json
 drafts/
+
+# Eval task fixtures ship an approved voice template.
+!eval/tasks/*/environment/workspace/.terse/

@@ -1,0 +1,54 @@
+{
+	"task": "claudism-removal",
+	"tags": [
+		"editing",
+		"ai-tells"
+	],
+	"deliverables": [
+		"draft.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "draft.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*change\\s+feeds?)(?=.*retr(?:y|ies|ied|ying))(?=.*batch)(?=.*deduplicat)(?=.*writes?)(?=.*cache\\s+hit\\s+rates?)(?=.*throughput)",
+			"why": "Every planted fact remains mechanically visible after the edit: customer change feeds, retries, batched writes, deduplicated writes, cache hit rates, and throughput."
+		},
+		{
+			"name": "no-banned-vocabulary",
+			"path": "draft.md",
+			"match": "not_contains",
+			"pattern": "(?i)\\b(robust|seamless|transformative|multifaceted|cutting-edge|pivotal|synergy|ecosystem|landscape|realm|tapestry|testament|journey|crucial|delves?|leverages?|fosters?|showcas(?:e|es|ing)|streamlines?|elevates?|unlocks?|underscores?)\\b",
+			"why": "The edited draft must contain none of the banned vocabulary."
+		},
+		{
+			"name": "no-structural-tells",
+			"path": "draft.md",
+			"match": "not_contains",
+			"pattern": "(?i)(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also|—",
+			"why": "No \"it's not X, it's Y\" constructions, no \"not only X but also Y\", and no em dashes remain."
+		},
+		{
+			"name": "no-tell-phrases",
+			"path": "draft.md",
+			"match": "not_contains",
+			"pattern": "(?i)here['’]s the thing|worth noting|importantly|at its core|load[- ]bearing|doing real work|in conclusion",
+			"why": "The edited draft must contain no signpost or tell phrases."
+		}
+	],
+	"judge": [
+		{
+			"name": "facts_preserved",
+			"description": "Every listed fact survives the edit with its meaning intact. Check the edited document still states all of these facts, in any wording: the service reads customer change feeds; it retries failed work; it batches writes; it deduplicates writes; it improves cache hit rates and throughput. Answer yes only if all five survive with meaning intact and no new invented facts appear."
+		}
+	],
+	"judge_flow": true
+}

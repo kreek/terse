@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    "claudism-removal",
+    "grammar-repair",
+    "quote-verification",
+    "generation-readme",
+    "generation-explainer",
+    "generation-launch",
+    "generation-issue",
+    "generation-slack",
+    "generation-email",
+    "voice-email-length",
+    "generation-schema-explainer",
+    "flow-repair"
+  ]
+}

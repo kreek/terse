@@ -68,7 +68,10 @@ house style, as its CI does, or when the user builds a project voice.
    the run ends. The save hook checks Markdown only, so it leaves the
    samples as the user wrote them. Never copy samples into a project. Ask for one genre where
    the user can: a voice measured across chat messages and specs fits
-   neither.
+   neither. Record each piece's genre, using the names in the `style`
+   skill's `../style/references/document-lengths.md`. A folder such as
+   `samples/email/` or a `genre:` frontmatter key names it. Otherwise
+   infer the genre from the content and mark the group `inferred`.
 3. Screen and measure. Resolve `<terse-root>` from this `SKILL.md`
    file's location: the plugin root is two directories above it. Run
    `node "<terse-root>/scripts/voice-profile.mjs" <paths...> --json`.
@@ -78,7 +81,12 @@ house style, as its CI does, or when the user builds a project voice.
    run again on the kept files plus that one, with `--no-screen`. A
    `null` profile means the screen set every sample aside. Under three
    samples or 1,500 words, the profile says `thin`. Tell the user, and
-   continue only if they confirm. The script measures the samples raw,
+   continue only if they confirm. Then group the kept samples by genre,
+   and from each sample's `words` in the JSON record the count, the
+   median, and the maximum per genre. Short genres count pieces rather
+   than words: three kept pieces of a genre are enough to measure its
+   length. Note each genre's shape too: greeting, sign-off, lists,
+   headings, and how a subject line reads. The script measures the samples raw,
    with no config applied, so a refresh sees the habits an old
    template exempts.
 4. Contrast. Pick two or three kept samples of 150 to 600 words. For
@@ -114,6 +122,11 @@ house style, as its CI does, or when the user builds a project voice.
      `ignore`. A word-level key names one phrase, so keeping it
      exempts that phrase alone.
    - Each contrast trait, shown as its pair: keep or drop.
+   - Each `inferred` genre group: "These 4 pieces read as emails.
+     Measure them as your emails?"
+   - Each genre with three or more kept pieces: "Your emails run 35
+     words, at most 40, with no greeting. Use that as your email
+     length?"
    - Last, one open question: which habits does the user want to
      lose? Record the answers as habits to drop. No `ignore` entry
      covers them, and the edit skill reports them as `voice-drift`.
@@ -189,6 +202,12 @@ From voice-profile.mjs over 10 kept samples, 6,240 words.
   - Theirs: "We move billing to the new cluster in August."
   - Default: "The team has evaluated options for the billing service."
 
+## Lengths by genre
+
+| Genre | Pieces | Grouping | Median words | Maximum words | Shape |
+|---|---|---|---|---|---|
+| Email | 4 | labelled | 35 | 40 | Subject line, then two or three sentences. No greeting or sign-off. |
+
 ## Exceptions
 
 The Terse rules this voice breaks on purpose. Each one is in config.json.
@@ -212,7 +231,10 @@ folder the user named for it, or the project's own PRs and issues.
 - The edit skill: exceptions suppress matching findings, the measured
   ranges bound every rewrite, and habits to drop become `voice-drift`
   findings. A 12-word-average author does not get 30-word rewrites.
-- The draft skill: the expansion lands inside the measured ranges.
+- The draft skill: the expansion lands inside the measured ranges. A
+  genre in "Lengths by genre" sets its own length. Its maximum replaces
+  the ceiling in the `style` skill's `references/document-lengths.md`,
+  and its shape notes replace the default shape.
 - Every skill reads `voice.md` alone, never `voice.draft.md`, and
   skips a `voice.md` still marked `draft`.
 
@@ -234,3 +256,6 @@ folder the user named for it, or the project's own PRs and issues.
       yes. You wrote `config.json` after it and kept the keys the
       voice does not set.
 - [ ] The exceptions section exists, even if empty.
+- [ ] Each genre length came from the profile's per-sample `words`, from
+      three or more kept pieces, and the user confirmed every
+      `inferred` group and every genre length.

@@ -1,0 +1,54 @@
+{
+	"task": "generation-slack",
+	"tags": [
+		"generation",
+		"length"
+	],
+	"deliverables": [
+		"message.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "under-length",
+			"path": "message.md",
+			"match": "max_words",
+			"pattern": "50",
+			"why": "The message stays at or under 50 prose words, the Slack ceiling."
+		},
+		{
+			"name": "no-headings",
+			"path": "message.md",
+			"match": "not_contains",
+			"pattern": "(?m)^#{1,6}\\s",
+			"why": "A Slack message has no Markdown headings."
+		},
+		{
+			"name": "facts-present",
+			"path": "message.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*(?:postpone|moved?|delay|push|reschedul|bump))(?=.*10:00)(?=.*UTC)(?=.*migration)(?=.*staging)(?=.*(?:prod|production))(?=.*Priya)(?=.*(?:(?:hold|pause|freeze|stop|no|don['’]t|do\\s+not|avoid)\\W.{0,30}merg|merge\\s+freeze))",
+			"why": "Every supplied fact remains visible."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "message.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|streamlines?|journey|landscape)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "No em dashes, inflated vocabulary, or tell phrases."
+		}
+	],
+	"judge": [
+		{
+			"name": "reads_as_slack",
+			"description": "The message reads as a short Slack post a teammate would write. Answer yes only if it states every supplied fact accurately, puts the change of time first, and has no memo structure: no headings, no greeting or sign-off, and no section labels."
+		}
+	],
+	"judge_flow": true
+}

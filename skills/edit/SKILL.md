@@ -1,6 +1,6 @@
 ---
 name: edit
-description: "The publish gate: collect every finding across readability, style, AI tells, and grammar; report them or fix them in staged order. Also the proofreader: use it when the user asks to fix the grammar, spelling, or punctuation in a file, to proofread, or to check a document."
+description: "Edit or review an existing document: use it when the user asks to edit a file so it reads better, improve its flow or clarity, tighten it, clean it up, or prepare it for publishing. The publish gate: collect every finding across readability, flow, style, AI tells, and grammar; report them or fix them in staged order. Also the proofreader: use it when the user asks to fix the grammar, spelling, or punctuation in a file, to proofread, or to check a document."
 ---
 
 # Edit
@@ -80,8 +80,8 @@ every mode.
 3. Resolve `<terse-root>` from this `SKILL.md` file's location: the
    plugin root is two directories above it. Then run
    `node "<terse-root>/scripts/style-check.mjs" <file...>` for
-   the mechanical flags, and read the document once for the `grammar`
-   and `voice-drift` findings. `--max-grade N` sets the target reading
+   the mechanical flags, and read the document once for the `grammar`,
+   `voice-drift`, and `flow` findings. `--max-grade N` sets the target reading
    level. A voice template or a document type that fixes a grade
    supplies the default; the flag overrides it. `--impersonal` adds
    the pronoun findings, for issues, specs, and acceptance criteria.
@@ -123,6 +123,13 @@ every mode.
      missing, extra, or reordered section, a section over its budget,
      and the whole over its target, each as a `structure` finding. An
      overrun is a finding even when the user did not ask for a trim
+   - length against the genre, when no approved outline exists.
+     `../style/references/document-lengths.md` gives the order: a
+     length the user stated, then the approved voice's, then the
+     default. Compare the word count with the first that applies.
+     An overrun is a `structure` finding
+     that names the genre and the ceiling. So is a shape the genre
+     does not take, such as a user story in an issue
    - the outline's promises, when an approved outline file exists:
      every section makes its assigned claim. The lead still sets up
      the governing thought, and the last section is the ask or the
@@ -166,7 +173,12 @@ every mode.
    wording.
    - **structural** first:
      - hard sentence: split it, or turn an in-sentence list into
-       bullets
+       bullets. A split keeps the link: the second sentence opens on
+       the shared term, not a bare `So`
+     - flow: fix it inside the sentence with a connective word, a
+       clause, or the antecedent named outright. Some fixes need a
+       reorder or a new sentence. Those go to the report for the
+       user's direction, because the author's order survives the edit
      - long opening: cut it back to the fact the reader came for
      - aside: cut it, or promote it to its own sentence
    - **wording** second:
@@ -216,12 +228,14 @@ every mode.
    first round or two.
 9. Re-read every touched section whole. A findings list is a worklist,
    not an edit plan: fifteen correct local fixes can leave a paragraph
-   reading as chopped fragments. Four audits happen in this read:
+   reading as chopped fragments. Five audits happen in this read:
    - cadence against the voice template's measured spread (`--json`
      gives `stats.sentenceLengths`); a collapsed spread means the
      splits flattened the rhythm
    - the first and last sentence of each paragraph, read in sequence,
      must chain
+   - inside each touched paragraph, every sentence still follows from
+     the one before it, under the `style` skill's Core Idea 8
    - key terms keep their names across sections; a renamed term breaks
      the reader's thread
    - where a cut or a merge landed, the paragraphs on either side must
@@ -248,7 +262,7 @@ every mode.
       keep, and went to the report for the user's direction.
 - [ ] A later instance that advanced its claim raised no finding.
 - [ ] The audit covered restatement, length against target and
-      budget, and omission on a short draft, skeleton compression
+      budget or against the genre ceiling, and omission on a short draft, skeleton compression
       included.
 - [ ] The warrant audit ran: every sentence still ties to its
       section's claim on the page.
@@ -277,4 +291,7 @@ every mode.
       cadence spread did not collapse against the voice range.
 - [ ] The paragraph transitions chain across cuts and merges, and key
       terms kept their names across sections.
+- [ ] Inside every touched paragraph, each sentence follows from the
+      one before it. You fixed each `flow` finding inside its sentence
+      or sent it to the report.
 - [ ] The report shows before/after stats and length against target.

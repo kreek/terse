@@ -1,0 +1,47 @@
+{
+	"task": "generation-explainer",
+	"tags": [
+		"generation",
+		"ai-tells"
+	],
+	"deliverables": [
+		"explainer.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "explainer.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*index)(?=.*B-?tree)(?=.*(?:full\\s+table\\s+scan|scan\\s+every\\s+(?:table\\s+)?row|inspect\\s+every\\s+row|read(?:ing)?\\s+every\\s+(?:table\\s+)?row))(?=.*(?:INSERT|UPDATE|DELETE|writes?))(?=.*(?:work|slower|slow(?:s|ing)?\\s+writes?|slow\\s+down|write\\s+speed\\s+falls|writes?\\s+more\\s+expensive|penalty|cost))(?=.*(?:avoid.{0,120}index|skip\\s+(?:an?\\s+index|one)|do\\s+not\\s+(?:automatically\\s+)?index|(?:do\\s+not|not|when\\s+not).{0,40}add.{0,40}index))",
+			"why": "The explainer retains the index definition, B-tree comparison, write cost, and a reason not to add an index."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "explainer.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|journey|landscape|realm)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "The explainer contains no em dashes, inflated vocabulary, tell phrases, or tell constructions."
+		},
+		{
+			"name": "under-length",
+			"path": "explainer.md",
+			"match": "not_contains",
+			"pattern": "(?:\\S+\\s+){200}\\S+",
+			"why": "The explainer stays under 200 words, so automatic drafting finishes without the interactive skeleton checkpoint. The `covers-topics` grader is the other half: short because it skipped a topic fails there."
+		}
+	],
+	"judge": [
+		{
+			"name": "covers_topics",
+			"description": "Technically correct, covers all four required topics, right audience level. Answer yes only if the explainer correctly covers: what an index is, B-tree lookup versus full table scan, the write penalty of additional indexes, and when not to index. Terminology beyond SQL basics must be introduced before use, and there are no technical errors."
+		}
+	],
+	"judge_flow": true
+}

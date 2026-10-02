@@ -81,6 +81,14 @@ inside that project.
 Measured sentence length, grade, hedging, and recorded exceptions then bound
 later drafts and edits.
 
+Each common genre has a default length and shape. A Slack message stays a
+sentence or two, and an email stays under 125 words. The defaults are in
+`skills/style/references/document-lengths.md`, and their sources are in
+`docs/research/document-lengths.md`. When the voice skill
+learns your voice, keep samples of one genre together, such as `samples/email/`.
+With three or more, the voice records that genre's length, and it replaces the
+default.
+
 Checker settings live in `.terse/config.json`. The checker reads your personal
 `~/.terse/config.json` and layers the nearest project file over it. Project
 keys replace personal ones, `ignore` lists combine, and `targets` merge rate
@@ -165,6 +173,10 @@ npm ci
 npm test
 npm run benchmark:grammar
 ```
+
+The eval suite runs on Harbor, and [`eval/README.md`](eval/README.md)
+documents it. The legacy harness in `evals/` stays until a live Harbor run
+passes, because it is the only one that has run live.
 
 The committed Codex marketplace points to this GitHub repository. Start a new
 Codex task after reinstalling so the host loads the current skills and hook.
