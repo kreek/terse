@@ -44,7 +44,11 @@ WORD_RE = re.compile(r"\S*[^\W_]\S*")
 
 
 def prose_words(text: str) -> int:
-    """Words as document-lengths.md counts them: no fenced code, and no bare Markdown symbols."""
+    """Prose words: fenced code and bare Markdown symbols are left out.
+
+    document-lengths.md also leaves out logs and quoted source text. This count
+    drops them only when they sit in a fenced block.
+    """
     return len(WORD_RE.findall(FENCED_CODE_RE.sub("", text)))
 
 

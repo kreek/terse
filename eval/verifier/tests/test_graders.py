@@ -125,6 +125,13 @@ class LengthTaskGraderTest(unittest.TestCase):
         self.assertEqual(failing("generation-issue", GOOD_ISSUE + extra), ["at-most-five-criteria"])
         self.assertEqual(failing("generation-issue", GOOD_ISSUE + extra.split("\n", 2)[-1]), [])
 
+    def test_a_loose_or_paren_numbered_criteria_list_still_counts(self):
+        loose = "\n\n".join(f"- Criterion {n} holds." for n in range(1, 7))
+        numbered = "\n".join(f"{n}) Criterion {n} holds." for n in range(1, 7))
+        for criteria in (loose, numbered):
+            issue = GOOD_ISSUE.split("## Acceptance criteria")[0] + "## Acceptance criteria\n\n" + criteria + "\n"
+            self.assertIn("at-most-five-criteria", failing("generation-issue", issue), criteria)
+
     def test_a_memo_shaped_slack_message_fails(self):
         self.assertIn("no-headings", failing("generation-slack", "## Deploy update\n\n" + GOOD_SLACK))
         self.assertIn("under-length", failing("generation-slack", GOOD_SLACK + GOOD_SLACK))

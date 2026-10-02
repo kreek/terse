@@ -26,7 +26,7 @@
 			"name": "at-most-five-criteria",
 			"path": "issue.md",
 			"match": "not_contains",
-			"pattern": "(?i)acceptance criteria[^\\n]*\\n(?:[ \\t]*\\n)*(?:[ \\t]*(?:[-*]|\\d+\\.)[ \\t][^\\n]*\\n?){6}",
+			"pattern": "(?i)acceptance criteria[^\\n]*\\n(?:[ \\t]*\\n)*(?:[ \\t]*(?:[-*+]|\\d+[.)])[ \\t][^\\n]*\\n(?:[ \\t]*\\n)*){6}",
 			"why": "An acceptance-criteria list, when present, holds five items or fewer."
 		},
 		{
