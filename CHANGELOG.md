@@ -6,6 +6,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Each sentence follows from the last. The `style` skill's Core Idea 8
+  replaces the known-new contract with that rule. Each sentence opens on
+  something the previous one named, and `so`, `because`, or `but` marks a
+  cause, consequence, or contrast. Back references must resolve. The draft
+  skeleton keeps those links, the expansion gains a sixth reader question
+  (why does this follow?), and outlines record each section's link.
+- A `flow` finding joins the findings contract. The edit gate fixes it inside
+  the sentence, or reports it when the fix needs a reorder. Splits made to
+  clear a hard sentence keep their relation word.
+
 ### Added
 
 - A Harbor eval suite in `eval/`. Each task runs a bare arm and a terse
@@ -14,6 +26,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the bare arm's. Unit tests, the verifier in its Docker image, and
   install-only runs prove it offline. The live run is still open, so
   the old harness in `evals/` stays as `npm run eval:legacy*`.
+- A shared `flow` judge criterion for the eval suite, and two flow tasks,
+  `generation-schema-explainer` and `flow-repair`.
 - Default lengths and shapes for common genres, in
   `skills/style/references/document-lengths.md`. Each genre in the table
   has a ceiling, from a text message to an ADR. A feature request

@@ -21,7 +21,8 @@ Workflow:
    - claims, facts, and their hedging state are invariant; "confident"
      strengthens delivery, never evidence
    - "shorter" cuts by selection, not by compressing sentences into
-     fragments
+     fragments. The connective words stay, because a cut that drops
+     `so` or `because` leaves the reader to guess the link
    - "more-detail" adds only material grounded in the document or
      provided by the user; never invent facts
    - the `style` skill's rules still apply

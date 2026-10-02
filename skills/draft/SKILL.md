@@ -90,8 +90,13 @@ a bare one means naming a missing fact, which you can check.
 4. Write the skeleton. Each section is its outline claim, stated in
    one or two sentences, plus the evidence the outline listed under a
    claim it marked disputable. With no outline, write the claims first
-   as one line each, then state them. Leave out setup, transitions,
-   examples, and restatement. The skeleton may read like a telegram.
+   as one line each, then state them. Keep the marker word on every
+   line whose link to the line before is cause, consequence, or
+   contrast, under the `style` skill's Core Idea 8. Leave out setup,
+   examples, and restatement. The skeleton may read like a telegram,
+   but it keeps those marker words, because they are the reasoning.
+   The expansion folds each one into its sentence; it does not keep
+   every `So` as an opener.
    It is the shortest document that makes every claim, and the
    measure for the final draft. Run the checker on it and record the
    word count. For a document over 200 words, show the skeleton to
@@ -109,7 +114,7 @@ a bare one means naming a missing fact, which you can check.
    in only when it answers a question the reader asks at that point in
    the document. Name the question before writing the answer, in a
    working note beside the draft, and keep the note until the report.
-   The reader may ask five questions:
+   The reader may ask six questions:
    - a term the reader does not own yet: define it once, where it
      first appears
    - a claim the outline marked disputable: give the evidence and the
@@ -122,11 +127,12 @@ a bare one means naming a missing fact, which you can check.
      forces the words back in. Anchor an abstract ordering in the
      concrete: "broad to narrow" becomes "a domain first, an event
      last". Give a semicolon aphorism its full clause
+   - why this follows from what came before: add the connective word
+     or clause. Sometimes the link is itself a claim the reader needs.
+     Then state that step as its own sentence
    A sentence with no question behind it stays out, however well it
-   reads. Add an example only as evidence for a disputable claim. Add
-   a transition only when the order alone does not carry the reader;
-   the known-new contract carries most of them. The room goes to the
-   second question. A disputable claim takes the evidence
+   reads. Add an example only as evidence for a disputable claim. The
+   room goes to the second question. A disputable claim takes the evidence
    and the warrant, and the cost of the position the document rejects.
    The other questions take a sentence, or a few added words, each. A
    paragraph whose claim nobody would contest stays at its skeleton
@@ -152,8 +158,9 @@ a bare one means naming a missing fact, which you can check.
    `../style/references/grammar-scope.md`: correct the typo in the sentence
    you just wrote. Shape each added sentence as you write it:
    - one point per paragraph, stated in the topic sentence
-   - the known-new contract: open on what the reader has, end on the
-     new information
+   - each sentence follows from the last (the `style` skill's Core
+     Idea 8). Open on what the previous sentence named, mark the
+     link, and resolve every back reference
    - characters in subjects, actions in verbs
 6. A section that resists the outline is a signal: the outline was wrong,
    or the section does not belong. Break the outline on purpose and
@@ -175,8 +182,13 @@ a bare one means naming a missing fact, which you can check.
      there; longer sentences are not the fix
    - connective flow: each section's opening should catch the previous
      section's throw; each paragraph's first sentence should need the
-     one before it. Restore a broken link by reordering, never by
-     adding a connective sentence; that is where padding returns
+     one before it. Restore a broken link the way the `style` skill's
+     Core Idea 8 allows, never by adding a connective sentence; that
+     is where padding returns
+   - sentence links: inside each paragraph, name each sentence's link
+     to the one before it in the working note, using Core Idea 8's six
+     names. Fix every fault that rule names in the paragraph that
+     holds it
    - advance: write one line per paragraph stating the claim it makes,
      and hold each paragraph against every earlier claim, not only its
      predecessor. A paragraph that repeats a claim from three sections
@@ -217,7 +229,7 @@ a bare one means naming a missing fact, which you can check.
       its word count.
 - [ ] A document over 200 words showed the user the skeleton with the
       proposed additions listed, for one approval.
-- [ ] Every sentence beyond the skeleton answers one of the five
+- [ ] Every sentence beyond the skeleton answers one of the six
       allowed questions, and the working note records which.
 - [ ] No sentence kept its skeleton compression: abstract orderings
       carry a concrete anchor, and no claim leans on reasoning the
@@ -228,17 +240,19 @@ a bare one means naming a missing fact, which you can check.
       sections stayed at skeleton length.
 - [ ] You fixed findings at draft time, grammar included, in the
       section that raised them.
-- [ ] Each paragraph makes one point, and sentences follow the
-      known-new contract.
+- [ ] Each paragraph makes one point, and each sentence follows from
+      the last under the `style` skill's Core Idea 8.
+- [ ] Every sentence pair has a named link in the working note, and
+      every back reference resolves.
 - [ ] Each paragraph advances on every paragraph before it; none
       restates an earlier claim in fresh words, at any distance.
 - [ ] Sections came in at or under their budgets, and every departure
       went back to the outline instead of into padding.
 - [ ] The outline file records every deviation from the approved
       outline, none silent.
-- [ ] The whole-document read happened: cadence against the voice
-      range, transitions in order, paragraph advance, outline claims
-      intact.
+- [ ] The whole-document read happened. It covered cadence against
+      the voice range, transitions, sentence links, paragraph advance,
+      and the outline claims.
 - [ ] No connective sentence went in to restore flow.
 - [ ] Every subsection makes one point, and that point supports its
       section's claim and the document's flow.

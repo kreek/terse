@@ -83,6 +83,11 @@ the reader from question to answer, ready to expand into prose later.
    - the sections form a question-answer chain: each answers the
      question the previous section raised, and each uses only what an
      earlier section taught
+   - each section after the first names its link to the one before
+     on a `follows:` line beside its budget. The names are the six in
+     the `style` skill's Core Idea 8, such as `follows: consequence`.
+     A section whose link has no name is out of order or missing a
+     step. The draft opens that section on the link
    - the sections are MECE: no two sections make the same point, and
      no gap remains in what the governing thought promises
    - sibling sections sit at the same level of abstraction; one much
