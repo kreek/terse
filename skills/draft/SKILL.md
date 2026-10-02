@@ -90,14 +90,13 @@ a bare one means naming a missing fact, which you can check.
 4. Write the skeleton. Each section is its outline claim, stated in
    one or two sentences, plus the evidence the outline listed under a
    claim it marked disputable. With no outline, write the claims first
-   as one line each, then state them. Some claims are the cause,
-   consequence, or contrast of the line before. Join each such pair in
-   one line with the marker word (the `style` skill's Core Idea 8). One
-   such line: `teams deploy on their own schedules, so a new version
-   reaches the topic first`. A skeleton line that opens on `So` becomes a
-   sentence that opens on `So`. Leave out setup, examples, and
-   restatement. The skeleton may read like a telegram, but it keeps
-   those marker words, because they are the reasoning.
+   as one line each, then state them. Keep the marker word on every
+   line whose link to the line before is cause, consequence, or
+   contrast, under the `style` skill's Core Idea 8. Leave out setup,
+   examples, and restatement. The skeleton may read like a telegram,
+   but it keeps those marker words, because they are the reasoning.
+   The expansion folds each one into its sentence; it does not keep
+   every `So` as an opener.
    It is the shortest document that makes every claim, and the
    measure for the final draft. Run the checker on it and record the
    word count. For a document over 200 words, show the skeleton to
@@ -129,9 +128,8 @@ a bare one means naming a missing fact, which you can check.
      concrete: "broad to narrow" becomes "a domain first, an event
      last". Give a semicolon aphorism its full clause
    - why this follows from what came before: add the connective word
-     or clause, which costs a few words. A new sentence goes in only
-     when the missing step is a claim the reader cannot infer. That
-     sentence counts against the expansion ceiling like any other
+     or clause. Sometimes the link is itself a claim the reader needs.
+     Then state that step as its own sentence
    A sentence with no question behind it stays out, however well it
    reads. Add an example only as evidence for a disputable claim. The
    room goes to the second question. A disputable claim takes the evidence
