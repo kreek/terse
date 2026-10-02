@@ -5,6 +5,10 @@
     "quote-verification",
     "generation-readme",
     "generation-explainer",
-    "generation-launch"
+    "generation-launch",
+    "generation-issue",
+    "generation-slack",
+    "generation-email",
+    "voice-email-length"
   ]
 }

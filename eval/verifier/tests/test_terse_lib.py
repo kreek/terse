@@ -28,6 +28,12 @@ class GradeTextTest(unittest.TestCase):
         self.assertFalse(tl.grade_text(None, r"x", "contains"))
         self.assertFalse(tl.grade_text(None, r"x", "not_contains"))
 
+    def test_max_words_counts_prose_only(self):
+        text = "# Title\n\n- one two\n\n| a | b |\n|---|---|\n\n```\ncode code code\n```\n"
+        self.assertEqual(tl.prose_words(text), 5)
+        self.assertTrue(tl.grade_text(text, "5", "max_words"))
+        self.assertFalse(tl.grade_text(text, "4", "max_words"))
+
     def test_inline_flags_apply_as_in_the_old_runner(self):
         self.assertTrue(tl.grade_text("First line\nsecond LINE", r"(?is)first.*line", "contains"))
 

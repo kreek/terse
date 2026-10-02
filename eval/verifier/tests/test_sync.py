@@ -37,6 +37,11 @@ class ValidateTest(unittest.TestCase):
         grader = {**GOOD["graders"][0], "pattern": "(unclosed"}
         self.assertIn("does not compile", problems(graders=[grader]))
 
+    def test_a_max_words_grader_needs_a_numeric_limit(self):
+        grader = {**GOOD["graders"][0], "match": "max_words", "pattern": "50"}
+        self.assertEqual(problems(graders=[grader]), "")
+        self.assertIn("word limit", problems(graders=[{**grader, "pattern": "fifty"}]))
+
     def test_rejects_an_unknown_skill(self):
         self.assertIn("unknown", problems(intended_skills=["workflow"]))
 

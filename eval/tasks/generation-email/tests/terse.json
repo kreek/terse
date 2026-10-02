@@ -1,0 +1,46 @@
+{
+	"task": "generation-email",
+	"tags": [
+		"generation",
+		"length"
+	],
+	"deliverables": [
+		"email.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "under-length",
+			"path": "email.md",
+			"match": "max_words",
+			"pattern": "125",
+			"why": "The email stays at or under 125 prose words, the email ceiling."
+		},
+		{
+			"name": "facts-present",
+			"path": "email.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*(?:March\\s+1(?:st)?\\b|\\b1(?:st)?\\s+March))(?=.*(?:April\\s+1(?:st)?\\b|\\b1(?:st)?\\s+April))(?=.*same\\s+terms)(?=.*(?:March\\s+20|20(?:th)?\\s+March))(?=.*(?:February\\s+14|14(?:th)?\\s+February))",
+			"why": "Every supplied fact remains visible."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "email.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|streamlines?|journey|landscape)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "No em dashes, inflated vocabulary, or tell phrases."
+		}
+	],
+	"judge": [
+		{
+			"name": "ask_first",
+			"description": "The email makes one clear request and leads with it. Answer yes only if the request to move the renewal from March 1 to April 1 on the same terms appears in the first two sentences of the body, the reason and the February 14 deadline are both stated, and nothing is invented."
+		}
+	]
+}

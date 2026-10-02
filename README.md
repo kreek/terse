@@ -73,6 +73,13 @@ the proposed traits to `.terse/voice.md` and waits for approval before using
 them. Measured sentence length, grade, hedging, and recorded exceptions then
 bound later edits.
 
+Each common genre has a default length and shape. A Slack message stays a
+sentence or two, and an email stays under 125 words. The defaults are in
+`skills/style/references/document-lengths.md`, and their sources are in
+`docs/research/document-lengths.md`. Put samples of
+one genre in their own folder, such as `samples/email/`. With three or more,
+the voice records that genre's length, and it replaces the default.
+
 Project settings live in `.terse/config.json`. This example enables broad US
 spelling and adds project words:
 

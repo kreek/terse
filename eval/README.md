@@ -94,8 +94,12 @@ Each task lives under `eval/tasks/<name>/`:
 | `generation-readme` | Fresh prose comes out clean and short | no tells, under 200 words, facts present |
 | `generation-explainer` | The same, for an explainer | no tells, under 200 words, facts present |
 | `generation-launch` | The same, for launch copy | no tells, under 200 words, facts present |
+| `generation-issue` | A feature request stays issue-sized | no user story, at most five acceptance criteria, under 200 words, facts present |
+| `generation-slack` | A status update stays Slack-sized | under 50 words, no headings, facts present |
+| `generation-email` | A request email stays short | under 125 words, facts present |
+| `voice-email-length` | An approved voice's genre length replaces the default | under 50 words, no greeting, no sign-off, facts present |
 
-Each task also has judge criteria for what a pattern cannot check, such as
+Most tasks also have judge criteria for what a pattern cannot check, such as
 facts preserved or content accurate. Suites under `eval/suites/` list tasks by
 name.
 

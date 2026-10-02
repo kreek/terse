@@ -1,0 +1,49 @@
+{
+	"task": "voice-email-length",
+	"tags": [
+		"generation",
+		"length",
+		"voice"
+	],
+	"deliverables": [
+		"email.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "under-voice-length",
+			"path": "email.md",
+			"match": "max_words",
+			"pattern": "50",
+			"why": "The email stays at or under 50 prose words. The voice's maximum is 40, and 50 allows a subject line. The input carries thanks and background that the default email shape includes and runs past 50 words."
+		},
+		{
+			"name": "no-greeting",
+			"path": "email.md",
+			"match": "not_contains",
+			"pattern": "(?m)^\\s*(?:(?i:hi|hello|hey|dear|good\\s+(?:morning|afternoon))\\b|[A-Z][a-z]+,\\s*$)",
+			"why": "The voice opens on the request, with no greeting or name line."
+		},
+		{
+			"name": "no-sign-off",
+			"path": "email.md",
+			"match": "not_contains",
+			"pattern": "(?s)\\n\\s*(?:(?i:thanks|thank\\s+you|best|cheers|regards|kind\\s+regards|best\\s+regards|sincerely)\\b[^\\n]*|[A-Z][a-z]+[.!]?)\\s*\\Z",
+			"why": "The voice ends on the ask: the last line is no sign-off, thanks, or bare name."
+		},
+		{
+			"name": "facts-present",
+			"path": "email.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*logo)(?=.*SVG)(?=.*one[- ]colou?r)(?=.*Thursday)(?=.*Friday)(?=.*print)",
+			"why": "Every supplied fact remains visible."
+		}
+	],
+	"judge": []
+}
