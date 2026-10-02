@@ -189,4 +189,7 @@ The Terse draft skill offers to build the template from writing samples
   none exists.
 - The Terse edit skill is the publish gate. As directed, it reports findings,
   fixes them in stages, proofs grammar alone, or shifts tone. It honors the
-  false alarms above and the approved voice template.
+  false alarms above and the approved voice template. A request to edit a
+  whole existing document goes to the edit skill, because only its
+  collection read finds the `flow` faults between sentences. This skill alone
+  covers prose written in passing.

@@ -1,6 +1,6 @@
 ---
 name: edit
-description: "The publish gate: collect every finding across readability, style, AI tells, and grammar; report them or fix them in staged order. Also the proofreader: use it when the user asks to fix the grammar, spelling, or punctuation in a file, to proofread, or to check a document."
+description: "Edit or review an existing document: use it when the user asks to edit a file so it reads better, improve its flow or clarity, tighten it, clean it up, or prepare it for publishing. The publish gate: collect every finding across readability, flow, style, AI tells, and grammar; report them or fix them in staged order. Also the proofreader: use it when the user asks to fix the grammar, spelling, or punctuation in a file, to proofread, or to check a document."
 ---
 
 # Edit
