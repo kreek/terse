@@ -8,15 +8,26 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Each sentence follows from the last. The `style` skill's Core Idea 8
-  replaces the known-new contract with that rule. Each sentence opens on
-  something the previous one named, and `so`, `because`, or `but` marks a
-  cause, consequence, or contrast. Back references must resolve. The draft
-  skeleton keeps those links, the expansion gains a sixth reader question
-  (why does this follow?), and outlines record each section's link.
-- A `flow` finding joins the findings contract. The edit gate fixes it inside
-  the sentence, or reports it when the fix needs a reorder. Splits made to
-  clear a hard sentence keep their relation word.
+- New documents link each sentence to the one before. The `style` skill's
+  Core Idea 8 replaces the known-new contract with that rule. A sentence
+  opens on something the previous one named, a marker word (`so`,
+  `because`, `but`) states a link the reader could miss, and back
+  references must resolve. The draft skeleton keeps those markers, the
+  expansion gains a sixth reader question (why does this follow?), and
+  outlines record each section's link. In a live A/B across four genres,
+  drafts scored 4.13 on a 1 to 5 flow judge, against 3.97 before the change.
+- A `flow` finding joins the findings contract, and requests to edit a
+  document so it reads better now load the edit skill. The edit skill
+  fixes a `flow` finding inside the sentence, or reports it when the fix
+  needs a reorder.
+
+### Known issues
+
+- Editing an existing document does not yet improve its flow. In the live
+  A/B, edits tied the bare model on the flow judge at about twice the cost.
+  A plural pointing at one thing (`these failures`) survived most runs.
+- Explainers drafted with a length in mind can run about 10% over it, and
+  a few explainers still open two or three sentences on `So`.
 
 ### Added
 
