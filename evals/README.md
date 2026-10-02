@@ -1,22 +1,27 @@
-# Terse eval suite
+# Terse eval suite (legacy)
 
-Proves the plugin's claim with A/B tests on both supported hosts. Each case
-runs once with Terse and once without it. The suite must show better prose
-with the plugin on, with no AI-tell editing signals in a plugin-on output.
+This harness is legacy. The documented suite is the Harbor one in
+[`eval/README.md`](../eval/README.md). This harness stays because it has run
+live and Harbor has not. Its deletion waits for a passing live Harbor run.
+
+This suite proves the plugin's claim with A/B tests on both supported
+hosts. Each case runs once with Terse and once without it. The suite must
+show better prose with the plugin on, with no AI-tell editing signals in a
+plugin-on output.
 
 Note: `claude plugin eval` is in early access. If it prints an
 early-access message, ask an Anthropic contact for enablement. The case
 files here match the documented format and run unchanged once enabled.
 
-Until then, `npm run eval:fallback` runs the same cases through
+Until then, `npm run eval:legacy:fallback` runs the same cases through
 headless `claude -p` sessions. The with arm loads the plugin via
 `--plugin-dir`; the without arm runs `--bare`. Regex graders score both
 arms; llm and tool_used graders wait for the real tool. The runner
 needs `ANTHROPIC_API_KEY` exported: `--bare` sessions never read OAuth,
 so a subscription login cannot carry them.
 
-`npm run eval:codex` runs four approved genres through the active Codex
-default model: README, explainer, launch post, and planted-tell edit. It uses
+`npm run eval:legacy:codex` runs four approved genres through the active
+Codex default model: README, explainer, launch post, and planted-tell edit. It uses
 ephemeral temporary workspaces with project rules disabled. The with arm sets
 `plugins."terse@terse".enabled=true`; the without arm changes only that value
 to `false`. Each arm uses an isolated Codex home that shares the installed
@@ -29,10 +34,10 @@ command needed to continue.
 ## Run it
 
 ```
-npm run eval          # full suite, 3 runs per case, cost-capped
-npm run eval:quick    # one run of the headline case
-npm run eval:codex    # four Codex genres, one run per arm
-npm run eval:codex:quick  # planted-tell Codex smoke evaluation
+npm run eval:legacy          # full suite, 3 runs per case, cost-capped
+npm run eval:legacy:quick    # one run of the headline case
+npm run eval:legacy:codex    # four Codex genres, one run per arm
+npm run eval:legacy:codex:quick  # planted-tell Codex smoke evaluation
 node scripts/eval-score.mjs evals/results/latest.json   # re-score a past run
 ```
 

@@ -50,9 +50,9 @@ ablation instead. Eight fresh sessions ran, one per case per arm. The with
 arm reads and follows the terse skills. The without arm gets the task
 alone. The checker scored every produced document.
 
-Delta table. Recorded 2026-09-01 with `npm run eval:fallback`, three
-runs per arm on the subscription login, scored on each case's
-deliverable with the checker of that day:
+Delta table. Recorded 2026-09-01 with `npm run eval:fallback` (now
+`eval:legacy:fallback`), three runs per arm on the subscription login,
+scored on each case's deliverable with the checker of that day:
 
 | Case | Arm | Flags/kword | AI tells | Grade |
 |---|---|---|---|---|
@@ -78,9 +78,10 @@ through in a one-shot session when the request says so; the cases
 now say it. The first table, recorded 2026-08-17 from a manual
 ablation, showed the same shape with one run per arm.
 
-- [ ] Get eval enablement from Anthropic. Rerun with `npm run eval`
-      to score this table with the real tool. Until then the fallback
-      runner works on the subscription login. Without an API key it
+- [ ] Get eval enablement from Anthropic. Rerun with
+      `npm run eval:legacy` to score this table with the real tool.
+      Until then the fallback runner, `npm run eval:legacy:fallback`,
+      works on the subscription login. Without an API key it
       isolates each session with `--setting-sources ""` instead of
       `--bare`. The eval cases grant `Bash` and `Skill`, which the
       with-plugin arm needs to load a skill and run the checker.
