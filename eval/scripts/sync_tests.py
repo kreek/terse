@@ -36,7 +36,7 @@ SHARED_DIR = EVAL_DIR / "verifier" / "shared"
 sys.path.insert(0, str(SHARED_DIR))
 import terse_lib as tl  # noqa: E402
 
-MATCHES = ("contains", "not_contains")
+MATCHES = ("contains", "not_contains", "max_words")
 
 
 def task_dirs() -> list[Path]:
@@ -57,6 +57,10 @@ def validate(task: Path, meta: dict) -> None:
             problems.append(f"{grader.get('name')}: match must be one of {MATCHES}")
         if grader.get("path") not in deliverables:
             problems.append(f"{grader.get('name')}: path {grader.get('path')!r} is not a deliverable")
+        if grader.get("match") == "max_words":
+            if not str(grader.get("pattern", "")).isdigit():
+                problems.append(f"{grader.get('name')}: a max_words pattern must be the word limit")
+            continue
         try:
             re.compile(grader.get("pattern") or "")
         except re.error as exc:
