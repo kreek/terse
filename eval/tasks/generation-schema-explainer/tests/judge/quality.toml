@@ -22,8 +22,8 @@ timeout = 300
 aggregation = "weighted-mean"
 
 [[criterion]]
-name = "covers_topics"
-description = "Technically correct, covers all four required topics, right audience level. Answer yes only if the explainer correctly covers: what an index is, B-tree lookup versus full table scan, the write penalty of additional indexes, and when not to index. Terminology beyond SQL basics must be introduced before use, and there are no technical errors."
+name = "accurate_content"
+description = "The explainer is technically correct and covers every supplied point. Answer yes only if it states all five points accurately and adds no incorrect claim about Kafka or Schema Registry."
 type = "binary"
 
 # Calibrated 2026-10-02 on four claim-stack paragraphs and four well-linked ones

@@ -38,5 +38,6 @@
 			"name": "accurate_content",
 			"description": "Covers every supplied product fact without inventing features. Answer yes only if the post accurately covers QueueLens 1.0, RabbitMQ dead-letter queues, grouping by exception type, first and latest occurrence, NDJSON export, confirmed replay, the config path, local-only operation, Homebrew installation, and the MIT license. Fail for invented features or services."
 		}
-	]
+	],
+	"judge_flow": true
 }

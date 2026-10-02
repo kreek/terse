@@ -180,5 +180,59 @@ class LengthTaskGraderTest(unittest.TestCase):
         self.assertEqual(failing("voice-email-length", "Subject: Logo\n\nBest format is SVG.\n" + body), [])
 
 
+
+FLOWING_REPAIR = """# Schema compatibility
+
+A schema is the contract between a producer and its consumers. Those two sides are often run by different teams that deploy on their own schedules, so a producer can start writing a new schema version before every consumer can read it. A consumer that can't read the new version gets stuck on the first event written with it, and it stays stuck unless its code skips events it can't read. The reverse problem exists too, because a topic holds events written under older schema versions. Schema Registry prevents both failures: it checks each new version against a compatibility type and rejects a version that breaks it.
+
+The compatibility type decides which side upgrades first. BACKWARD, the default, lets consumers using the new schema read data written with the old one, so you upgrade consumers first. Adding a field with no default breaks BACKWARD, because old data has no value for it. FORWARD is the reverse: consumers on the old schema can read data written with the new one. FULL means both.
+"""
+
+FLOWING_EXPLAINER = """# Why Schema Registry checks compatibility
+
+A schema is the contract between a producer and its consumers. Different teams often own the two sides and deploy on their own schedules, so a producer can ship a new schema version before a consumer is ready for it. That consumer stops at the first event written with the new version, and it stays stopped unless its code skips events it cannot read.
+
+The topic makes this harder, because it keeps events written under older versions. Every consumer has to read the old events and the new ones.
+
+Schema Registry prevents the mismatch. It checks each new schema version against the subject's compatibility type, BACKWARD by default, and rejects a version that breaks it.
+"""
+
+
+class FlowTaskGraderTest(unittest.TestCase):
+    def test_the_stilted_draft_keeps_its_facts_so_only_the_judge_scores_flow(self):
+        draft = (EVAL_DIR / "tasks" / "flow-repair" / "environment" / "workspace" / "schema.md").read_text()
+        self.assertEqual(failing("flow-repair", draft), [])
+
+    def test_a_flowing_repair_passes_every_grader(self):
+        self.assertEqual(failing("flow-repair", FLOWING_REPAIR), [])
+
+    def test_a_repair_that_drops_a_fact_fails(self):
+        dropped = FLOWING_REPAIR.replace(" FULL means both.", "")
+        self.assertEqual(failing("flow-repair", dropped), ["facts-present"])
+
+    def test_a_flowing_explainer_passes_every_grader(self):
+        self.assertEqual(failing("generation-schema-explainer", FLOWING_EXPLAINER), [])
+
+    def test_a_list_fails_both_flow_tasks(self):
+        listed = "\n".join(f"- {line}" for line in FLOWING_REPAIR.split(". ") if line.strip())
+        self.assertIn("prose-not-list", failing("flow-repair", listed))
+        listed = "\n".join(f"1. {line}" for line in FLOWING_EXPLAINER.split(". ") if line.strip())
+        self.assertIn("prose-not-list", failing("generation-schema-explainer", listed))
+
+    def test_repair_wordings_that_keep_the_facts_pass(self):
+        for old, new in (("so you upgrade consumers first", "so consumers must be upgraded first"),
+                         ("so you upgrade consumers first", "so you upgrade the consumers first"),
+                         ("events written under older schema versions", "events from earlier schema versions")):
+            self.assertEqual(failing("flow-repair", FLOWING_REPAIR.replace(old, new)), [], new)
+
+    def test_dropping_the_default_type_fails_the_repair(self):
+        dropped = FLOWING_REPAIR.replace("BACKWARD, the default, lets", "BACKWARD lets")
+        self.assertEqual(failing("flow-repair", dropped), ["facts-present"])
+
+    def test_install_is_not_a_stopped_consumer(self):
+        stopless = FLOWING_EXPLAINER.replace("That consumer stops at", "Install it before").replace("stays stopped", "waits")
+        self.assertIn("facts-present", failing("generation-schema-explainer", stopless))
+
+
 if __name__ == "__main__":
     unittest.main()

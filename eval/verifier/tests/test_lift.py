@@ -88,6 +88,26 @@ class AcceptanceTest(unittest.TestCase):
         self.assertTrue(any("bare trial" in f and "without the judge" in f for f in failures), failures)
 
 
+class FlowGateTest(unittest.TestCase):
+    def row(self, tags, bare, terse):
+        trial = lambda score: {"trial": "t__0", "criteria": {}, "skills": ["draft"], "flow": score}  # noqa: E731
+        return {"tags": tags, "intended": {"draft"},
+                "trials": {"bare": [trial(s) for s in bare], "terse": [trial(s) for s in terse]}}
+
+    def test_flow_tasks_need_a_higher_terse_mean(self):
+        self.assertEqual(lift.flow_failures(self.row(["flow"], [2, 3], [4, 4])), [])
+        failures = lift.flow_failures(self.row(["flow"], [3, 4], [3, 3]))
+        self.assertTrue(any("not above bare" in f for f in failures), failures)
+
+    def test_other_tasks_report_flow_without_gating(self):
+        self.assertEqual(lift.flow_failures(self.row(["generation"], [4, 4], [2, 2])), [])
+
+    def test_the_flow_score_is_read_back_onto_the_1_to_5_scale(self):
+        details = {"judge": {"criteria": [{"name": "flow", "value": 0.75}, {"name": "accurate", "value": 1.0}]}}
+        self.assertEqual(lift.flow_score(details), 4.0)
+        self.assertEqual(lift.criteria(details), {"accurate": True})
+
+
 class BootstrapTest(unittest.TestCase):
     def test_interval_brackets_a_constant_lift(self):
         trial = lambda r: {"reward": r}  # noqa: E731

@@ -1,0 +1,54 @@
+{
+	"task": "generation-schema-explainer",
+	"tags": [
+		"generation",
+		"flow"
+	],
+	"deliverables": [
+		"schema-registry.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "schema-registry.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*contract)(?=.*producer)(?=.*consumer)(?=.*team)(?=.*(?:deploy|schedule|release))(?=.*(?:old|older|earlier|previous|prior)\\s.{0,40}versions?)(?=.*\\b(?:stops?|stopped|stuck|stalls?|stalled|blocks?|blocked|halts?|halted)\\b)(?=.*\\bskip)(?=.*compatib)(?=.*BACKWARD)(?=.*reject)",
+			"why": "Every supplied point remains visible."
+		},
+		{
+			"name": "under-length",
+			"path": "schema-registry.md",
+			"match": "max_words",
+			"pattern": "300",
+			"why": "A short explainer stays at or under 300 prose words. In the live A/B, Terse with the flow rule wrote 288 to 296 words and the bare model 648 to 754."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "schema-registry.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|streamlines?|journey|landscape)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "No em dashes, inflated vocabulary, or tell phrases."
+		},
+		{
+			"name": "prose-not-list",
+			"match": "not_contains",
+			"pattern": "(?m)^[ \\t]*(?:[-*+]|\\d+\\.)[ \\t]+\\S",
+			"why": "The deliverable is prose paragraphs. A list would skip the flow the task measures.",
+			"path": "schema-registry.md"
+		}
+	],
+	"judge": [
+		{
+			"name": "accurate_content",
+			"description": "The explainer is technically correct and covers every supplied point. Answer yes only if it states all five points accurately and adds no incorrect claim about Kafka or Schema Registry."
+		}
+	],
+	"judge_flow": true
+}

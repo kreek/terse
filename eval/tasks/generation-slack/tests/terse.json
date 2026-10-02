@@ -49,5 +49,6 @@
 			"name": "reads_as_slack",
 			"description": "The message reads as a short Slack post a teammate would write. Answer yes only if it states every supplied fact accurately, puts the change of time first, and has no memo structure: no headings, no greeting or sign-off, and no section labels."
 		}
-	]
+	],
+	"judge_flow": true
 }

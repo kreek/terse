@@ -25,3 +25,14 @@ aggregation = "weighted-mean"
 name = "accurate_requirements"
 description = "The issue states every supplied requirement and invents none. Answer yes only if it covers the CSV export, all seven fields, the list filters, emailed links above 10,000 rows, ISO 8601 dates, and the Billing Admin restriction, and adds no requirement, field, or role the request did not give."
 type = "binary"
+
+# Calibrated 2026-10-02 on four claim-stack paragraphs and four well-linked ones
+# (two Terse-style rewrites, a guide paragraph, and Hemingway), three runs each on
+# claude-sonnet-5 at low effort. A yes/no form failed every sample. This 1-5 form
+# averaged 2.75 on the claim stacks and 3.75 on the linked prose, so lift.py
+# compares arm means rather than gating single trials on a threshold.
+[[criterion]]
+name = "flow"
+description = "How well does each sentence follow from the one before it? Score from 1 to 5. 5: every link between sentences is clear; a reader never has to guess why one sentence follows another. 4: links are clear, with at most one place where the reader pauses to work out the connection. 3: several links the reader must work to recover, but each paragraph still holds together. 2: a paragraph reads partly as a stack of claims; the reader must guess why some sentences follow others, or a back reference or term has nothing to point at. 1: the paragraphs are stacks of unrelated claims. A link the reader can infer without effort needs no marker word. Lists, tables, headings, and code are exempt."
+type = "likert"
+points = 5

@@ -1,0 +1,7 @@
+# Synced from eval/verifier/shared/reward.toml by eval/scripts/sync_tests.py. Do not edit in tasks/.
+# The regex graders are the deterministic share and the judge the rest.
+# skill_triggering is a readout: the bare arm loads no Terse skill by construction.
+[[reward]]
+name = "reward"
+aggregation = "weighted-mean"
+weights = { graders = 0.6, judge = 0.4, skill_triggering = 0.0 }
