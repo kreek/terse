@@ -20,6 +20,13 @@ sentence it touches. Every rewrite traces to a finding, because the
 model cannot judge its own prose without an outside standard. The
 findings contract is that standard.
 
+So the findings come first, in writing. Before the first change to the
+file, put the findings list in the reply, one line per finding:
+`line: category: the words at fault: the fix`. A change with no line in
+that list behind it is out of scope. A rewrite of the whole file in one
+pass is never the fix, because it hides which finding each change
+answers.
+
 ## Modes
 
 The user directs the mode and scope in chat; collection is the same in
@@ -77,7 +84,20 @@ every mode.
    plugin root is two directories above it. Then run
    `node "<terse-root>/scripts/style-check.mjs" <file...>` for
    the mechanical flags, and read the document once for the `grammar`,
-   `voice-drift`, and `flow` findings. `--max-grade N` sets the target reading
+   `voice-drift`, and `flow` findings. The `flow` findings come from a
+   link list, built paragraph by paragraph in the same read:
+   - number the sentences. Give each one after the first its link to
+     the one before, using the six names in the `style` skill's Core
+     Idea 8, or `none`
+   - for each back reference (`this`, `these`, `also`, `both`,
+     `the new X`), name what it points at, and check the number
+   - for each term, name the sentence that introduces it
+   Each of these is a `flow` finding:
+   - a link marked `none`
+   - a reference with nothing to point at, or with the wrong number
+   - a term used before its introduction
+
+   `--max-grade N` sets the target reading
    level. A voice template or a document type that fixes a grade
    supplies the default; the flag overrides it. `--impersonal` adds
    the pronoun findings, for issues, specs, and acceptance criteria.
@@ -287,6 +307,9 @@ every mode.
       cadence spread did not collapse against the voice range.
 - [ ] The paragraph transitions chain across cuts and merges, and key
       terms kept their names across sections.
+- [ ] The findings list, the link list included, went into the reply
+      before the first change to the file.
+- [ ] Every change answers one line of that list.
 - [ ] Inside every touched paragraph, each sentence follows from the
       one before it. You fixed each `flow` finding inside its sentence
       or sent it to the report.
