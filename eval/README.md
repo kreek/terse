@@ -108,8 +108,11 @@ facts preserved or content accurate. A task whose `terse.json` sets
 sentence follows from the one before it, so one definition of flow scores
 every task. Single scores are noisy: in calibration, claim-stack paragraphs
 averaged 2.75 and well-linked ones 3.75. So `lift.py` reports each arm's mean,
-and on a task tagged `flow` the terse mean must beat the bare mean. Suites under `eval/suites/` list tasks by
-name.
+and on a task tagged `flow` the terse mean must beat the bare mean.
+`flow-repair` carries no `flow` tag, because edits still tie the bare model
+there, so its flow score is a readout. Setting `judge_flow` also changes a
+task's reward, so its rewards from before the change do not compare with
+later ones. Suites under `eval/suites/` list tasks by name.
 
 ## Scoring
 

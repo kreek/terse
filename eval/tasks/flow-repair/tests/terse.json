@@ -1,8 +1,7 @@
 {
 	"task": "flow-repair",
 	"tags": [
-		"editing",
-		"flow"
+		"editing"
 	],
 	"deliverables": [
 		"schema.md"
