@@ -42,5 +42,6 @@
 			"name": "ask_first",
 			"description": "The email makes one clear request and leads with it. Answer yes only if the request to move the renewal from March 1 to April 1 on the same terms appears in the first two sentences of the body, the reason and the February 14 deadline are both stated, and nothing is invented."
 		}
-	]
+	],
+	"judge_flow": true
 }

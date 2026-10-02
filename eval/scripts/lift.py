@@ -21,6 +21,7 @@ Acceptance, the bar the suite must clear:
     flags with Terse
   - every terse trial passes every grader and judge criterion and loaded an
     intended skill. The old runner left LLM graders unscored; here they count
+  - on a task tagged `flow`, the terse arm's mean 1-5 flow score beats bare's
   - no bare trial loaded a Terse skill
 
 Writes runs/lift/<terse-job>.json and .md and exits 1 when acceptance fails.
@@ -55,10 +56,23 @@ def reward_details(trial_dir: Path) -> dict:
     return json.loads(path.read_text()) if path.is_file() else {}
 
 
+def has_judge(meta: dict) -> bool:
+    return bool(meta.get("judge") or meta.get("judge_flow"))
+
+
 def criteria(details: dict) -> dict[str, bool]:
-    """Grader and judge criteria by name."""
+    """Pass or fail grader and judge criteria by name. The 1-5 flow score is read separately."""
     return {c["name"]: c["value"] >= 1.0
-            for dimension in ("graders", "judge") for c in (details.get(dimension) or {}).get("criteria", [])}
+            for dimension in ("graders", "judge") for c in (details.get(dimension) or {}).get("criteria", [])
+            if c["name"] != "flow"}
+
+
+def flow_score(details: dict) -> float | None:
+    """The judge's 1-5 flow score, from RewardKit's 0-1 normalized value."""
+    for c in (details.get("judge") or {}).get("criteria", []):
+        if c["name"] == "flow":
+            return 1 + 4 * c["value"]
+    return None
 
 
 def load_trial(trial_dir: Path) -> dict:
@@ -73,6 +87,7 @@ def load_trial(trial_dir: Path) -> dict:
         "error": error,
         "criteria": criteria(details),
         "judged": "judge" in details,
+        "flow": flow_score(details),
         "skills": tl.read_skill_names(tl.load_trajectory(trial_dir / "agent" / "trajectory.json")),
         "deliverables": sorted(str(p) for p in (trial_dir / "verifier" / "deliverables").glob("*")),
     }
@@ -183,6 +198,25 @@ def flag_failures(row: dict) -> list[str]:
     return failures
 
 
+def mean_flow(trials: list[dict]) -> float | None:
+    scores = [t["flow"] for t in trials if t["flow"] is not None]
+    return statistics.mean(scores) if scores else None
+
+
+def flow_failures(row: dict) -> list[str]:
+    """On a flow task, the terse arm's mean flow score must beat the bare arm's.
+
+    Single 1-5 scores are noisy (eval/verifier/shared/judge/flow.toml), so the
+    gate compares arm means instead of holding each trial to a threshold.
+    """
+    if "flow" not in row["tags"]:
+        return []
+    bare, terse = (mean_flow(row["trials"][arm]) for arm in ARMS)
+    if bare is None or terse is None or terse > bare:
+        return []
+    return [f"terse flow {terse:.2f} is not above bare {bare:.2f}"]
+
+
 def trial_failures(row: dict) -> list[str]:
     failures = []
     for trial in row["trials"]["terse"]:
@@ -199,8 +233,8 @@ def trial_failures(row: dict) -> list[str]:
 
 def acceptance(rows: list[dict]) -> list[str]:
     failures = [f"{row['task']}: {message}" for row in rows
-                for message in (*output_failures(row, bool(task_meta(row["task"]).get("judge"))),
-                                *flag_failures(row), *trial_failures(row))]
+                for message in (*output_failures(row, has_judge(task_meta(row["task"]))),
+                                *flag_failures(row), *trial_failures(row), *flow_failures(row))]
     style = [row for row in rows if "grammar" not in row["tags"] and all(row["checker"].values())]
     improved = [row for row in style if row["checker"]["terse"]["flags"] < row["checker"]["bare"]["flags"]]
     if len(rows) > 1 and not improved:
@@ -212,6 +246,10 @@ def fmt_checker(summary: dict | None) -> str:
     if not summary:
         return "n/a"
     return f"{summary['flagsPerKword']:.1f}/kw, {summary['aiTells']} tells, grade {summary['meanGrade']:.1f}"
+
+
+def fmt_flow(score: float | None) -> str:
+    return f"{score:.2f}" if score is not None else "n/a"
 
 
 def pass_rate(trials: list[dict], name: str) -> str:
@@ -241,6 +279,11 @@ def render(rows: list[dict], lift: float, interval: tuple[float, float] | None, 
         names = sorted({n for arm in ARMS for t in row["trials"][arm] for n in t["criteria"]})
         lines += [f"| {row['task']} | {n} | {pass_rate(row['trials']['bare'], n)} | "
                   f"{pass_rate(row['trials']['terse'], n)} |" for n in names]
+    flowed = [row for row in rows if any(mean_flow(row["trials"][arm]) is not None for arm in ARMS)]
+    if flowed:
+        lines += ["", "## Flow (judge, 1-5 mean)", "", "| task | bare | terse |", "| --- | ---: | ---: |"]
+        lines += [f"| {row['task']} | {fmt_flow(mean_flow(row['trials']['bare']))} | "
+                  f"{fmt_flow(mean_flow(row['trials']['terse']))} |" for row in flowed]
     lines += ["", "## Acceptance", ""] + ([f"- FAIL {f}" for f in failures] or ["- passed"])
     return "\n".join(lines) + "\n"
 
@@ -249,7 +292,7 @@ def summary_json(rows: list[dict], lift: float, interval: tuple[float, float] | 
     return {
         "suite_lift": lift, "interval90": list(interval) if interval else None, "acceptance_failures": failures,
         "tasks": [{"task": r["task"], "reward": r["reward"], "checker": r["checker"],
-                   "trials": {arm: [{k: t[k] for k in ("trial", "reward", "error", "criteria", "judged", "skills")}
+                   "trials": {arm: [{k: t[k] for k in ("trial", "reward", "error", "criteria", "judged", "flow", "skills")}
                                     for t in r["trials"][arm]] for arm in ARMS}} for r in rows],
     }
 

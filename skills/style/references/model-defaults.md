@@ -35,7 +35,13 @@ the framed cases it can; the editor judges the rest:
 - negative parallelism such as `it's not just X, it's Y`
 - synonym cycling, compulsive triplets, and uniform paragraph shapes
 - trailing analysis such as "highlighting the need for"
-- inflated vocabulary, stock figures, and formal connective tissue
+- inflated vocabulary, stock figures, and formal connective tissue:
+  `Furthermore`, `Moreover`, `Additionally`, `It is important to note`.
+  Plain connectives (`so`, `because`, `but`) state the logic and stay
+- the claim stack: consecutive sentences that each state a true claim
+  with no link to the one before. It appears most when a user asks a
+  model to write short, because the links go first. The style skill's Core
+  Idea 8 is the fix
 - a slogan opener built from a count, verdict verb, and list, such as
   `Two parts do the work:`
 - pointer nouns such as `this approach` or `that split` that make the reader

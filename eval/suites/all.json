@@ -9,6 +9,8 @@
     "generation-issue",
     "generation-slack",
     "generation-email",
-    "voice-email-length"
+    "voice-email-length",
+    "generation-schema-explainer",
+    "flow-repair"
   ]
 }

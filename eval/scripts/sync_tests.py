@@ -14,7 +14,8 @@ Per task it writes:
   tests/graders/graders.py                from verifier/shared/graders/
   tests/skill_triggering/...              from verifier/shared/skill_triggering/
   tests/judge/prompt.md                   from verifier/shared/judge/prompt.md
-  tests/judge/quality.toml                the shared header plus the task's judge criteria
+  tests/judge/quality.toml                the shared header, the task's judge criteria, and
+                                          verifier/shared/judge/flow.toml when terse.json sets judge_flow
   tests/judge/instruction.md              from the task's instruction.md
 
 Per-task files it never touches: task.toml, instruction.md, environment/workspace/,
@@ -65,20 +66,28 @@ def validate(task: Path, meta: dict) -> None:
             re.compile(grader.get("pattern") or "")
         except re.error as exc:
             problems.append(f"{grader.get('name')}: pattern does not compile: {exc}")
-    if not meta.get("graders") and not meta.get("judge"):
+    if not isinstance(meta.get("judge_flow", False), bool):
+        problems.append("judge_flow must be true or false")
+    if not meta.get("graders") and not has_judge(meta):
         problems.append("no graders and no judge criteria: the task would score nothing")
     if problems:
         raise SystemExit(f"{task.name}/tests/terse.json:\n  " + "\n  ".join(problems))
+
+
+def has_judge(meta: dict) -> bool:
+    return bool(meta.get("judge") or meta.get("judge_flow"))
 
 
 def toml_string(text: str) -> str:
     return json.dumps(text, ensure_ascii=False)
 
 
-def quality_toml(criteria: list[dict]) -> bytes:
+def quality_toml(meta: dict) -> bytes:
+    """The shared judge header, the task's own criteria, then the shared flow criterion when the task opts in."""
     tables = [f'\n[[criterion]]\nname = {toml_string(c["name"])}\ndescription = {toml_string(c["description"])}\n'
-              'type = "binary"\n' for c in criteria]
-    return ((SHARED_DIR / "judge" / "quality.toml").read_text() + "".join(tables)).encode()
+              'type = "binary"\n' for c in meta.get("judge") or []]
+    flow = (SHARED_DIR / "judge" / "flow.toml").read_text() if meta.get("judge_flow") else ""
+    return ((SHARED_DIR / "judge" / "quality.toml").read_text() + "".join(tables) + flow).encode()
 
 
 def reward_toml(has_judge: bool) -> bytes:
@@ -95,15 +104,15 @@ def planned_copies(task: Path) -> list[tuple[Path | bytes, Path]]:
         (SHARED_DIR / "Dockerfile", task / "environment" / "Dockerfile"),
         (SHARED_DIR / "test.sh", tests / "test.sh"),
         (SHARED_DIR / "terse_lib.py", tests / "terse_lib.py"),
-        (reward_toml(bool(meta.get("judge"))), tests / "reward.toml"),
+        (reward_toml(has_judge(meta)), tests / "reward.toml"),
         (SHARED_DIR / "skill_triggering" / "skill_triggering.py", tests / "skill_triggering" / "skill_triggering.py"),
     ]
     if meta.get("graders"):
         pairs.append((SHARED_DIR / "graders" / "graders.py", tests / "graders" / "graders.py"))
-    if meta.get("judge"):
+    if has_judge(meta):
         pairs += [
             (SHARED_DIR / "judge" / "prompt.md", tests / "judge" / "prompt.md"),
-            (quality_toml(meta["judge"]), tests / "judge" / "quality.toml"),
+            (quality_toml(meta), tests / "judge" / "quality.toml"),
             (task / "instruction.md", tests / "judge" / "instruction.md"),
         ]
     return pairs

@@ -56,5 +56,6 @@
 			"name": "accurate_requirements",
 			"description": "The issue states every supplied requirement and invents none. Answer yes only if it covers the CSV export, all seven fields, the list filters, emailed links above 10,000 rows, ISO 8601 dates, and the Billing Admin restriction, and adds no requirement, field, or role the request did not give."
 		}
-	]
+	],
+	"judge_flow": true
 }
