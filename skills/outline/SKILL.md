@@ -25,8 +25,10 @@ the reader from question to answer, ready to expand into prose later.
    not guess the reader. When the angle itself is open, offer the
    Terse brainstorm skill rather than asking the user to pick
    blind. When the user has no length in mind, propose
-   one and get agreement, because step 3 budgets every section against
-   it. Then state the governing thought: the answer in one or two
+   one and get agreement, because step 3 budgets every section
+   against it. For a genre in
+   `../style/references/document-lengths.md`, propose a target under
+   the genre's ceiling, or under the approved voice's length. Then state the governing thought: the answer in one or two
    sentences. The final document supplies the detail. If it will not
    fit in two, check whether the subject is too wide or you are
    writing two documents.
@@ -81,6 +83,11 @@ the reader from question to answer, ready to expand into prose later.
    - the sections form a question-answer chain: each answers the
      question the previous section raised, and each uses only what an
      earlier section taught
+   - each section after the first names its link to the one before
+     on a `follows:` line beside its budget. The names are the six in
+     the `style` skill's Core Idea 8, such as `follows: consequence`.
+     A section whose link has no name is out of order or missing a
+     step. The draft opens that section on the link
    - the sections are MECE: no two sections make the same point, and
      no gap remains in what the governing thought promises
    - sibling sections sit at the same level of abstraction; one much

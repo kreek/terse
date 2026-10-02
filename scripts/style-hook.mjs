@@ -2,8 +2,9 @@
 // PostToolUse hook: after an agent writes or edits Markdown, run the checker
 // and return the flags as tool feedback. A full-file write reports the whole
 // file. An edit reports only findings that overlap added text, so one changed
-// line in a legacy document does not replay every old finding. The project's
-// .terse/config.json applies. Exit 0 is silence; exit 2 returns feedback.
+// line in a legacy document does not replay every old finding. The personal
+// ~/.terse/config.json applies, with the project's .terse/config.json layered
+// over it. Exit 0 is silence; exit 2 returns feedback.
 import { readFileSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';

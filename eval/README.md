@@ -94,10 +94,25 @@ Each task lives under `eval/tasks/<name>/`:
 | `generation-readme` | Fresh prose comes out clean and short | no tells, under 200 words, facts present |
 | `generation-explainer` | The same, for an explainer | no tells, under 200 words, facts present |
 | `generation-launch` | The same, for launch copy | no tells, under 200 words, facts present |
+| `generation-issue` | A feature request stays issue-sized | no user story, at most five acceptance criteria, under 200 words, facts present |
+| `generation-slack` | A status update stays Slack-sized | under 50 words, no headings, facts present |
+| `generation-email` | A request email stays short | under 125 words, facts present |
+| `voice-email-length` | An approved voice's genre length replaces the default | under 50 words, no greeting, no sign-off, facts present |
+| `generation-schema-explainer` | Facts supplied as a list come out as connected reasoning | facts present, under 300 words, prose not a list, no tells |
+| `flow-repair` | An edit links a stack of true claims without losing one | facts present, under 230 words, no tells, prose not a list |
 
-Each task also has judge criteria for what a pattern cannot check, such as
-facts preserved or content accurate. Suites under `eval/suites/` list tasks by
-name.
+Most tasks also have judge criteria for what a pattern cannot check, such as
+facts preserved or content accurate. A task whose `terse.json` sets
+`judge_flow` also gets the shared `flow` criterion from
+`eval/verifier/shared/judge/flow.toml`. It scores from 1 to 5 how well each
+sentence follows from the one before it, so one definition of flow scores
+every task. Single scores are noisy: in calibration, claim-stack paragraphs
+averaged 2.75 and well-linked ones 3.75. So `lift.py` reports each arm's mean,
+and on a task tagged `flow` the terse mean must beat the bare mean.
+`flow-repair` carries no `flow` tag, because edits still tie the bare model
+there, so its flow score is a readout. Setting `judge_flow` also changes a
+task's reward, so its rewards from before the change do not compare with
+later ones. Suites under `eval/suites/` list tasks by name.
 
 ## Scoring
 

@@ -1,0 +1,53 @@
+{
+	"task": "flow-repair",
+	"tags": [
+		"editing"
+	],
+	"deliverables": [
+		"schema.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "schema.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*contract)(?=.*team)(?=.*(?:schedule|deploy))(?=.*(?:old|older|earlier|previous|prior)\\s.{0,30}(?:schema\\s+)?versions?)(?=.*\\b(?:stuck|stops?|stopped|stalls?|halts?)\\b)(?=.*\\bskip)(?=.*compatib)(?=.*reject)(?=.*BACKWARD)(?=.*(?:upgrad\\w*\\s+(?:the\\s+|your\\s+)?consumers?\\s+first|consumers?\\s+(?:must\\s+|should\\s+|need\\s+to\\s+)?(?:be\\s+|are\\s+)?upgraded\\s+first|upgrad\\w*\\s+(?:the\\s+)?consumers?\\s+before))(?=.*FORWARD)(?=.*FULL)(?=.*(?:no|without\\s+a)\\s+default)(?=.*(?:BACKWARD[^.]{0,80}\\bthe\\s+default\\b|\\bthe\\s+default[^.]{0,80}BACKWARD|BACKWARD,\\s+the\\s+default))",
+			"why": "Every fact in the draft survives the edit."
+		},
+		{
+			"name": "under-length",
+			"path": "schema.md",
+			"match": "max_words",
+			"pattern": "230",
+			"why": "The edit adds the links, not new material: at most about 1.6 times the draft's 140 words."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "schema.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|streamlines?|journey|landscape)\\b|worth noting|here['’]s the thing|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "No em dashes, inflated vocabulary, or tell phrases."
+		},
+		{
+			"name": "prose-not-list",
+			"match": "not_contains",
+			"pattern": "(?m)^[ \\t]*(?:[-*+]|\\d+\\.)[ \\t]+\\S",
+			"why": "The deliverable is prose paragraphs. A list would skip the flow the task measures.",
+			"path": "schema.md"
+		}
+	],
+	"judge": [
+		{
+			"name": "facts_preserved",
+			"description": "The edit keeps every fact in the original draft and invents none. Answer yes only if each claim about schemas, deploys, stuck consumers, Schema Registry, and the BACKWARD, FORWARD, and FULL types survives with its meaning, and any added sentence only states what the draft already implies."
+		}
+	],
+	"judge_flow": true
+}

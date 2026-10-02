@@ -37,6 +37,11 @@ class ValidateTest(unittest.TestCase):
         grader = {**GOOD["graders"][0], "pattern": "(unclosed"}
         self.assertIn("does not compile", problems(graders=[grader]))
 
+    def test_a_max_words_grader_needs_a_numeric_limit(self):
+        grader = {**GOOD["graders"][0], "match": "max_words", "pattern": "50"}
+        self.assertEqual(problems(graders=[grader]), "")
+        self.assertIn("word limit", problems(graders=[{**grader, "pattern": "fifty"}]))
+
     def test_rejects_an_unknown_skill(self):
         self.assertIn("unknown", problems(intended_skills=["workflow"]))
 
@@ -50,6 +55,18 @@ class ValidateTest(unittest.TestCase):
         without_judge = {d for d in planned if "judge" not in d.parts}
         stale = sync_tests.stale_files(task, without_judge)
         self.assertIn(task / "tests" / "judge" / "quality.toml", stale)
+
+    def test_the_flow_criterion_is_appended_only_when_the_task_opts_in(self):
+        judge = [{"name": "accurate", "description": "Accurate."}]
+        with_flow = sync_tests.quality_toml({"judge": judge, "judge_flow": True}).decode()
+        without = sync_tests.quality_toml({"judge": judge}).decode()
+        self.assertIn('name = "flow"', with_flow)
+        self.assertNotIn('name = "flow"', without)
+        self.assertIn('name = "accurate"', without)
+
+    def test_judge_flow_alone_gives_the_task_a_judge(self):
+        self.assertEqual(problems(graders=[], judge=[], judge_flow=True), "")
+        self.assertIn("true or false", problems(judge_flow="yes"))
 
     def test_the_committed_tasks_are_in_sync(self):
         self.assertEqual(sync_tests.sync(check=True), 0)

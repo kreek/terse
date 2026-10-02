@@ -20,6 +20,7 @@ every category.
 | hard-sentence, very-hard-sentence | checker | structural |
 | long-opening | checker | structural |
 | aside | checker | structural |
+| flow | model: a sentence pair with no named link, a back reference with nothing to point at, a term used before its introduction; anchored on the later sentence | structural |
 | passive-voice, adverb, qualifier | checker | wording |
 | preference | checker | wording |
 | personal-pronoun | checker, under `--impersonal` | wording |
@@ -27,7 +28,7 @@ every category.
 | em-dash | checker | wording |
 | grammar | native checker, admitted Harper rules, and model, `references/grammar-scope.md` | mechanics |
 | quote-unsourced, quote-unverified, quote-link-plain | quote checker (`scripts/quote-check.mjs`) | mechanics |
-| voice-drift | model, against the approved template | wording |
+| voice-drift | model, against the approved template: its register, its measured ranges, and each habit it lists to drop | wording |
 | structure | model: theme, order, unintroduced terms, repeated claims, claims stripped of their warrant | report-only |
 | unasked | model: a sentence with no reader question behind it | report-only |
 
@@ -39,7 +40,9 @@ Executable consumers use async `checkDocument`, which adds admitted
 Harper grammar findings and applies the same suppressions. One model
 read emits the remaining `grammar`, and one quote-checker run proves
 every quotation against its source. The same collection produces the
-`voice-drift`, and `structure` findings in the shape above. The
+`voice-drift`, `flow`, and `structure` findings in the shape above.
+The `flow` findings come from naming the link between each pair of
+sentences, in the style skill's Core Idea 8 terms. The
 `structure` findings come from a reverse outline: one line per
 paragraph stating the claim it makes, built in the same read. Audit
 the list for jumps, misordering, and paragraphs making two points.
@@ -51,9 +54,14 @@ rest as candidates for cut or merge. A later paragraph that adds
 evidence, a qualification, or a new consequence advances the claim
 rather than repeating it, and emits nothing. The `unasked` findings
 come from the `draft` skill's working note: a sentence the note does
-not tie to one of the five reader questions. Those are an unowned
-term, a disputable claim's evidence, a required step, an
-uninferred consequence, and a sentence too compressed to parse.
+not tie to one of the six reader questions:
+- an unowned term
+- a disputable claim's evidence
+- a required step
+- an uninferred consequence
+- a sentence too compressed to parse
+- the link from what came before
+
 On imported text with no note, ask the question of each
 sentence in the same read. Do not re-read the prose per category.
 
@@ -64,10 +72,11 @@ Four layers mark keeps before a finding reaches the report or the loop:
 1. The checker itself. Lexical findings inside quotes and blockquotes
    never emit. A `<!-- terse-ignore -->` line in the file suppresses
    the next paragraph's findings, all of them or by category. The
-   project's `.terse/config.json` removes whole categories, or one
-   finding within a category, everywhere.
-2. An approved `.terse/voice.md`: its exceptions remove matching
-   findings, named as covered.
+   `.terse/config.json` files, the project's layered over the personal
+   one in `~/.terse`, remove whole categories, or one finding within a
+   category, everywhere.
+2. The approved voice template, as the `style` skill finds it: its
+   exceptions remove matching findings, named as covered.
 3. The `style` skill's tripwires: matching findings stay listed,
    marked as false alarms with the table's reason.
 4. The translation test, on `ai-tell` findings from a frame: the

@@ -14,12 +14,12 @@ function workspace(prefix = 'terse-hook-') {
 	return dir;
 }
 
-function run(payload, cwd) {
+function run(payload, cwd, home = process.env.HOME) {
 	return spawnSync(process.execPath, [SCRIPT], {
 		cwd,
 		encoding: 'utf8',
 		input: typeof payload === 'string' ? payload : JSON.stringify(payload),
-		env: { ...process.env, TERSE_HOOK: '' },
+		env: { ...process.env, TERSE_HOOK: '', HOME: home, USERPROFILE: home },
 	});
 }
 
@@ -48,6 +48,19 @@ describe('style-hook', () => {
 		expect(result.stderr).toContain('[adverb] "quickly"');
 		expect(result.stderr).not.toContain('utilize');
 	});
+
+	it('honors the personal voice in ~/.terse/config.json', () => {
+		const home = workspace('terse-hook-home-');
+		mkdirSync(join(home, '.terse'));
+		writeFileSync(join(home, '.terse', 'config.json'), JSON.stringify({ ignore: ['em-dash'] }));
+		const file = join(workspace(), 'notes.md');
+		writeFileSync(file, 'We ship it — you will see.\n');
+		const payload = { tool_name: 'Write', tool_input: { file_path: file } };
+		expect(run(payload).stderr).toContain('[em-dash]');
+		const result = run(payload, undefined, home);
+		expect(result.status).toBe(0);
+		expect(result.stderr).toBe('');
+	}, 15_000);
 
 	it.each([
 		['malformed JSON', '{not json'],

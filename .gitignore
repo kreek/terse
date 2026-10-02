@@ -3,5 +3,9 @@ node_modules/
 *.tgz
 evals/results/
 examples/
-.terse/
+.terse/*
+!.terse/config.json
 drafts/
+
+# Eval task fixtures ship an approved voice template.
+!eval/tasks/*/environment/workspace/.terse/

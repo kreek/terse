@@ -13,15 +13,16 @@ Workflow:
 
 1. Run the checker (with `--max-grade <target>` for "simpler") to
    record the baseline flags and stats before touching the document.
-2. Load an approved `.terse/voice.md`. A tone shift moves within the
-   author's voice, not out of it: their vocabulary register and
-   exception list still hold.
+2. Load the approved voice template, as the `style` skill finds it.
+   A tone shift moves within the author's voice, not out of it: their
+   vocabulary register and exception list still hold.
 3. Rewrite sentence by sentence toward the preset. Rules that survive
    every preset:
    - claims, facts, and their hedging state are invariant; "confident"
      strengthens delivery, never evidence
    - "shorter" cuts by selection, not by compressing sentences into
-     fragments
+     fragments. The connective words stay, because a cut that drops
+     `so` or `because` leaves the reader to guess the link
    - "more-detail" adds only material grounded in the document or
      provided by the user; never invent facts
    - the `style` skill's rules still apply

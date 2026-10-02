@@ -28,7 +28,7 @@ INLINE_BUNDLE_LIMIT = 100_000
 
 # The directory names under skills/. The verifier runs where the repo is absent;
 # test_terse_lib.py fails when this set drifts from the plugin.
-TERSE_SKILLS = frozenset({"brainstorm", "draft", "edit", "outline", "style", "write"})
+TERSE_SKILLS = frozenset({"brainstorm", "draft", "edit", "outline", "style", "voice", "write"})
 SKILL_PATH_RE = re.compile(r"skills/([a-z][a-z0-9-]*)/SKILL\.md")
 # Claude Code injects this line and the skill body as a user message once a Skill
 # call resolves. A failed call injects nothing.
@@ -39,10 +39,28 @@ def load_task_meta(tests_dir: Path = TESTS_DIR) -> dict:
     return json.loads((tests_dir / "terse.json").read_text())
 
 
+FENCED_CODE_RE = re.compile(r"^[ \t]*(```|~~~).*?^[ \t]*\1[^\n]*$", re.MULTILINE | re.DOTALL)
+WORD_RE = re.compile(r"\S*[^\W_]\S*")
+
+
+def prose_words(text: str) -> int:
+    """Prose words: fenced code and bare Markdown symbols are left out.
+
+    document-lengths.md also leaves out logs and quoted source text. This count
+    drops them only when they sit in a fenced block.
+    """
+    return len(WORD_RE.findall(FENCED_CODE_RE.sub("", text)))
+
+
 def grade_text(text: str | None, pattern: str, match: str) -> bool:
-    """A missing file fails either way, as the old runner graded it."""
+    """A missing file fails either way, as the old runner graded it.
+
+    `max_words` reads `pattern` as the word limit; the other matches read it as a regex.
+    """
     if text is None:
         return False
+    if match == "max_words":
+        return prose_words(text) <= int(pattern)
     hit = re.search(pattern, text) is not None
     return not hit if match == "not_contains" else hit
 

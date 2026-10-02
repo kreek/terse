@@ -32,8 +32,8 @@ states it.
    brainstorm skill first. Its approved brief supplies this step's
    answers, and the two stops below stay the outline and the
    skeleton. An
-   issue, a PR description, a comment, or a short email under 200
-   words skips to step 4. The Terse draft skill handles it in one pass with
+   issue, a PR description, a comment, a Slack message, or a short
+   email under 200 words skips to step 4. The Terse draft skill handles it in one pass with
    no stop, and the gate in step 5 still runs.
 2. Outline, under the Terse outline skill. Write `<name>-outline.md` beside
    where the document will live. It holds the governing thought, the

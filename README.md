@@ -60,6 +60,7 @@ Codex uses `$terse:*`; Claude Code uses `/terse:*`.
 | `$terse:draft <outline or subject>` | `/terse:draft <outline or subject>` | Expand an approved outline or write a short document. |
 | `$terse:edit <file>` | `/terse:edit <file>` | Report or fix findings in an existing document. |
 | `$terse:style` | `/terse:style` | Apply the shared voice and clarity rules. |
+| `$terse:voice [samples]` | `/terse:voice [samples]` | Learn or refresh your voice from your past writing. |
 
 The full workflow has two approval points: the outline and a short skeleton.
 Each file remains beside the finished document as a record of the agreed
@@ -68,13 +69,32 @@ request grants approval in advance.
 
 ## Voice and project settings
 
-The draft and edit skills can learn a voice from writing samples. Terse writes
-the proposed traits to `.terse/voice.md` and waits for approval before using
-them. Measured sentence length, grade, hedging, and recorded exceptions then
-bound later edits.
+The voice skill learns your voice from your past writing. It reads a folder of
+Markdown or text files or your GitHub PRs and issues. With your consent, it
+also reads a connected document or mail tool. It sets aside samples dense with AI tells, then asks
+yes-or-no questions backed by your own sentences. Before you approve, it runs
+a blind test: can you pick its writing as yours?
 
-Project settings live in `.terse/config.json`. This example enables broad US
-spelling and adds project words:
+Your voice lives in `~/.terse/voice.md` and follows you into every project. A
+project can hold its own `.terse/voice.md`, which the skills use in its place
+inside that project.
+Measured sentence length, grade, hedging, and recorded exceptions then bound
+later drafts and edits.
+
+Each common genre has a default length and shape. A Slack message stays a
+sentence or two, and an email stays under 125 words. The defaults are in
+`skills/style/references/document-lengths.md`, and their sources are in
+`docs/research/document-lengths.md`. When the voice skill
+learns your voice, keep samples of one genre together, such as `samples/email/`.
+With three or more, the voice records that genre's length, and it replaces the
+default.
+
+Checker settings live in `.terse/config.json`. The checker reads your personal
+`~/.terse/config.json` and layers the nearest project file over it. Project
+keys replace personal ones, `ignore` lists combine, and `targets` merge rate
+by rate. A project can add keeps to your voice but cannot remove one. A
+project with a house style sets `"personal": false` to leave your voice out,
+so local checks match CI. This example enables broad US spelling and adds project words:
 
 ```json
 {
@@ -118,10 +138,12 @@ node scripts/style-check.mjs draft.md --max-grade 8
 node scripts/style-check.mjs draft.md --json
 node scripts/style-check.mjs issue.md --impersonal
 node scripts/outline-check.mjs draft.md
+node scripts/voice-profile.mjs ~/writing
 ```
 
 Exit code 0 means clean, 1 means findings remain, and 2 means the check could
-not run. `checkText` exposes synchronous readability and style results to
+not run. `voice-profile.mjs` measures a folder of samples for the voice skill
+and exits 0 unless it cannot read them. `checkText` exposes synchronous readability and style results to
 code. `checkDocument` adds the offline grammar engine for the CLI, hook,
 preview, and eval scorer.
 

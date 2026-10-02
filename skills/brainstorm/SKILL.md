@@ -22,9 +22,9 @@ skill reads.
 1. Gather what the user already knows. Ask for the territory, the occasion (why
    write now), and the constraints: venue, length, deadline. Take
    what the user offers and go; this skill exists because the rest is
-   open. An issue, a PR description, a comment, or a short email
-   under 200 words never needs this skill; offer the Terse draft
-   skill instead.
+   open. A piece under 200 words never needs this skill. An issue, a
+   PR description, a comment, a Slack message, or a short email goes
+   to the Terse draft skill instead.
 2. Diverge. Propose three to five candidate angles as bullets in
    chat. Each angle names a reader, the one question that reader is
    asking, and a candidate governing thought: the answer in one or

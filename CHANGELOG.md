@@ -8,12 +8,84 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `/terse:voice` (`$terse:voice` in Codex) learns the user's voice from
+  their past writing. It reads a folder, the user's GitHub PRs and issues, or
+  a connected document or mail tool once the user agrees. It compares each
+  sample with what Terse writes from the same facts, and keeps only the
+  differences as traits. The user answers yes-or-no questions backed by their
+  own sentences, then picks between two blind versions before approving.
+- `scripts/voice-profile.mjs` screens samples and measures the voice. It
+  sets aside a sample with 2 or more AI tells, at 3 or more per 1,000 words,
+  so the voice never learns a model's polish. Emoji do not count toward the
+  screen. The profile reports the sentence-length spread and the grade. It
+  gives a rate and an example per category, and the config the numbers
+  suggest. It lists each habit the author might keep as an `ignore` key.
+  A word-level key names one phrase; a structural key names a category.
+- A personal voice in `~/.terse/voice.md` and `~/.terse/config.json`. The
+  checker and the hook layer the nearest project config over it: project keys
+  replace personal ones, `ignore` lists combine, and `targets` merge rate by
+  rate. A project can add keeps but cannot remove a personal one. An approved
+  project `.terse/voice.md` still wins inside its project.
+- `"personal": false` in a project's `.terse/config.json` leaves the personal
+  voice out of that project: the checker and the skills read the project's
+  files alone. Terse's own repository sets it, so local checks match CI.
 - A Harbor eval suite in `eval/`. Each task runs a bare arm and a terse
   arm on Claude Code or Codex. RewardKit graders and a Claude Code judge
   score both arms, and a lift report gives the terse arm's reward minus
   the bare arm's. Unit tests, the verifier in its Docker image, and
   install-only runs prove it offline. The live run is still open, so
   the old harness in `evals/` stays as `npm run eval:legacy*`.
+- A shared `flow` judge criterion for the eval suite, and two flow tasks,
+  `generation-schema-explainer` and `flow-repair`.
+- Default lengths and shapes for common genres, in
+  `skills/style/references/document-lengths.md`. Each genre in the table
+  has a ceiling, from a text message to an ADR. A feature request
+  carries no user story unless the repository's template asks for one, and at
+  most five acceptance criteria. The draft, outline, and edit skills apply the
+  ceilings, and `docs/research/document-lengths.md` records the evidence.
+- The voice skill groups samples by genre and records each genre's length and
+  shape. A genre with three or more samples replaces the default.
+- Four length tasks in the Harbor eval suite (`eval/suites/length.json`).
+  One, `voice-email-length`, ships an approved voice template whose emails run
+  shorter than the default.
+
+### Changed
+
+- The draft, edit, and style skills find the voice in the project first,
+  then in `~/.terse`, and offer the voice skill when neither exists.
+- The voice template gains a habits-to-drop section. The edit skill reports
+  those habits as `voice-drift`.
+- A `~/.terse/config.json` now applies to every file, and a project config
+  layers over it instead of replacing it. It used to apply only to files
+  under the home folder, and only where no nearer project config existed.
+  Set `"personal": false` in a project to restore the old result there.
+- A suggested `maxGrade` sits one above the measured grade. The checker fails
+  a document at or above its limit, so the measured grade itself failed the
+  author's typical document.
+- New documents link each sentence to the one before. The `style` skill's
+  Core Idea 8 replaces the known-new contract with that rule. A sentence
+  opens on something the previous one named, a marker word (`so`,
+  `because`, `but`) states a link the reader could miss, and back
+  references must resolve. The draft skeleton keeps those markers, the
+  expansion gains a sixth reader question (why does this follow?), and
+  outlines record each section's link. In a live A/B across four genres,
+  drafts scored 4.13 on a 1 to 5 flow judge, against 3.97 before the change.
+- A `flow` finding joins the findings contract, and requests to edit a
+  document so it reads better now load the edit skill. The edit skill
+  fixes a `flow` finding inside the sentence, or reports it when the fix
+  needs a reorder.
+
+### Known issues
+
+- Editing an existing document does not yet improve its flow. In the live
+  A/B, edits tied the bare model on the flow judge at about twice the cost.
+  A plural pointing at one thing (`these failures`) survived most runs.
+- Explainers drafted with a length in mind can run about 10% over it, and
+  a few explainers still open two or three sentences on `So`.
+
+### Removed
+
+- `skills/style/references/voice-analysis.md`. The voice skill replaces it.
 
 ## [0.13.1] (2026-09-04)
 

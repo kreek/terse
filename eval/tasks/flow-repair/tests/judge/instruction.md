@@ -1,0 +1,1 @@
+`schema.md` is a draft section of our Kafka onboarding guide. Edit it so each paragraph reads as a connected explanation for an engineer new to Kafka. Keep it as prose paragraphs. Keep every fact, and add none.

@@ -1,0 +1,7 @@
+{
+  "tasks": [
+    "generation-schema-explainer",
+    "flow-repair",
+    "generation-explainer"
+  ]
+}

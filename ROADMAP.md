@@ -160,8 +160,16 @@ republish at score 100.
 
 The voice template works but is young.
 
+- [x] A voice skill with a personal voice in `~/.terse` that follows the
+      author across projects. The checker layers a project config over it.
+- [x] A screen that keeps samples dense with AI tells out of the profile.
+- [x] Traits drawn from the difference between the author's writing and
+      Terse's default from the same facts, confirmed by a blind test before
+      sign-off.
 - [ ] An eval case with an approved fixture template. The edit pass
       stays inside the measured ranges and honors exceptions.
+      `voice-email-length` is the first task with an approved fixture.
+      It covers the voice's genre length, not an edit pass.
 - [ ] Multiple voices per project, such as a README voice beside a spec
       voice.
 - [ ] Fast re-analysis, so the template tracks an author whose writing
