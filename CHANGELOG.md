@@ -6,6 +6,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A Harbor eval suite in `eval/`. Each task runs a bare arm and a terse
+  arm on Claude Code or Codex. RewardKit graders and a Claude Code judge
+  score both arms, and a lift report gives the terse arm's reward minus
+  the bare arm's. Unit tests, the verifier in its Docker image, and
+  install-only runs prove it offline. The live run is still open, so
+  the old harness in `evals/` stays as `npm run eval:legacy*`.
+
 ## [0.13.1] (2026-09-04)
 
 ### Fixed

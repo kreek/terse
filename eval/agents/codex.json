@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "Harbor AgentConfig fragment for Codex; eval/scripts/run.py merges it into a job.",
+    "Auth: CODEX_FORCE_AUTH_JSON uploads ~/.codex/auth.json (ChatGPT login) into the sandbox,",
+    "so no OPENAI_API_KEY is needed. Set CODEX_AUTH_JSON_PATH for another file.",
+    "host_env is exported into the `harbor run` process (see claude-code.json for why).",
+    "version matches the CLI preinstalled in verifier/shared/Dockerfile.",
+    "multi_agent stays off: Harbor builds the trajectory from the newest rollout, and a",
+    "subagent's rollout would replace the main one."
+  ],
+  "name": "codex",
+  "terse_import_path": "terse_agents:TerseCodex",
+  "model_name": "openai/gpt-5.5",
+  "kwargs": {
+    "version": "0.156.1",
+    "reasoning_effort": "medium",
+    "config": {
+      "features": {
+        "multi_agent": false
+      }
+    }
+  },
+  "host_env": {
+    "CODEX_FORCE_AUTH_JSON": "true"
+  }
+}

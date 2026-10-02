@@ -1,0 +1,42 @@
+{
+	"task": "generation-launch",
+	"tags": [
+		"generation",
+		"ai-tells"
+	],
+	"deliverables": [
+		"launch.md"
+	],
+	"intended_skills": [
+		"style"
+	],
+	"graders": [
+		{
+			"name": "facts-present",
+			"path": "launch.md",
+			"match": "contains",
+			"pattern": "(?is)(?=.*QueueLens\\s+1\\.0)(?=.*RabbitMQ)(?=.*dead-letter)(?=.*exception\\s+type)(?=.*first.{0,80}latest\\s+occurrence)(?=.*newline-delimited\\s+JSON)(?=.*--confirm)(?=.*~/\\.queuelens\\.toml)(?=.*(?:without|no|does\\s+not).{0,100}hosted\\s+(?:service|control\\s+plane))(?=.*brew\\s+install\\s+queuelens)(?=.*MIT)",
+			"why": "Every supplied product, safety, installation, and license fact remains mechanically visible."
+		},
+		{
+			"name": "no-ai-tells",
+			"path": "launch.md",
+			"match": "not_contains",
+			"pattern": "(?i)—|\\b(robust|seamless|powerful|crucial|pivotal|delves?|leverages?|showcases?|journey|landscape|ecosystem|intricate|meticulous)\\b|worth noting|here['’]s the thing|thrilled to announce|excited to announce|at its core|(?:it|this|that)['’]s not (?:just |only )?[^,;.]{1,40}[,;] (?:it|this|that)['’]s|not only [^.;]{1,60}but also",
+			"why": "The launch post contains no em dashes, inflated vocabulary, stock launch phrases, tell phrases, or tell constructions."
+		},
+		{
+			"name": "under-length",
+			"path": "launch.md",
+			"match": "not_contains",
+			"pattern": "(?:\\S+\\s+){200}\\S+",
+			"why": "The launch post stays under 200 words, so the automatic draft path can finish without the interactive skeleton checkpoint. The content grader ensures that brevity did not remove required facts."
+		}
+	],
+	"judge": [
+		{
+			"name": "accurate_content",
+			"description": "Covers every supplied product fact without inventing features. Answer yes only if the post accurately covers QueueLens 1.0, RabbitMQ dead-letter queues, grouping by exception type, first and latest occurrence, NDJSON export, confirmed replay, the config path, local-only operation, Homebrew installation, and the MIT license. Fail for invented features or services."
+		}
+	]
+}

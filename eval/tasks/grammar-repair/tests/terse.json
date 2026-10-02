@@ -1,0 +1,45 @@
+{
+	"task": "grammar-repair",
+	"tags": [
+		"grammar"
+	],
+	"deliverables": [
+		"notes.md"
+	],
+	"intended_skills": [
+		"style",
+		"write",
+		"draft",
+		"outline",
+		"edit"
+	],
+	"graders": [
+		{
+			"name": "comma-splice-fixed",
+			"path": "notes.md",
+			"match": "not_contains",
+			"pattern": "previous release, this happens",
+			"why": "The comma splice (\"...previous release, this happens...\") is repaired."
+		},
+		{
+			"name": "errors-corrected",
+			"path": "notes.md",
+			"match": "not_contains",
+			"pattern": "(?i)pipeline have|stage run\\b|it['’]s own|tests passes|artifacts is|Their are|canary fail\\b|system revert\\b|happens automatic\\b|You['’]re on-call engineer|rate rise\\b|seperate|to complex|Its now|quater|the affects of",
+			"why": "None of the sixteen planted errors survive: agreement (pipeline have, stage run, tests passes, artifacts is, canary fail, system revert, rate rise), homophones and apostrophes (it's own, Their are, You're on-call, Its now, the affects of), spelling (seperate, quater), and misused forms (happens automatic, to complex)."
+		},
+		{
+			"name": "style-untouched",
+			"path": "notes.md",
+			"match": "contains",
+			"pattern": "(?i)decided to separate the config from the code|previous release|error rate",
+			"why": "The fix stays inside grammar scope: these grammatical phrasings from the original must survive unrewritten, showing the pass did not restyle the document."
+		}
+	],
+	"judge": [
+		{
+			"name": "meaning_preserved",
+			"description": "All corrections are grammatical fixes; no facts changed, added, or dropped. Compare against the intent of the original: three pipeline stages, per-stage containers, upload after tests, two rollback paths, automatic canary rollback, on-call paging on error rate, config/code separation deferred to next quarter with monitoring. Answer yes only if all facts survive and every change is a correctness fix rather than a stylistic rewrite."
+		}
+	]
+}

@@ -1,0 +1,45 @@
+{
+	"task": "quote-verification",
+	"tags": [
+		"editing",
+		"quotes"
+	],
+	"deliverables": [
+		"article.md"
+	],
+	"intended_skills": [
+		"style",
+		"edit",
+		"write",
+		"draft"
+	],
+	"graders": [
+		{
+			"name": "invented-removed",
+			"path": "article.md",
+			"match": "not_contains",
+			"pattern": "(?i)owes the author one question",
+			"why": "The invented quote appears nowhere in the source, so it must not survive as a quotation."
+		},
+		{
+			"name": "tampered-corrected",
+			"path": "article.md",
+			"match": "not_contains",
+			"pattern": "(?i)catches the bug the first read",
+			"why": "The altered quote (\"catches\" for the source's \"finds\") must not survive: either corrected to the source wording or removed."
+		},
+		{
+			"name": "verbatim-kept",
+			"path": "article.md",
+			"match": "contains",
+			"pattern": "(?i)once for what the change forgot",
+			"why": "The quotation that matches the source verbatim survives the pass untouched."
+		}
+	],
+	"judge": [
+		{
+			"name": "quotes_verbatim",
+			"description": "Every remaining quotation appears verbatim in source.md. Compare every quotation left in article.md against source.md. Answer yes only if each quoted passage appears in the source word for word (whitespace and quote-mark differences aside) and the surrounding prose kept its meaning."
+		}
+	]
+}

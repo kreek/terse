@@ -152,6 +152,10 @@ npm test
 npm run benchmark:grammar
 ```
 
+The eval suite runs on Harbor, and [`eval/README.md`](eval/README.md)
+documents it. The legacy harness in `evals/` stays until a live Harbor run
+passes, because it is the only one that has run live.
+
 The committed Codex marketplace points to this GitHub repository. Start a new
 Codex task after reinstalling so the host loads the current skills and hook.
 

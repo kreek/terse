@@ -1,0 +1,10 @@
+{
+  "tasks": [
+    "claudism-removal",
+    "grammar-repair",
+    "quote-verification",
+    "generation-readme",
+    "generation-explainer",
+    "generation-launch"
+  ]
+}
